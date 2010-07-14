@@ -2,10 +2,10 @@
 //  Copyright Allen Ding 2010. All rights reserved.
 //
 
-#import "NKAppDelegate.h"
-#import "NKViewController.h"
+#import "NotekataAppDelegate.h"
+#import "NotekataViewController.h"
 
-@implementation NKAppDelegate
+@implementation NotekataAppDelegate
 
 @synthesize window;
 @synthesize viewController;

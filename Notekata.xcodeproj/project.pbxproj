@@ -7,21 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1D3623260D0F684500981E51 /* NKAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* NKAppDelegate.m */; };
+		1D3623260D0F684500981E51 /* NotekataAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* NotekataAppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
-		F5030A7A11D3555B002CD3BD /* NKViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F5030A7911D3555B002CD3BD /* NKViewController.m */; };
-		F5030A8711D3559B002CD3BD /* NKViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F5030A8611D3559B002CD3BD /* NKViewController.xib */; };
+		F5030A7A11D3555B002CD3BD /* NotekataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F5030A7911D3555B002CD3BD /* NotekataViewController.m */; };
+		F544536211ED61A5009D392B /* NKTPageView.m in Sources */ = {isa = PBXBuildFile; fileRef = F544535F11ED61A5009D392B /* NKTPageView.m */; };
+		F544536311ED61A5009D392B /* NKTTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = F544536111ED61A5009D392B /* NKTTextView.m */; };
+		F544538F11ED62AA009D392B /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F544538E11ED62AA009D392B /* NotekataViewController.xib */; };
+		F54453B311ED6371009D392B /* CreamPaperPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453AF11ED6371009D392B /* CreamPaperPattern.png */; };
+		F54453B411ED6371009D392B /* PlainPaperPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453B011ED6371009D392B /* PlainPaperPattern.png */; };
+		F54453B511ED6371009D392B /* RedCoverPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453B111ED6371009D392B /* RedCoverPattern.png */; };
+		F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5632B0111DD9D1000868F7B /* CoreText.framework */; };
 		F5F94DA411DC4DC1004AB62C /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = F5F94DA311DC4DC1004AB62C /* Icon.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		1D3623240D0F684500981E51 /* NKAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKAppDelegate.h; sourceTree = "<group>"; };
-		1D3623250D0F684500981E51 /* NKAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKAppDelegate.m; sourceTree = "<group>"; };
+		1D3623240D0F684500981E51 /* NotekataAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotekataAppDelegate.h; sourceTree = "<group>"; };
+		1D3623250D0F684500981E51 /* NotekataAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataAppDelegate.m; sourceTree = "<group>"; };
 		1D6058910D05DD3D006BFB54 /* Notekata.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Notekata.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -29,9 +35,17 @@
 		28AD735F0D9D9599002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Notekata-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Notekata-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
-		F5030A7811D3555B002CD3BD /* NKViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKViewController.h; sourceTree = "<group>"; };
-		F5030A7911D3555B002CD3BD /* NKViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKViewController.m; sourceTree = "<group>"; };
-		F5030A8611D3559B002CD3BD /* NKViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NKViewController.xib; sourceTree = "<group>"; };
+		F5030A7811D3555B002CD3BD /* NotekataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotekataViewController.h; sourceTree = "<group>"; };
+		F5030A7911D3555B002CD3BD /* NotekataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataViewController.m; sourceTree = "<group>"; };
+		F544535E11ED61A5009D392B /* NKTPageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPageView.h; sourceTree = "<group>"; };
+		F544535F11ED61A5009D392B /* NKTPageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPageView.m; sourceTree = "<group>"; };
+		F544536011ED61A5009D392B /* NKTTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextView.h; sourceTree = "<group>"; };
+		F544536111ED61A5009D392B /* NKTTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextView.m; sourceTree = "<group>"; };
+		F544538E11ED62AA009D392B /* NotekataViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotekataViewController.xib; sourceTree = "<group>"; };
+		F54453AF11ED6371009D392B /* CreamPaperPattern.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CreamPaperPattern.png; sourceTree = "<group>"; };
+		F54453B011ED6371009D392B /* PlainPaperPattern.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PlainPaperPattern.png; sourceTree = "<group>"; };
+		F54453B111ED6371009D392B /* RedCoverPattern.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = RedCoverPattern.png; sourceTree = "<group>"; };
+		F5632B0111DD9D1000868F7B /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		F5F94DA311DC4DC1004AB62C /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -43,6 +57,7 @@
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
+				F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,10 +67,9 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				1D3623240D0F684500981E51 /* NKAppDelegate.h */,
-				1D3623250D0F684500981E51 /* NKAppDelegate.m */,
-				F5030A7811D3555B002CD3BD /* NKViewController.h */,
-				F5030A7911D3555B002CD3BD /* NKViewController.m */,
+				F5632AAB11DD92D800868F7B /* Models */,
+				F5632AAC11DD92DE00868F7B /* Views */,
+				F5632AAA11DD92CF00868F7B /* Controllers */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -92,10 +106,13 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F54453AF11ED6371009D392B /* CreamPaperPattern.png */,
 				F5F94DA311DC4DC1004AB62C /* Icon.png */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
-				F5030A8611D3559B002CD3BD /* NKViewController.xib */,
 				8D1107310486CEB800E47090 /* Notekata-Info.plist */,
+				F544538E11ED62AA009D392B /* NotekataViewController.xib */,
+				F54453B011ED6371009D392B /* PlainPaperPattern.png */,
+				F54453B111ED6371009D392B /* RedCoverPattern.png */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -106,8 +123,38 @@
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
+				F5632B0111DD9D1000868F7B /* CoreText.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F5632AAA11DD92CF00868F7B /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				1D3623240D0F684500981E51 /* NotekataAppDelegate.h */,
+				1D3623250D0F684500981E51 /* NotekataAppDelegate.m */,
+				F5030A7811D3555B002CD3BD /* NotekataViewController.h */,
+				F5030A7911D3555B002CD3BD /* NotekataViewController.m */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
+		F5632AAB11DD92D800868F7B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
+		F5632AAC11DD92DE00868F7B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F544535E11ED61A5009D392B /* NKTPageView.h */,
+				F544535F11ED61A5009D392B /* NKTPageView.m */,
+				F544536011ED61A5009D392B /* NKTTextView.h */,
+				F544536111ED61A5009D392B /* NKTTextView.m */,
+			);
+			name = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -160,8 +207,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */,
-				F5030A8711D3559B002CD3BD /* NKViewController.xib in Resources */,
 				F5F94DA411DC4DC1004AB62C /* Icon.png in Resources */,
+				F544538F11ED62AA009D392B /* NotekataViewController.xib in Resources */,
+				F54453B311ED6371009D392B /* CreamPaperPattern.png in Resources */,
+				F54453B411ED6371009D392B /* PlainPaperPattern.png in Resources */,
+				F54453B511ED6371009D392B /* RedCoverPattern.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,8 +223,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
-				1D3623260D0F684500981E51 /* NKAppDelegate.m in Sources */,
-				F5030A7A11D3555B002CD3BD /* NKViewController.m in Sources */,
+				1D3623260D0F684500981E51 /* NotekataAppDelegate.m in Sources */,
+				F5030A7A11D3555B002CD3BD /* NotekataViewController.m in Sources */,
+				F544536211ED61A5009D392B /* NKTPageView.m in Sources */,
+				F544536311ED61A5009D392B /* NKTTextView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,6 +243,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
 				INFOPLIST_FILE = "Resources/Notekata-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				PRODUCT_NAME = Notekata;
 			};
 			name = Debug;
@@ -217,8 +270,10 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				PREBINDING = NO;
-				SDKROOT = iphoneos3.2;
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = iphoneos4.0;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
@@ -231,9 +286,11 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PREBINDING = NO;
-				SDKROOT = iphoneos3.2;
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = iphoneos4.0;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
