@@ -1,4 +1,4 @@
-//
+/*//
 //  Copyright 2010 Allen Ding. All rights reserved.
 //
 
@@ -40,3 +40,4 @@ typedef enum {
 @property (nonatomic, readwrite, retain) UIColor *verticalMarginColor;
 
 @end
+*/

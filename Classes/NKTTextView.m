@@ -3,25 +3,45 @@
 //
 
 #import "NKTTextView.h"
+#import "NKTTextViewCore.h"
 #import <CoreText/CoreText.h>
+
+@interface NKTTextView()
+
+#pragma mark -
+#pragma mark Accessing the Core Text View
+
+@property (nonatomic, readonly) NKTTextViewCore *textViewCore;
+
+#pragma mark -
+#pragma mark Managing View Geometry
+
+- (void)updateTextViewCoreFrame;
+- (void)updateContentSize;
+
+@end
 
 @implementation NKTTextView
 
-@synthesize text;
-@synthesize textInset;
-@synthesize lineHeight;
+@synthesize textViewCore;
 
 #pragma mark -
 #pragma mark Initializing
 
+- (void)createTextViewCore {
+    textViewCore = [[NKTTextViewCore alloc] initWithFrame:self.bounds];
+    [self addSubview:textViewCore];
+}
+
 - (void)initCommonState {
-    self.lineHeight = 24.0;
+    [self createTextViewCore];
+    self.alwaysBounceVertical = YES;
+    self.alwaysBounceHorizontal = NO;
 }
 
 - (id)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         [self initCommonState];
-        self.contentMode = UIViewContentModeRedraw;
     }
     
     return self;
@@ -32,102 +52,79 @@
 }
 
 - (void)dealloc {
-    [text release];
+    [textViewCore release];
     [super dealloc];
 }
 
 #pragma mark -
-#pragma mark Managing the Text
+#pragma mark Managing View Geometry
 
-- (void)setText:(NSAttributedString *)newText {
-    if (text != newText) {
-        [text release];
-        text = [newText copy];
-        [self setNeedsDisplay];
+- (void)updateTextViewCoreFrame {
+    CGRect frame = self.textViewCore.frame;
+    frame.size = self.textViewCore.suggestedFrameSize;
+    self.textViewCore.frame = frame;
+}
+
+- (void)updateContentSize {
+    self.contentSize = self.textViewCore.frame.size;
+}
+
+- (void)setFrame:(CGRect)newFrame {
+    CGRect previousFrame = self.frame;
+    [super setFrame:newFrame];
+    
+    if (previousFrame.size.width != newFrame.size.width) {
+        self.textViewCore.contentWidth = newFrame.size.width;
+        [self updateTextViewCoreFrame];
+        [self updateContentSize];
+    }
+}
+
+- (void)setBounds:(CGRect)newBounds {
+    CGRect previousBounds = self.bounds;
+    [super setBounds:newBounds];
+    
+    if (previousBounds.size.width != newBounds.size.width) {
+        self.textViewCore.contentWidth = newBounds.size.width;
+        [self updateTextViewCoreFrame];
+        [self updateContentSize];
     }
 }
 
 #pragma mark -
-#pragma mark Managing Typography
+#pragma mark Managing Text
 
-- (void)setTextInset:(UIEdgeInsets)inset {
-    textInset = inset;
-    [self setNeedsDisplay];
+- (NSAttributedString *)text {
+    return self.textViewCore.text;
 }
 
-- (void)setLineHeight:(CGFloat)height {
-    lineHeight = height;
-    [self setNeedsDisplay];
-}
-
-#pragma mark -
-#pragma mark Typesetting
-
-- (CGRect)textRect {
-    return CGRectMake(self.textInset.left,
-                      self.textInset.bottom,
-                      self.bounds.size.width - (self.textInset.left + self.textInset.right),
-                      self.bounds.size.height - (self.textInset.top + self.textInset.bottom));
-}
-
-- (void)drawLinesInContext:(CGContextRef)context {
-    CGContextSaveGState(context);
-    
-    // Set the clip region to the view bounds excluding the bottom inset
-    CGRect clipRect = self.bounds;
-    clipRect.origin.y += self.textInset.bottom;
-    CGContextBeginPath(context);
-    CGContextAddRect(context, clipRect);
-    CGContextClosePath(context);
-    CGContextClip(context);
-    
-    // Create typesetter for the text
-    CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedString((CFAttributedStringRef)self.text);
-    
-    CFIndex length = (CFIndex)[self.text length];
-    CFIndex charIndex = 0;
-    CGRect textRect = [self textRect];
-    // The first baseline starts one line height below the top inset
-    CGFloat baseline = CGRectGetMaxY(textRect) - self.lineHeight;
-    
-    while (charIndex < length) {
-        CFIndex lineCharCount = CTTypesetterSuggestLineBreak(typesetter, charIndex, textRect.size.width);
-        CTLineRef line = CTTypesetterCreateLine(typesetter, CFRangeMake(charIndex, lineCharCount));
-        CGContextSetTextPosition(context, textRect.origin.x, baseline);
-        CTLineDraw(line, context);
-        charIndex += lineCharCount;
-        baseline -= self.lineHeight;
-        CFRelease(line);
-    }
-    
-    CFRelease(typesetter);
-    CGContextRestoreGState(context);
-}
-
-- (void)drawDebugTextInsetInContext:(CGContextRef)context {
-    CGContextSaveGState(context);
-    CGContextBeginPath(context);
-    CGContextAddRect(context, [self textRect]);
-    CGContextClosePath(context);
-    CGContextSetShouldAntialias(context, NO);
-    CGContextSetLineWidth(context, 1.0);
-    [[UIColor cyanColor] setStroke];
-    CGContextStrokePath(context);
-    CGContextRestoreGState(context);
+- (void)setText:(NSAttributedString *)text {
+    self.textViewCore.text = text;
+    [self updateTextViewCoreFrame];
+    [self updateContentSize];
 }
 
 #pragma mark -
-#pragma mark Drawing
+#pragma mark Managing Text Layout
 
-- (void)drawRect:(CGRect)rect {
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    // Set up coordinate system with origin at the bottom-left
-    CGContextTranslateCTM(context, 0, self.bounds.size.height);
-    CGContextScaleCTM(context, 1.0, -1.0);
-    
-    [self drawLinesInContext:context];
-    //[self drawDebugTextInsetInContext:context];
+- (CGFloat)lineHeight {
+    return self.textViewCore.lineHeight;
+}
+
+- (void)setLineHeight:(CGFloat)lineHeight {
+    self.textViewCore.lineHeight = lineHeight;
+    [self updateTextViewCoreFrame];
+    [self updateContentSize];
+}
+
+- (UIEdgeInsets)margins {
+    return self.textViewCore.margins;
+}
+
+- (void)setMargins:(UIEdgeInsets)margins {
+    self.textViewCore.margins = margins;
+    [self updateTextViewCoreFrame];
+    [self updateContentSize];
 }
 
 @end

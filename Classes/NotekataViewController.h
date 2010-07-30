@@ -5,17 +5,14 @@
 #import <UIKit/UIKit.h>
 
 @class NKTPageView;
+@class NKTTextView;
 
 @interface NotekataViewController : UIViewController {
     
 }
 
-@property (nonatomic, retain) IBOutlet NKTPageView *pageView;
+@property (nonatomic, retain) IBOutlet NKTTextView *textView;
 @property (nonatomic, retain) IBOutlet UIView *coverView;
-
-- (IBAction)performAction1;
-- (IBAction)performAction2;
-- (IBAction)performAction3;
-- (IBAction)performAction4;
+@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
 
 @end

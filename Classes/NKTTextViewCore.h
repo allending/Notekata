@@ -4,7 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface NKTTextView : UIScrollView {
+@interface NKTTextViewCore : UIView {
 
 }
 
@@ -16,7 +16,9 @@
 #pragma mark -
 #pragma mark Managing Text Layout
 
+@property (nonatomic, readwrite) CGFloat contentWidth;
 @property (nonatomic, readwrite) CGFloat lineHeight;
 @property (nonatomic, readwrite) UIEdgeInsets margins;
+@property (nonatomic, readonly) CGSize suggestedFrameSize;
 
 @end
