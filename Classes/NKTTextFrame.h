@@ -3,9 +3,17 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CoreText/CoreText.h>
 
-@interface NKTFramesetter : NSObject {
-
+@interface NKTTextFrame : NSObject {
+@private
+    NSAttributedString *text;
+    
+    CGFloat lineWidth;
+    CGFloat lineHeight;
+    
+    CTTypesetterRef typesetter;
+    NSArray* lines;
 }
 
 #pragma mark -
@@ -14,7 +22,7 @@
 - (id)initWithText:(NSAttributedString *)text lineWidth:(CGFloat)lineWidth lineHeight:(CGFloat)lineHeight;
 
 #pragma mark -
-#pragma mark Accessing Frame Attributes
+#pragma mark Accessing Text Frame Attributes
 
 @property (nonatomic, readonly, copy) NSAttributedString *text;
 @property (nonatomic, readonly) CGFloat lineWidth;

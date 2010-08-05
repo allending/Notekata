@@ -9,14 +9,14 @@
 @interface NKTTextView()
 
 #pragma mark -
-#pragma mark Accessing the Core Text View
+#pragma mark Accessing the Text View Core
 
 @property (nonatomic, readonly) NKTTextViewCore *textViewCore;
 
 #pragma mark -
-#pragma mark Managing View Geometry
+#pragma mark Updating View Sizes
 
-- (void)updateTextViewCoreFrame;
+- (void)updateTextViewCoreSize;
 - (void)updateContentSize;
 
 @end
@@ -33,22 +33,19 @@
     [self addSubview:textViewCore];
 }
 
-- (void)initCommonState {
-    [self createTextViewCore];
-    self.alwaysBounceVertical = YES;
-    self.alwaysBounceHorizontal = NO;
-}
-
 - (id)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
-        [self initCommonState];
+        [self createTextViewCore];
+        self.alwaysBounceVertical = YES;
     }
     
     return self;
 }
 
 - (void)awakeFromNib {
-    [self initCommonState];
+    [super awakeFromNib];
+    [self createTextViewCore];
+    self.alwaysBounceVertical = YES;
 }
 
 - (void)dealloc {
@@ -57,9 +54,9 @@
 }
 
 #pragma mark -
-#pragma mark Managing View Geometry
+#pragma mark Updating View Sizes
 
-- (void)updateTextViewCoreFrame {
+- (void)updateTextViewCoreSize {
     CGRect frame = self.textViewCore.frame;
     frame.size = self.textViewCore.suggestedFrameSize;
     self.textViewCore.frame = frame;
@@ -68,6 +65,8 @@
 - (void)updateContentSize {
     self.contentSize = self.textViewCore.frame.size;
 }
+#pragma mark -
+#pragma mark Modifying View Bounds
 
 - (void)setFrame:(CGRect)newFrame {
     CGRect previousFrame = self.frame;
@@ -75,7 +74,7 @@
     
     if (previousFrame.size.width != newFrame.size.width) {
         self.textViewCore.contentWidth = newFrame.size.width;
-        [self updateTextViewCoreFrame];
+        [self updateTextViewCoreSize];
         [self updateContentSize];
     }
 }
@@ -86,13 +85,13 @@
     
     if (previousBounds.size.width != newBounds.size.width) {
         self.textViewCore.contentWidth = newBounds.size.width;
-        [self updateTextViewCoreFrame];
+        [self updateTextViewCoreSize];
         [self updateContentSize];
     }
 }
 
 #pragma mark -
-#pragma mark Managing Text
+#pragma mark Accessing Text
 
 - (NSAttributedString *)text {
     return self.textViewCore.text;
@@ -100,12 +99,12 @@
 
 - (void)setText:(NSAttributedString *)text {
     self.textViewCore.text = text;
-    [self updateTextViewCoreFrame];
+    [self updateTextViewCoreSize];
     [self updateContentSize];
 }
 
 #pragma mark -
-#pragma mark Managing Text Layout
+#pragma mark Configuring Text Layout
 
 - (CGFloat)lineHeight {
     return self.textViewCore.lineHeight;
@@ -113,7 +112,7 @@
 
 - (void)setLineHeight:(CGFloat)lineHeight {
     self.textViewCore.lineHeight = lineHeight;
-    [self updateTextViewCoreFrame];
+    [self updateTextViewCoreSize];
     [self updateContentSize];
 }
 
@@ -123,7 +122,7 @@
 
 - (void)setMargins:(UIEdgeInsets)margins {
     self.textViewCore.margins = margins;
-    [self updateTextViewCoreFrame];
+    [self updateTextViewCoreSize];
     [self updateContentSize];
 }
 

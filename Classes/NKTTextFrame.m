@@ -2,11 +2,10 @@
 //  Copyright 2010 Allen Ding. All rights reserved.
 //
 
-#import "NKTFramesetter.h"
-#import <CoreText/CoreText.h>
+#import "NKTTextFrame.h"
 #import "NKTLine.h"
 
-@interface NKTFramesetter()
+@interface NKTTextFrame()
 
 #pragma mark -
 #pragma mark Typesetting
@@ -18,19 +17,21 @@
 
 @end
 
-@implementation NKTFramesetter
+@implementation NKTTextFrame
 
 @synthesize text;
 @synthesize lineWidth;
 @synthesize lineHeight;
-@synthesize lines;
+
 @synthesize typesetter;
+@synthesize lines;
 
 #pragma mark -
 #pragma mark Initializing
 
 - (id)initWithText:(NSAttributedString *)theText lineWidth:(CGFloat)theLineWidth lineHeight:(CGFloat)theLineHeight {
     if ((self = [super init])) {
+        // TODO: should really copy text?
         text = [theText copy];
         lineWidth = theLineWidth;
         lineHeight = theLineHeight;
@@ -56,19 +57,20 @@
 #pragma mark Typesetting
 
 - (void)createLines {
-    NSMutableArray *mutableLines = [[NSMutableArray alloc] init];
-    lines = mutableLines;
-    
+    NSMutableArray *theLines = [[NSMutableArray alloc] init];
     CFIndex length = (CFIndex)[self.text length];
     CFIndex charIndex = 0;
     
     while (charIndex < length) {
-        CFIndex lineCharCount = CTTypesetterSuggestLineBreak(self.typesetter, charIndex, self.lineWidth);
-        NKTLine *line = [[NKTLine alloc] initWithTypesetter:self.typesetter text:self.text range:NSMakeRange(charIndex, lineCharCount)];
-        [mutableLines addObject:line];
+        CFIndex charCount = CTTypesetterSuggestLineBreak(self.typesetter, charIndex, self.lineWidth);
+        NSRange range = NSMakeRange(charIndex, charCount);
+        NKTLine *line = [[NKTLine alloc] initWithTypesetter:self.typesetter text:self.text range:range];
+        [theLines addObject:line];
         [line release];
-        charIndex += lineCharCount;
+        charIndex += charCount;
     }
+    
+    lines = theLines;
 }
 
 #pragma mark -
@@ -88,12 +90,12 @@
         return;
     }
     
-    CGFloat baselineY = 0.0;
+    CGFloat baseline = 0.0;
     
     for (NKTLine *line in self.lines) {
-        CGContextSetTextPosition(context, 0.0, baselineY);
+        CGContextSetTextPosition(context, 0.0, baseline);
         [line drawInContext:context];
-        baselineY -= self.lineHeight;
+        baseline -= self.lineHeight;
     }
 }
 

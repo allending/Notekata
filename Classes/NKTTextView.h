@@ -4,17 +4,22 @@
 
 #import <UIKit/UIKit.h>
 
-@interface NKTTextView : UIScrollView {
+// TODO: should really really tile up text frames
 
+@class NKTTextViewCore;
+
+@interface NKTTextView : UIScrollView {
+@private
+    NKTTextViewCore *textViewCore;
 }
 
 #pragma mark -
-#pragma mark Managing Text
+#pragma mark Accessing Text
 
 @property (nonatomic, readwrite, copy) NSAttributedString *text;
 
 #pragma mark -
-#pragma mark Managing Text Layout
+#pragma mark Configuring Text Layout
 
 @property (nonatomic, readwrite) CGFloat lineHeight;
 @property (nonatomic, readwrite) UIEdgeInsets margins;

@@ -3,25 +3,26 @@
 //
 
 #import "NKTTextViewCore.h"
-#import <CoreText/CoreText.h>
-#import "NKTFramesetter.h"
+#import "NKTTextFrame.h"
 
 @interface NKTTextViewCore()
 
 #pragma mark -
-#pragma mark Typesetting
+#pragma mark Generating Text Frames
 
-@property (nonatomic, readwrite) NKTFramesetter *framesetter;
+@property (nonatomic, readwrite) NKTTextFrame *textFrame;
 
 @end
 
 @implementation NKTTextViewCore
 
 @synthesize text;
+
 @synthesize contentWidth;
 @synthesize lineHeight;
 @synthesize margins;
-@synthesize framesetter;
+
+@synthesize textFrame;
 
 #pragma mark -
 #pragma mark Initializing
@@ -29,9 +30,9 @@
 - (id)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
         self.backgroundColor = [UIColor clearColor];
-        self.lineHeight = 24.0;
-        self.margins = UIEdgeInsetsMake(60.0, 40.0, 40.0, 80.0);
-        self.contentWidth = frame.size.width;
+        lineHeight = 24.0;
+        margins = UIEdgeInsetsMake(60.0, 40.0, 40.0, 80.0);
+        contentWidth = frame.size.width;
     }
     
     return self;
@@ -39,60 +40,60 @@
 
 - (void)dealloc {
     [text release];
-    [framesetter release];
+    [textFrame release];
     [super dealloc];
 }
 
 #pragma mark -
-#pragma mark Managing Text
+#pragma mark Accessing Text
 
 - (void)setText:(NSAttributedString *)newText {
     if (text != newText) {
         [text release];
         text = [newText copy];
-        self.framesetter = nil;
+        self.textFrame = nil;
         [self setNeedsDisplay];
     }
 }
 
 #pragma mark -
-#pragma mark Managing Text Layout
+#pragma mark Configuring Text Layout
 
 - (void)setContentWidth:(CGFloat)newContentWidth {
     contentWidth = newContentWidth;
-    self.framesetter = nil;
+    self.textFrame = nil;
     [self setNeedsDisplay];
 }
 
 - (void)setLineHeight:(CGFloat)newLineHeight {
     lineHeight = newLineHeight;
-    self.framesetter = nil;
+    self.textFrame = nil;
     [self setNeedsDisplay];
 }
 
 - (void)setMargins:(UIEdgeInsets)newMargins {
     margins = newMargins;
-    self.framesetter = nil;
+    self.textFrame = nil;
     [self setNeedsDisplay];
 }
 
 - (CGSize)suggestedFrameSize {
-    CGFloat height = [self.framesetter suggestedFrameHeight] + self.margins.top + self.margins.bottom;
+    CGFloat height = [self.textFrame suggestedFrameHeight] + self.margins.top + self.margins.bottom;
     return CGSizeMake(self.contentWidth, height);
 }
 
 #pragma mark -
-#pragma mark Typesetting
+#pragma mark Generating Text Metrics
 
-- (NKTFramesetter *)framesetter {
-    if (framesetter != nil) {
-        return framesetter;
+- (NKTTextFrame *)textFrame {
+    if (textFrame != nil) {
+        return textFrame;
     }
     
     CGFloat lineWidth = self.contentWidth - self.margins.left - self.margins.right;
-    // TODO: lineWidth must be > 0
-    framesetter = [[NKTFramesetter alloc] initWithText:self.text lineWidth:lineWidth lineHeight:self.lineHeight];
-    return framesetter;
+    // TODO: make sure lineWidth > 0
+    textFrame = [[NKTTextFrame alloc] initWithText:self.text lineWidth:lineWidth lineHeight:self.lineHeight];
+    return textFrame;
 }
 
 #pragma mark -
@@ -100,11 +101,11 @@
 
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
-    // Set up coordinate system with origin at the top-left with y pointing up
+    // Set up coordinate system with origin at the top-left with y upwards
     CGContextScaleCTM(context, 1.0, -1.0);
     // Drawing begins with the first baseline at the top margin
     CGContextTranslateCTM(context, self.margins.left, -self.margins.top);
-    [self.framesetter drawInContext:context];
+    [self.textFrame drawInContext:context];
 }
 
 @end
