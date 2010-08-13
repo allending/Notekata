@@ -4,13 +4,15 @@
 
 #import <UIKit/UIKit.h>
 
-// TODO: should really really tile up text frames
-
-@class NKTTextViewCore;
-
 @interface NKTTextView : UIScrollView {
 @private
-    NKTTextViewCore *textViewCore;
+    NSAttributedString *text;
+    CGFloat lineHeight;
+    UIEdgeInsets margins;
+    NSMutableArray *typesettedLines;
+    
+    NSMutableSet *visibleSections;
+    NSMutableSet *reusableSections;
 }
 
 #pragma mark -

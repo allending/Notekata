@@ -20,17 +20,23 @@
 #pragma mark -
 #pragma mark Initializing
 
-- (id)initWithTypesetter:(CTTypesetterRef)typesetter text:(NSAttributedString *)text range:(NSRange)range {
+- (id)initWithCTLine:(CTLineRef)ctLine {
     if ((self = [super init])) {
-        CFRange adaptedRange = CFRangeMake(range.location, range.length);
-        line = CTTypesetterCreateLine(typesetter, adaptedRange);
+        line = ctLine;
+        
+        if (line != NULL) {
+            CFRetain(line);
+        }
     }
     
     return self;
 }
 
 - (void)dealloc {
-    CFRelease(line);
+    if (line != NULL) {
+        CFRelease(line);
+    }
+
     [super dealloc];
 }
 
@@ -38,7 +44,7 @@
 #pragma mark Getting Line Metrics
 
 - (CGFloat)descent {
-    float ascent, descent, leading;
+    CGFloat ascent, descent, leading;
     CTLineGetTypographicBounds(self.line, &ascent, &descent, &leading);
     return descent;
 }

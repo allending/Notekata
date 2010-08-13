@@ -14,10 +14,8 @@
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
 		F5030A7A11D3555B002CD3BD /* NotekataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F5030A7911D3555B002CD3BD /* NotekataViewController.m */; };
-		F5120F9011EDB1F7009A887B /* NKTTextViewCore.m in Sources */ = {isa = PBXBuildFile; fileRef = F5120F8F11EDB1F7009A887B /* NKTTextViewCore.m */; };
 		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
 		F520394E12097D3600675702 /* NKTTestText.m in Sources */ = {isa = PBXBuildFile; fileRef = F520394D12097D3600675702 /* NKTTestText.m */; };
-		F5265DCE11F1BC7800EEC900 /* NKTTextFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = F5265DCD11F1BC7800EEC900 /* NKTTextFrame.m */; };
 		F544536211ED61A5009D392B /* NKTPaperView.m in Sources */ = {isa = PBXBuildFile; fileRef = F544535F11ED61A5009D392B /* NKTPaperView.m */; };
 		F544536311ED61A5009D392B /* NKTTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = F544536111ED61A5009D392B /* NKTTextView.m */; };
 		F54453B311ED6371009D392B /* CreamPaperPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453AF11ED6371009D392B /* CreamPaperPattern.png */; };
@@ -25,6 +23,8 @@
 		F54453B511ED6371009D392B /* RedCoverPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453B111ED6371009D392B /* RedCoverPattern.png */; };
 		F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5632B0111DD9D1000868F7B /* CoreText.framework */; };
 		F5D12AA011F2ECA20049C2CE /* NKTLine.m in Sources */ = {isa = PBXBuildFile; fileRef = F5D12A9F11F2ECA20049C2CE /* NKTLine.m */; };
+		F5D56D5812129CFA0010849C /* NKTTextSection.m in Sources */ = {isa = PBXBuildFile; fileRef = F5D56D5712129CFA0010849C /* NKTTextSection.m */; };
+		F5E4990912143A4600C788A1 /* TODO.txt in Resources */ = {isa = PBXBuildFile; fileRef = F5E4990812143A4600C788A1 /* TODO.txt */; };
 		F5F94DA411DC4DC1004AB62C /* Icon-72.png in Resources */ = {isa = PBXBuildFile; fileRef = F5F94DA311DC4DC1004AB62C /* Icon-72.png */; };
 /* End PBXBuildFile section */
 
@@ -41,13 +41,9 @@
 		8D1107310486CEB800E47090 /* Notekata-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Notekata-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		F5030A7811D3555B002CD3BD /* NotekataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotekataViewController.h; sourceTree = "<group>"; };
 		F5030A7911D3555B002CD3BD /* NotekataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataViewController.m; sourceTree = "<group>"; };
-		F5120F8E11EDB1F7009A887B /* NKTTextViewCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewCore.h; sourceTree = "<group>"; };
-		F5120F8F11EDB1F7009A887B /* NKTTextViewCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewCore.m; sourceTree = "<group>"; };
 		F520393412097B1B00675702 /* NotekataViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotekataViewController.xib; sourceTree = "<group>"; };
 		F520394C12097D3600675702 /* NKTTestText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTestText.h; sourceTree = "<group>"; };
 		F520394D12097D3600675702 /* NKTTestText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTestText.m; sourceTree = "<group>"; };
-		F5265DCC11F1BC7800EEC900 /* NKTTextFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextFrame.h; sourceTree = "<group>"; };
-		F5265DCD11F1BC7800EEC900 /* NKTTextFrame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextFrame.m; sourceTree = "<group>"; };
 		F544535E11ED61A5009D392B /* NKTPaperView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPaperView.h; sourceTree = "<group>"; };
 		F544535F11ED61A5009D392B /* NKTPaperView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPaperView.m; sourceTree = "<group>"; };
 		F544536011ED61A5009D392B /* NKTTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextView.h; sourceTree = "<group>"; };
@@ -58,6 +54,9 @@
 		F5632B0111DD9D1000868F7B /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		F5D12A9E11F2ECA20049C2CE /* NKTLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLine.h; sourceTree = "<group>"; };
 		F5D12A9F11F2ECA20049C2CE /* NKTLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTLine.m; sourceTree = "<group>"; };
+		F5D56D5612129CFA0010849C /* NKTTextSection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextSection.h; sourceTree = "<group>"; };
+		F5D56D5712129CFA0010849C /* NKTTextSection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextSection.m; sourceTree = "<group>"; };
+		F5E4990812143A4600C788A1 /* TODO.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TODO.txt; sourceTree = "<group>"; };
 		F5F94DA311DC4DC1004AB62C /* Icon-72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-72.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -97,6 +96,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				F5E4990812143A4600C788A1 /* TODO.txt */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -167,12 +167,10 @@
 				F5D12A9F11F2ECA20049C2CE /* NKTLine.m */,
 				F544535E11ED61A5009D392B /* NKTPaperView.h */,
 				F544535F11ED61A5009D392B /* NKTPaperView.m */,
-				F5265DCC11F1BC7800EEC900 /* NKTTextFrame.h */,
-				F5265DCD11F1BC7800EEC900 /* NKTTextFrame.m */,
+				F5D56D5612129CFA0010849C /* NKTTextSection.h */,
+				F5D56D5712129CFA0010849C /* NKTTextSection.m */,
 				F544536011ED61A5009D392B /* NKTTextView.h */,
 				F544536111ED61A5009D392B /* NKTTextView.m */,
-				F5120F8E11EDB1F7009A887B /* NKTTextViewCore.h */,
-				F5120F8F11EDB1F7009A887B /* NKTTextViewCore.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -232,6 +230,7 @@
 				F54453B411ED6371009D392B /* PlainPaperPattern.png in Resources */,
 				F54453B511ED6371009D392B /* RedCoverPattern.png in Resources */,
 				F520393512097B1B00675702 /* NotekataViewController.xib in Resources */,
+				F5E4990912143A4600C788A1 /* TODO.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,10 +246,9 @@
 				F5030A7A11D3555B002CD3BD /* NotekataViewController.m in Sources */,
 				F544536211ED61A5009D392B /* NKTPaperView.m in Sources */,
 				F544536311ED61A5009D392B /* NKTTextView.m in Sources */,
-				F5120F9011EDB1F7009A887B /* NKTTextViewCore.m in Sources */,
-				F5265DCE11F1BC7800EEC900 /* NKTTextFrame.m in Sources */,
 				F5D12AA011F2ECA20049C2CE /* NKTLine.m in Sources */,
 				F520394E12097D3600675702 /* NKTTestText.m in Sources */,
+				F5D56D5812129CFA0010849C /* NKTTextSection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

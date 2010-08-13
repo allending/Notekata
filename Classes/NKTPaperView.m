@@ -6,6 +6,7 @@
 
 @implementation NKTPaperView
 
+@synthesize index;
 @synthesize horizontalLinesEnabled;
 @synthesize horizontalLineOffset;
 @synthesize horizontalLineColor;
@@ -20,7 +21,7 @@
 
 - (void)commonInit_NKTPaperView {
     horizontalLinesEnabled = YES;
-    horizontalLineColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+    horizontalLineColor = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
     lineHeight = 24.0;
 }
 
@@ -104,7 +105,7 @@
 // observe scrolls (set a delegate), and redraw page/print
 // - probably not what is wanted
 
-- (void)drawRect:(CGRect)rect {
+- (void)drawRect:(CGRect)rect {    
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     CGContextSaveGState(context);
@@ -120,8 +121,7 @@
             CGContextAddLineToPoint(context, self.bounds.size.width, line);
         }
         
-        [self.horizontalLineColor setStroke];
-
+        CGContextSetStrokeColorWithColor(context, self.horizontalLineColor.CGColor);
         CGContextStrokePath(context);
     }
     

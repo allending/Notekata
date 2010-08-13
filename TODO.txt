@@ -1,0 +1,8 @@
+Text View
+---------
+Optimization: Typeset at line granularity lazily
+x Crash: Creating text sections that won't display any lines..
+x Issue: first line clipping glyphs?
+Issue: Text view doesn't rotate properly
+Issue: what if glyphs from non visible line enter visible line? solve by design? buffer 1 on top and bottom and limit point size
+Issue: text clips if section frames are just right. can solve by adding some padding to frame?

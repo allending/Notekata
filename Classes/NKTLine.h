@@ -12,7 +12,7 @@
 #pragma mark -
 #pragma mark Initializing
 
-- (id)initWithTypesetter:(CTTypesetterRef)typesetter text:(NSAttributedString *)text range:(NSRange)range;
+- (id)initWithCTLine:(CTLineRef)ctLine;
 
 #pragma mark -
 #pragma mark Getting Line Metrics

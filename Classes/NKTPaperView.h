@@ -6,6 +6,8 @@
 
 @interface NKTPaperView : UIView {
 @private
+    NSUInteger index;
+    
     BOOL horizontalLinesEnabled;
     CGFloat horizontalLineOffset;
     UIColor *horizontalLineColor;
@@ -15,6 +17,11 @@
 //    CGFloat verticalMarginInset;
     UIColor *verticalMarginColor;
 }
+
+#pragma mark -
+#pragma mark Configuring the Section
+
+@property (nonatomic, readwrite) NSUInteger index;
 
 #pragma mark -
 #pragma mark Configuring the Paper Style
