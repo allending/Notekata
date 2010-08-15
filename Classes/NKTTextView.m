@@ -19,28 +19,46 @@
 
 - (void)tileSections;
 - (void)clearVisibleSections;
-- (BOOL)isDisplayingSectionForIndex:(NSUInteger)index;
+- (BOOL)isDisplayingSectionForIndex:(NSInteger)index;
 - (NKTTextSection *)dequeueReusableSection;
-- (void)configureSection:(NKTTextSection *)section forIndex:(NSUInteger)index;
-- (CGRect)frameForSectionAtIndex:(NSUInteger)index;
+- (void)configureSection:(NKTTextSection *)section forIndex:(NSInteger)index;
+- (CGRect)frameForSectionAtIndex:(NSInteger)index;
 
 @end
 
 @implementation NKTTextView
 
 @synthesize text;
-@synthesize lineHeight;
+
 @synthesize margins;
+@synthesize lineHeight;
+
+@synthesize horizontalLinesEnabled;
+@synthesize horizontalLineColor;
+@synthesize horizontalLineOffset;
+
+@synthesize verticalMarginEnabled;
+@synthesize verticalMarginColor;
+@synthesize verticalMarginInset;
 
 #pragma mark -
 #pragma mark Initializing
 
 - (void)initInternal_NKTTextView {
-    lineHeight = 30.0;
+    self.alwaysBounceVertical = YES;
+
     margins = UIEdgeInsetsMake(60.0, 40.0, 80.0, 60.0);
+    lineHeight = 32.0;
+    
+    horizontalLinesEnabled = YES;
+    horizontalLineColor = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
+    horizontalLineOffset = 3.0;
+    
+    verticalMarginEnabled = NO;
+    verticalMarginInset = 60.0;
+
     visibleSections = [[NSMutableSet alloc] init];
     reusableSections = [[NSMutableSet alloc] init];
-    self.alwaysBounceVertical = YES;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -57,6 +75,8 @@
 
 - (void)dealloc {
     [text release];
+    [horizontalLineColor release];
+    [verticalMarginColor release];
     [typesettedLines release];
     [visibleSections release];
     [reusableSections release];
@@ -82,7 +102,7 @@
 }
 
 #pragma mark -
-#pragma mark Accessing Text
+#pragma mark Accessing the Text
 
 - (void)setText:(NSAttributedString *)newText {
     if (text != newText) {
@@ -162,7 +182,7 @@
     [visibleSections minusSet:reusableSections];
     
     // Add missing sections
-    for (NSUInteger index = firstVisibleSectionIndex; index <= lastVisibleSectionIndex; ++index) {
+    for (NSInteger index = firstVisibleSectionIndex; index <= lastVisibleSectionIndex; ++index) {
         if (![self isDisplayingSectionForIndex:index]) {
             NKTTextSection *section = [self dequeueReusableSection];
             
@@ -172,7 +192,7 @@
             
             [self configureSection:section forIndex:index];
             [visibleSections addObject:section];
-            [self addSubview:section];
+            [self insertSubview:section atIndex:0];
         }
     }
 }
@@ -186,7 +206,7 @@
     [visibleSections removeAllObjects];
 }
 
-- (BOOL)isDisplayingSectionForIndex:(NSUInteger)index {
+- (BOOL)isDisplayingSectionForIndex:(NSInteger)index {
     for (NKTTextSection *section in visibleSections) {
         if (section.index == index) {
             return YES;
@@ -208,24 +228,51 @@
     return nil;
 }
 
-- (void)configureSection:(NKTTextSection *)section forIndex:(NSUInteger)index {
+- (void)configureSection:(NKTTextSection *)section forIndex:(NSInteger)index {
     section.index = index;
     section.frame = [self frameForSectionAtIndex:index];
     section.typesettedLines = typesettedLines;
-    section.lineHeight = self.lineHeight;
     section.margins = self.margins;
+    section.lineHeight = self.lineHeight;
+    
+    section.horizontalLinesEnabled = self.horizontalLinesEnabled;
+    section.horizontalLineColor = self.horizontalLineColor;
+    section.horizontalLineOffset = self.horizontalLineOffset;
     
     // Debug coloring
     //section.backgroundColor = [UIColor colorWithRed:0.0 green:index%2 blue:1.0 - index%2 alpha:0.1];
-    
     [section setNeedsDisplay];
 }
 
-- (CGRect)frameForSectionAtIndex:(NSUInteger)index {
+- (CGRect)frameForSectionAtIndex:(NSInteger)index {
     CGRect sectionFrame = self.bounds;
     sectionFrame.origin.x = 0.0;
     sectionFrame.origin.y = index * CGRectGetHeight(sectionFrame);
     return sectionFrame;
+}
+
+#pragma mark -
+#pragma mark Drawing
+
+- (void)drawRect:(CGRect)rect {
+    [super drawRect:rect];
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    // Set up a graphics state suitable for drawing lines
+    CGContextSaveGState(context);
+    CGContextSetShouldAntialias(context, NO);
+    CGContextSetLineWidth(context, 1.0);
+    
+    // Draw vertical margin
+    if (self.verticalMarginEnabled && self.verticalMarginColor != nil) {
+        CGContextBeginPath(context);
+        CGContextMoveToPoint(context, self.verticalMarginInset, 0.0);
+        CGContextAddLineToPoint(context, self.verticalMarginInset, CGRectGetHeight(self.bounds));
+        CGContextSetStrokeColorWithColor(context, self.verticalMarginColor.CGColor);
+        CGContextStrokePath(context);
+    }
+    
+    CGContextRestoreGState(context);
 }
 
 @end

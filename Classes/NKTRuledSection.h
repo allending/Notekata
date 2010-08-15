@@ -4,7 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface NKTPaperView : UIView {
+@interface NKTRuledSection : UIView {
 @private
     NSUInteger index;
     

@@ -7,10 +7,16 @@
 @interface NKTTextSection : UIView {
 @private
     NSInteger index;
+    
     NSArray *typesettedLines;
-    CGFloat lineHeight;
+    
     UIEdgeInsets margins;
-    NSUInteger skirtLineCount;
+    CGFloat lineHeight;
+    NSUInteger numberOfSkirtLines;
+
+    BOOL horizontalLinesEnabled;
+    UIColor *horizontalLineColor;
+    CGFloat horizontalLineOffset;
 }
 
 #pragma mark -
@@ -19,11 +25,22 @@
 @property (nonatomic, readwrite) NSInteger index;
 
 #pragma mark -
-#pragma mark Configuring the Text Lines
+#pragma mark Accessing the Typesetted Lines
 
 @property (nonatomic, readwrite, retain) NSArray *typesettedLines;
-@property (nonatomic, readwrite) CGFloat lineHeight;
+
+#pragma mark -
+#pragma mark Configuring Text Layout
+
 @property (nonatomic, readwrite) UIEdgeInsets margins;
-@property (nonatomic, readwrite) NSUInteger skirtLineCount;
+@property (nonatomic, readwrite) CGFloat lineHeight;
+@property (nonatomic, readwrite) NSUInteger numberOfSkirtLines;
+
+#pragma mark -
+#pragma mark Configuring Page Markings
+
+@property (nonatomic, readwrite) BOOL horizontalLinesEnabled;
+@property (nonatomic, readwrite, retain) UIColor *horizontalLineColor;
+@property (nonatomic, readwrite) CGFloat horizontalLineOffset;
 
 @end

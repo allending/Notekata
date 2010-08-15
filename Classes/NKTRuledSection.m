@@ -2,9 +2,9 @@
 //  Created by Allen Ding on 7/6/10.
 //
 
-#import "NKTPaperView.h"
+#import "NKTRuledSection.h"
 
-@implementation NKTPaperView
+@implementation NKTRuledSection
 
 @synthesize index;
 @synthesize horizontalLinesEnabled;
