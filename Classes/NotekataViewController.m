@@ -53,21 +53,21 @@
                                                                          target:self
                                                                          action:@selector(useDefaultLineHeight)];
     UIBarButtonItem *largeLineHeight = [[UIBarButtonItem alloc] initWithTitle:@"Large Line Height"
-                                                                          style:UIBarButtonItemStyleBordered
-                                                                         target:self
-                                                                         action:@selector(useLargeLineHeight)];
-    UIBarButtonItem *defaultMargins = [[UIBarButtonItem alloc] initWithTitle:@"Default Margins"
                                                                         style:UIBarButtonItemStyleBordered
                                                                        target:self
-                                                                       action:@selector(useDefaultMargins)];
-    UIBarButtonItem *zeroMargins = [[UIBarButtonItem alloc] initWithTitle:@"Zero Margins"
+                                                                       action:@selector(useLargeLineHeight)];
+    UIBarButtonItem *defaultMargins = [[UIBarButtonItem alloc] initWithTitle:@"Default Margins"
                                                                        style:UIBarButtonItemStyleBordered
                                                                       target:self
-                                                                      action:@selector(useZeroMargins)];
-    UIBarButtonItem *largeMargins = [[UIBarButtonItem alloc] initWithTitle:@"Large Margins"
+                                                                      action:@selector(useDefaultMargins)];
+    UIBarButtonItem *zeroMargins = [[UIBarButtonItem alloc] initWithTitle:@"Zero Margins"
                                                                     style:UIBarButtonItemStyleBordered
                                                                    target:self
-                                                                   action:@selector(useLargeMargins)];
+                                                                   action:@selector(useZeroMargins)];
+    UIBarButtonItem *largeMargins = [[UIBarButtonItem alloc] initWithTitle:@"Large Margins"
+                                                                     style:UIBarButtonItemStyleBordered
+                                                                    target:self
+                                                                    action:@selector(useLargeMargins)];
     NSArray *items = [NSArray arrayWithObjects:defaultLineHeight, largeLineHeight, defaultMargins, zeroMargins, largeMargins, nil];
     [defaultLineHeight release];
     [largeLineHeight release];
@@ -102,3 +102,38 @@
 }
 
 @end
+
+/*
+ - (void)setPlainStyle {
+    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
+    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
+    self.paperView.horizontalLinesEnabled = NO;
+    self.paperView.verticalMarginEnabled = NO;
+}
+
+- (void)setPlainRuledStyle {
+    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
+    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
+    self.paperView.horizontalLinesEnabled = YES;
+    self.paperView.horizontalLineColor = [UIColor colorWithRed:0.77 green:0.77 blue:0.72 alpha:1.0];
+    self.paperView.verticalMarginEnabled = NO;
+}
+
+- (void)setCreamRuledStyle {
+    UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
+    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
+    self.paperView.horizontalLinesEnabled = YES;
+    self.paperView.horizontalLineColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+    self.paperView.verticalMarginEnabled = NO;
+}
+
+- (void)setCollegeRuledStyle {
+    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
+    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
+    self.paperView.horizontalLinesEnabled = YES;
+    self.paperView.horizontalLineColor = [UIColor colorWithRed:0.69 green:0.77 blue:0.9 alpha:1.0];
+    self.paperView.verticalMarginEnabled = YES;
+    self.paperView.verticalMarginColor = [UIColor colorWithRed:0.83 green:0.3 blue:0.29 alpha:1.0];
+    self.paperView.verticalMarginInset = 60.0;
+}
+ */
