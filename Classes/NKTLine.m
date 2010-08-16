@@ -41,15 +41,6 @@
 }
 
 #pragma mark -
-#pragma mark Getting Line Metrics
-
-- (CGFloat)descent {
-    CGFloat ascent, descent, leading;
-    CTLineGetTypographicBounds(self.line, &ascent, &descent, &leading);
-    return descent;
-}
-
-#pragma mark -
 #pragma mark Drawing
 
 - (void)drawInContext:(CGContextRef)context {

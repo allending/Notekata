@@ -1,16 +1,21 @@
 TODO
 ----
 
+General
+-------
+Make property use consistent
+
 Controller
 ----------
 Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-Issue: Default Line Height + Large Margins -> last horizontal rule missing
-Issue: Text view doesn't rotate properly
+Issue: Make position computations clearer in text section
 Optimization: Typeset at line granularity lazily
 
+x Issue: Default Line Height + Large Margins -> last horizontal rule missing
+x Issue: Text view doesn't rotate properly
 x Feature: Lines/Styles
 x Issue: Unlimited line drawing fails when using large margins
 x Issue: what if glyphs from non visible line enter visible line? solve by design? buffer 1 on top and bottom and limit point size

@@ -15,11 +15,6 @@
 - (id)initWithCTLine:(CTLineRef)ctLine;
 
 #pragma mark -
-#pragma mark Getting Line Metrics
-
-@property (nonatomic, readonly) CGFloat descent;
-
-#pragma mark -
 #pragma mark Drawing
 
 - (void)drawInContext:(CGContextRef)context;

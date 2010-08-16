@@ -14,9 +14,13 @@
     CGFloat lineHeight;
     NSUInteger numberOfSkirtLines;
 
-    BOOL horizontalLinesEnabled;
-    UIColor *horizontalLineColor;
-    CGFloat horizontalLineOffset;
+    BOOL horizontalRulesEnabled;
+    UIColor *horizontalRuleColor;
+    CGFloat horizontalRuleOffset;
+    
+    BOOL verticalMarginEnabled;
+    UIColor *verticalMarginColor;
+    CGFloat verticalMarginInset;
 }
 
 #pragma mark -
@@ -37,10 +41,14 @@
 @property (nonatomic, readwrite) NSUInteger numberOfSkirtLines;
 
 #pragma mark -
-#pragma mark Configuring Page Markings
+#pragma mark Configuring the View Style
 
-@property (nonatomic, readwrite) BOOL horizontalLinesEnabled;
-@property (nonatomic, readwrite, retain) UIColor *horizontalLineColor;
-@property (nonatomic, readwrite) CGFloat horizontalLineOffset;
+@property (nonatomic, readwrite) BOOL horizontalRulesEnabled;
+@property (nonatomic, readwrite, retain) UIColor *horizontalRuleColor;
+@property (nonatomic, readwrite) CGFloat horizontalRuleOffset;
+
+@property (nonatomic, readwrite) BOOL verticalMarginEnabled;
+@property (nonatomic, readwrite, retain) UIColor *verticalMarginColor;
+@property (nonatomic, readwrite) CGFloat verticalMarginInset;
 
 @end

@@ -11,9 +11,9 @@
     UIEdgeInsets margins;
     CGFloat lineHeight;
     
-    BOOL horizontalLinesEnabled;
-    UIColor *horizontalLineColor;
-    CGFloat horizontalLineOffset;
+    BOOL horizontalRulesEnabled;
+    UIColor *horizontalRuleColor;
+    CGFloat horizontalRuleOffset;
     
     BOOL verticalMarginEnabled;
     UIColor *verticalMarginColor;
@@ -23,6 +23,12 @@
     
     NSMutableSet *visibleSections;
     NSMutableSet *reusableSections;
+    
+#if !defined(NKT_STRIP_DEBUG_SUPPORT)
+    
+    BOOL debug_alternatesSectionBackgroundColors;
+    
+#endif // #if !defined(NKT_STRIP_DEBUG_SUPPORT)
 }
 
 #pragma mark -
@@ -37,14 +43,23 @@
 @property (nonatomic, readwrite) CGFloat lineHeight;
 
 #pragma mark -
-#pragma mark Configuring Page Markings
+#pragma mark Configuring the View Style
 
-@property (nonatomic, readwrite) BOOL horizontalLinesEnabled;
-@property (nonatomic, readwrite, retain) UIColor *horizontalLineColor;
-@property (nonatomic, readwrite) CGFloat horizontalLineOffset;
+@property (nonatomic, readwrite) BOOL horizontalRulesEnabled;
+@property (nonatomic, readwrite, retain) UIColor *horizontalRuleColor;
+@property (nonatomic, readwrite) CGFloat horizontalRuleOffset;
 
 @property (nonatomic, readwrite) BOOL verticalMarginEnabled;
 @property (nonatomic, readwrite, retain) UIColor *verticalMarginColor;
 @property (nonatomic, readwrite) CGFloat verticalMarginInset;
+
+#if !defined(NKT_STRIP_DEBUG_SUPPORT)
+
+#pragma mark -
+#pragma mark Debugging
+
+@property (nonatomic, readwrite) BOOL debug_alternatesSectionBackgroundColors;
+
+#endif // #if !defined(NKT_STRIP_DEBUG_SUPPORT)
 
 @end

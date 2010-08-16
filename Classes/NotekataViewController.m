@@ -40,9 +40,13 @@
 #pragma mark Managing Views
 
 - (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.textView.debug_alternatesSectionBackgroundColors = NO;
+    
     UIImage *edgePattern = [UIImage imageNamed:@"RedCoverPattern.png"];
     self.edgeView.backgroundColor = [UIColor colorWithPatternImage:edgePattern];
-
+    
     UIImage *backgroundPattern = [UIImage imageNamed:@"CreamPaperPattern.png"];
     self.view.backgroundColor = [UIColor colorWithPatternImage:backgroundPattern];
     
@@ -107,31 +111,31 @@
  - (void)setPlainStyle {
     UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
     self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalLinesEnabled = NO;
+    self.paperView.horizontalRulesEnabled = NO;
     self.paperView.verticalMarginEnabled = NO;
 }
 
 - (void)setPlainRuledStyle {
     UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
     self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalLinesEnabled = YES;
-    self.paperView.horizontalLineColor = [UIColor colorWithRed:0.77 green:0.77 blue:0.72 alpha:1.0];
+    self.paperView.horizontalRulesEnabled = YES;
+    self.paperView.horizontalRuleColor = [UIColor colorWithRed:0.77 green:0.77 blue:0.72 alpha:1.0];
     self.paperView.verticalMarginEnabled = NO;
 }
 
 - (void)setCreamRuledStyle {
     UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
     self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalLinesEnabled = YES;
-    self.paperView.horizontalLineColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+    self.paperView.horizontalRulesEnabled = YES;
+    self.paperView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
     self.paperView.verticalMarginEnabled = NO;
 }
 
 - (void)setCollegeRuledStyle {
     UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
     self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalLinesEnabled = YES;
-    self.paperView.horizontalLineColor = [UIColor colorWithRed:0.69 green:0.77 blue:0.9 alpha:1.0];
+    self.paperView.horizontalRulesEnabled = YES;
+    self.paperView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.77 blue:0.9 alpha:1.0];
     self.paperView.verticalMarginEnabled = YES;
     self.paperView.verticalMarginColor = [UIColor colorWithRed:0.83 green:0.3 blue:0.29 alpha:1.0];
     self.paperView.verticalMarginInset = 60.0;
