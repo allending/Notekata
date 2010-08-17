@@ -143,6 +143,7 @@
 
 - (NSRange)typesettedLineRangeForDrawing {
     CGFloat sectionVirtualMinY = self.index * CGRectGetHeight(self.bounds);
+    // Note that lines draw from the upper-left corner
     NSInteger firstLineIndex = (NSInteger)floorf(sectionVirtualMinY - self.margins.top) / self.lineHeight;
     firstLineIndex -= self.numberOfSkirtLines;
     firstLineIndex = MAX(firstLineIndex, 0);

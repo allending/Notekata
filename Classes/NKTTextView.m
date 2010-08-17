@@ -4,6 +4,7 @@
 
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
+#import "NKTCaret.h"
 #import "NKTTextSection.h"
 #import "NKTLine.h"
 
@@ -68,6 +69,14 @@
 
     visibleSections = [[NSMutableSet alloc] init];
     reusableSections = [[NSMutableSet alloc] init];
+    
+    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                   action:@selector(tapped)];
+    [self addGestureRecognizer:tapGestureRecognizer];
+    
+    caret = [[NKTCaret alloc] initWithFrame:CGRectMake(0.0, 0.0, 3.0, 30.0)];
+    caret.hidden = YES;
+    [self addSubview:caret];
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -91,6 +100,7 @@
     [typesettedLines release];
     [visibleSections release];
     [reusableSections release];
+    [tapGestureRecognizer release];
     [super dealloc];
 }
 
@@ -287,6 +297,61 @@
     sectionFrame.origin.x = 0.0;
     sectionFrame.origin.y = index * CGRectGetHeight(sectionFrame);
     return sectionFrame;
+}
+
+#pragma mark -
+#pragma mark Managing the Responder Chain
+
+- (BOOL)canBecomeFirstResponder {
+    return YES;
+}
+
+- (BOOL)becomeFirstResponder {
+    BOOL acceptsFirstResponder = [super becomeFirstResponder];
+    
+    if (!acceptsFirstResponder) {
+        return acceptsFirstResponder;
+    }
+    
+    [caret restartBlinking];
+    caret.center = [tapGestureRecognizer locationInView:self];
+    caret.hidden = NO;
+    return YES;
+}
+
+- (BOOL)resignFirstResponder {
+    BOOL resignsFirstResponder = [super resignFirstResponder];
+    [caret stopBlinking];
+    caret.hidden = resignsFirstResponder;
+    return resignsFirstResponder;
+}
+
+#pragma mark -
+#pragma mark Responding to Gestures
+
+- (void)tapped {
+    if (![self isFirstResponder]) {
+        [self becomeFirstResponder];
+        return;
+    }
+    
+    [caret restartBlinking];
+    caret.center = [tapGestureRecognizer locationInView:self];
+}
+
+#pragma mark -
+#pragma mark Inserting and Deleting Text
+
+- (BOOL)hasText {
+    return [self.text length] > 0;
+}
+
+- (void)insertText:(NSString *)theText {
+    NSLog(@"insertText: %@", theText);
+}
+
+- (void)deleteBackward {
+    NSLog(@"deleteBackward");
 }
 
 @end

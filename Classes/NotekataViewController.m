@@ -72,7 +72,12 @@
                                                                      style:UIBarButtonItemStyleBordered
                                                                     target:self
                                                                     action:@selector(useLargeMargins)];
-    NSArray *items = [NSArray arrayWithObjects:defaultLineHeight, largeLineHeight, defaultMargins, zeroMargins, largeMargins, nil];
+    NSArray *items = [NSArray arrayWithObjects:defaultLineHeight,
+                                               largeLineHeight,
+                                               defaultMargins,
+                                               zeroMargins,
+                                               largeMargins,
+                                               nil];
     [defaultLineHeight release];
     [largeLineHeight release];
     [defaultMargins release];

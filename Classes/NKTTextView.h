@@ -4,7 +4,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface NKTTextView : UIScrollView {
+@class NKTCaret;
+
+@interface NKTTextView : UIScrollView <UIKeyInput> {
 @private
     NSAttributedString *text;
     
@@ -23,6 +25,9 @@
     
     NSMutableSet *visibleSections;
     NSMutableSet *reusableSections;
+    
+    UITapGestureRecognizer *tapGestureRecognizer;
+    NKTCaret *caret;
     
 #if !defined(NKT_STRIP_DEBUG_SUPPORT)
     

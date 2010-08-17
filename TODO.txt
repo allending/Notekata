@@ -3,7 +3,7 @@ TODO
 
 General
 -------
-Make property use consistent
+Make property access consistent
 
 Controller
 ----------
@@ -11,6 +11,8 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
+Iteration goals
+Start on input - implement UIKeyInput protocol
 Optimization: Typeset at line granularity lazily
 
 x Issue: Make position computations clearer in text section
