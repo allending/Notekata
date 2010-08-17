@@ -28,7 +28,7 @@
     self.alpha = 1.0;
     [UIView beginAnimations:@"NKTCaret" context:nil];
     [UIView setAnimationRepeatCount:CGFLOAT_MAX];
-    [UIView setAnimationDuration:0.8];
+    [UIView setAnimationDuration:0.85];
     self.alpha = 0.0;
     [UIView commitAnimations];
 }
