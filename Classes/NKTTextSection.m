@@ -13,8 +13,7 @@
 - (void)drawHorizontalRulesInContext:(CGContextRef)context;
 - (void)drawVerticalMarginInContext:(CGContextRef)context;
 - (void)drawTypesettedLinesInContext:(CGContextRef)context;
-- (NSRange)horizontalRuleRange;
-- (NSRange)textLineRange;
+- (NSRange)typesettedLineRangeForDrawing;
 
 @end
 
@@ -53,6 +52,7 @@
 - (void)dealloc {
     [typesettedLines release];
     [horizontalRuleColor release];
+    [verticalMarginColor release];
     [super dealloc];
 }
 
@@ -74,18 +74,20 @@
     CGContextSaveGState(context);
     CGContextSetShouldAntialias(context, NO);
     CGContextSetLineWidth(context, 1.0);
-    
+
     CGContextBeginPath(context);
-    
-    // TODO: should return first horizontal rule visible in this section
-    NSRange ruleRange = [self horizontalRuleRange];
-    CGFloat ruleY = self.margins.top + self.horizontalRuleOffset + ((ruleRange.location + 1) * self.lineHeight);
-    ruleY = fmod(ruleY, CGRectGetHeight(self.bounds));
-    
-    while (ruleY < CGRectGetHeight(self.bounds)) {
-        CGContextMoveToPoint(context, 0.0, ruleY);
-        CGContextAddLineToPoint(context, CGRectGetWidth(self.bounds), ruleY);
-        ruleY += lineHeight;
+    // Figure out where the horizontal rules in the section start
+    CGFloat topRuleVirtualY = self.margins.top + self.lineHeight + self.horizontalRuleOffset;
+    CGFloat sectionVirtualMinY = (CGFloat)self.index * CGRectGetHeight(self.bounds);
+    NSInteger firstVisibleRuleIndex = (NSInteger)ceil((sectionVirtualMinY - topRuleVirtualY) / self.lineHeight);
+    firstVisibleRuleIndex = MAX(firstVisibleRuleIndex, 0);
+    CGFloat ruleLocalY = ((CGFloat)firstVisibleRuleIndex * self.lineHeight) + topRuleVirtualY - sectionVirtualMinY;
+
+    // Draw the horizontal rules in local space
+    while (ruleLocalY < CGRectGetHeight(self.bounds)) {
+        CGContextMoveToPoint(context, 0.0, ruleLocalY);
+        CGContextAddLineToPoint(context, CGRectGetWidth(self.bounds), ruleLocalY);
+        ruleLocalY += self.lineHeight;
     }
     
     CGContextSetStrokeColorWithColor(context, self.horizontalRuleColor.CGColor);
@@ -113,56 +115,48 @@
 }
 
 - (void)drawTypesettedLinesInContext:(CGContextRef)context {
-    CGContextSaveGState(context);
-    // Set up coordinate system with origin at the top-left with y upwards
-    CGContextScaleCTM(context, 1.0, -1.0);
-    // Move into the virtual text space
-    CGFloat sectionVirtualMinY = self.index * CGRectGetHeight(self.bounds);
-    CGContextTranslateCTM(context, 0.0, sectionVirtualMinY);
+    NSRange lineRange = [self typesettedLineRangeForDrawing];
     
-    NSRange lineRange = [self textLineRange];
-    
-    if (lineRange.location == NSNotFound || lineRange.length == 0) {
+    if (lineRange.location == NSNotFound) {
         return;
     }
     
+    CGContextSaveGState(context);
+    // Set up transform so that text draws correctly
+    CGContextScaleCTM(context, 1.0, -1.0);
+    // Move into the virtual text space
+    CGFloat minY = (CGFloat)self.index * CGRectGetHeight(self.bounds);
+    CGContextTranslateCTM(context, 0.0, minY);
+    
     NSUInteger lastLineIndex = lineRange.location + lineRange.length;
-    CGFloat baseline = -self.margins.top - ((lineRange.location + 1) * self.lineHeight);
+    CGFloat baseline = -self.margins.top - ((CGFloat)(lineRange.location + 1) * self.lineHeight);
     
     for (NSUInteger lineIndex = lineRange.location; lineIndex < lastLineIndex; ++lineIndex) {
-        NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
-        CGContextSetTextPosition(context, margins.left, baseline);
-        baseline -= lineHeight;
+        NKTLine *line = [self.typesettedLines objectAtIndex:lineIndex];
+        CGContextSetTextPosition(context, self.margins.left, baseline);
+        baseline -= self.lineHeight;
         [line drawInContext:context];
     }
     
     CGContextRestoreGState(context);
 }
 
-- (NSRange)horizontalRuleRange {
-    CGFloat sectionMinY = self.index * CGRectGetHeight(self.bounds);
-    NSInteger firstRuleIndex = floorf(sectionMinY - self.margins.top - self.horizontalRuleOffset) / self.lineHeight;
-    firstRuleIndex = MAX(firstRuleIndex, 0);
-    CGFloat firstRuleY = ((CGFloat)firstRuleIndex * self.lineHeight) + self.margins.top + self.horizontalRuleOffset;
-    CGFloat nextSectionMinY = sectionMinY + CGRectGetHeight(self.bounds);
-    NSUInteger ruleCount = ceilf((nextSectionMinY - firstRuleY) / self.lineHeight);
-    return NSMakeRange(firstRuleIndex, ruleCount);
-}
-
-- (NSRange)textLineRange {
+- (NSRange)typesettedLineRangeForDrawing {
     CGFloat sectionVirtualMinY = self.index * CGRectGetHeight(self.bounds);
-    NSInteger firstLineIndex = floorf(sectionVirtualMinY - self.margins.top) / self.lineHeight;
-    firstLineIndex = MAX(firstLineIndex - (NSInteger)numberOfSkirtLines, 0);
+    NSInteger firstLineIndex = (NSInteger)floorf(sectionVirtualMinY - self.margins.top) / self.lineHeight;
+    firstLineIndex -= self.numberOfSkirtLines;
+    firstLineIndex = MAX(firstLineIndex, 0);
     
-    if (firstLineIndex > [typesettedLines count] - 1) {
+    if (firstLineIndex > [self.typesettedLines count] - 1) {
         return NSMakeRange(NSNotFound, 0);
     }
     
-    CGFloat firstLineMinY = ((CGFloat)firstLineIndex * self.lineHeight) + self.margins.top;
+    CGFloat firstLineVirtualY = ((CGFloat)firstLineIndex * self.lineHeight) + self.margins.top;
     CGFloat nextSectionVirtualMinY = sectionVirtualMinY + CGRectGetHeight(self.bounds);
-    NSUInteger lineCount = ceilf((nextSectionVirtualMinY - firstLineMinY) / self.lineHeight);
-    lineCount = MIN(lineCount + numberOfSkirtLines, [typesettedLines count] - firstLineIndex);
-    return NSMakeRange(firstLineIndex, lineCount);
+    NSInteger numberOfLines = (NSInteger)ceilf((nextSectionVirtualMinY - firstLineVirtualY) / self.lineHeight);
+    numberOfLines += 2 * self.numberOfSkirtLines;
+    numberOfLines = MIN(numberOfLines, [self.typesettedLines count] - firstLineIndex);
+    return NSMakeRange(firstLineIndex, numberOfLines);
 }
 
 @end

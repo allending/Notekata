@@ -11,9 +11,9 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-Issue: Make position computations clearer in text section
 Optimization: Typeset at line granularity lazily
 
+x Issue: Make position computations clearer in text section
 x Issue: Default Line Height + Large Margins -> last horizontal rule missing
 x Issue: Text view doesn't rotate properly
 x Feature: Lines/Styles
