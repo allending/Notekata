@@ -12,6 +12,8 @@ Design: Controller responsible for setting up styles of text view
 Text View
 ---------
 Iteration goals
+Issue: Tap beyong line should place caret at end of line.
+Issue: Caret should be sized with ascent + descent
 Start on input - implement UIKeyInput protocol
 Optimization: Typeset at line granularity lazily
 Optimization: Low memory - purge recycled sections

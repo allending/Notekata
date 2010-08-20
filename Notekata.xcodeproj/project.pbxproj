@@ -17,6 +17,8 @@
 		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
 		F520394E12097D3600675702 /* NKTTestText.m in Sources */ = {isa = PBXBuildFile; fileRef = F520394D12097D3600675702 /* NKTTestText.m */; };
 		F5267D9F121AD23D003CA42D /* NKTCaret.m in Sources */ = {isa = PBXBuildFile; fileRef = F5267D9E121AD23D003CA42D /* NKTCaret.m */; };
+		F52EFA9F121B7492007A4951 /* NKTTextPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = F52EFA9E121B7492007A4951 /* NKTTextPosition.m */; };
+		F52EFAA4121B74B7007A4951 /* NKTTextRange.m in Sources */ = {isa = PBXBuildFile; fileRef = F52EFAA3121B74B7007A4951 /* NKTTextRange.m */; };
 		F544536311ED61A5009D392B /* NKTTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = F544536111ED61A5009D392B /* NKTTextView.m */; };
 		F54453B311ED6371009D392B /* CreamPaperPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453AF11ED6371009D392B /* CreamPaperPattern.png */; };
 		F54453B411ED6371009D392B /* PlainPaperPattern.png in Resources */ = {isa = PBXBuildFile; fileRef = F54453B011ED6371009D392B /* PlainPaperPattern.png */; };
@@ -46,6 +48,10 @@
 		F520394D12097D3600675702 /* NKTTestText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTestText.m; sourceTree = "<group>"; };
 		F5267D9D121AD23D003CA42D /* NKTCaret.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTCaret.h; sourceTree = "<group>"; };
 		F5267D9E121AD23D003CA42D /* NKTCaret.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTCaret.m; sourceTree = "<group>"; };
+		F52EFA9D121B7492007A4951 /* NKTTextPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextPosition.h; sourceTree = "<group>"; };
+		F52EFA9E121B7492007A4951 /* NKTTextPosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextPosition.m; sourceTree = "<group>"; };
+		F52EFAA2121B74B7007A4951 /* NKTTextRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextRange.h; sourceTree = "<group>"; };
+		F52EFAA3121B74B7007A4951 /* NKTTextRange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextRange.m; sourceTree = "<group>"; };
 		F544536011ED61A5009D392B /* NKTTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextView.h; sourceTree = "<group>"; };
 		F544536111ED61A5009D392B /* NKTTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextView.m; sourceTree = "<group>"; };
 		F54453AF11ED6371009D392B /* CreamPaperPattern.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CreamPaperPattern.png; sourceTree = "<group>"; };
@@ -167,6 +173,10 @@
 				F5267D9E121AD23D003CA42D /* NKTCaret.m */,
 				F5D12A9E11F2ECA20049C2CE /* NKTLine.h */,
 				F5D12A9F11F2ECA20049C2CE /* NKTLine.m */,
+				F52EFA9D121B7492007A4951 /* NKTTextPosition.h */,
+				F52EFA9E121B7492007A4951 /* NKTTextPosition.m */,
+				F52EFAA2121B74B7007A4951 /* NKTTextRange.h */,
+				F52EFAA3121B74B7007A4951 /* NKTTextRange.m */,
 				F5D56D5612129CFA0010849C /* NKTTextSection.h */,
 				F5D56D5712129CFA0010849C /* NKTTextSection.m */,
 				F544536011ED61A5009D392B /* NKTTextView.h */,
@@ -249,6 +259,8 @@
 				F520394E12097D3600675702 /* NKTTestText.m in Sources */,
 				F5D56D5812129CFA0010849C /* NKTTextSection.m in Sources */,
 				F5267D9F121AD23D003CA42D /* NKTCaret.m in Sources */,
+				F52EFA9F121B7492007A4951 /* NKTTextPosition.m in Sources */,
+				F52EFAA4121B74B7007A4951 /* NKTTextRange.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,6 +277,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Notekata-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				PRODUCT_NAME = Notekata;
@@ -280,6 +293,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Notekata-Info.plist";
 				PRODUCT_NAME = Notekata;
 				VALIDATE_PRODUCT = YES;

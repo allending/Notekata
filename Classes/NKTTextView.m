@@ -5,8 +5,10 @@
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
 #import "NKTCaret.h"
-#import "NKTTextSection.h"
 #import "NKTLine.h"
+#import "NKTTextPosition.h"
+#import "NKTTextRange.h"
+#import "NKTTextSection.h"
 
 @interface NKTTextView()
 
@@ -24,6 +26,28 @@
 - (NKTTextSection *)dequeueReusableSection;
 - (void)configureSection:(NKTTextSection *)section forIndex:(NSInteger)index;
 - (CGRect)frameForSectionAtIndex:(NSInteger)index;
+
+#pragma mark -
+#pragma mark Responding to Gestures
+
+- (void)tap;
+
+#pragma mark -
+#pragma mark Hit-Testing Lines
+
+- (NSInteger)closestLineIndexToPoint:(CGPoint)point;
+
+#pragma mark -
+#pragma mark Getting Line Coordinates
+
+- (CGPoint)originForLineAtIndex:(NSInteger)index;
+- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSInteger)index;
+
+#pragma mark - UITextInput
+
+@property(nonatomic, readwrite, copy) UITextRange *selectedTextRange;
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point;
 
 @end
 
@@ -70,10 +94,10 @@
     visibleSections = [[NSMutableSet alloc] init];
     reusableSections = [[NSMutableSet alloc] init];
     
-    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                   action:@selector(tapped)];
+    tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap)];
     [self addGestureRecognizer:tapGestureRecognizer];
     
+    // TODO: create this lazily
     caret = [[NKTCaret alloc] initWithFrame:CGRectMake(0.0, 0.0, 3.0, 30.0)];
     caret.hidden = YES;
     [self addSubview:caret];
@@ -101,6 +125,9 @@
     [visibleSections release];
     [reusableSections release];
     [tapGestureRecognizer release];
+    [caret release];
+    [selectedTextRange release];
+    //[tokenizer release];
     [super dealloc];
 }
 
@@ -170,8 +197,6 @@
 #pragma mark Typesetting
 
 - (void)typesetText {
-    // TODO: edge cases
-    // text is nil, lineWidth < 0, CF usage
     [typesettedLines release];
     typesettedLines = [[NSMutableArray alloc] init];
     
@@ -310,48 +335,376 @@
     BOOL acceptsFirstResponder = [super becomeFirstResponder];
     
     if (!acceptsFirstResponder) {
-        return acceptsFirstResponder;
+        return NO;
     }
     
-    [caret restartBlinking];
-    caret.center = [tapGestureRecognizer locationInView:self];
     caret.hidden = NO;
     return YES;
 }
 
 - (BOOL)resignFirstResponder {
     BOOL resignsFirstResponder = [super resignFirstResponder];
-    [caret stopBlinking];
-    caret.hidden = resignsFirstResponder;
-    return resignsFirstResponder;
+    
+    if (!resignsFirstResponder) {
+        return NO;
+    }
+
+    caret.hidden = YES;
+    return YES;
 }
 
 #pragma mark -
 #pragma mark Responding to Gestures
 
-- (void)tapped {
-    if (![self isFirstResponder]) {
-        [self becomeFirstResponder];
+- (void)tap {
+    // Make sure view is the first responder
+    if (![self isFirstResponder] && ![self becomeFirstResponder]) {
         return;
     }
     
-    [caret restartBlinking];
-    caret.center = [tapGestureRecognizer locationInView:self];
+    CGPoint tapLocation = [tapGestureRecognizer locationInView:self];
+    NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:tapLocation];
+    NKTTextRange *textRange = [textPosition emptyTextRange];
+    [self setSelectedTextRange:textRange];
 }
 
 #pragma mark -
 #pragma mark Inserting and Deleting Text
 
 - (BOOL)hasText {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
     return [self.text length] > 0;
 }
 
 - (void)insertText:(NSString *)theText {
-    NSLog(@"insertText: %@", theText);
+    NSLog(@"%s", __PRETTY_FUNCTION__);
 }
 
 - (void)deleteBackward {
-    NSLog(@"deleteBackward");
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+}
+
+#pragma mark -
+#pragma mark Searching for Lines
+
+- (NSUInteger)lineIndexContainingTextPosition:(NKTTextPosition *)textPosition {
+    NSUInteger index = 0;
+    
+    for (NKTLine *line in typesettedLines) {
+        NKTTextRange *textRange = [line textRange];
+        
+        if ([textRange containsTextPosition:textPosition]) {
+            return index;
+        }
+        
+        ++index;
+    }
+    
+    return NSNotFound;
+}
+
+#pragma mark -
+#pragma mark Working with Marked and Selected Text
+
+@synthesize selectedTextRange;
+
+- (void)setSelectedTextRange:(UITextRange *)newSelectedTextRange {
+    if (selectedTextRange == newSelectedTextRange) {
+        return;
+    }
+    
+    [selectedTextRange release];
+    selectedTextRange = [newSelectedTextRange copy];
+
+    // TODO: Only handle empty range for now
+    
+    NSUInteger lineIndex = [self lineIndexContainingTextPosition:(NKTTextPosition *)selectedTextRange.start];
+    NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
+    
+    CGFloat offset = [line offsetForTextAtIndex:selectedTextRange.startIndex];
+    CGPoint lineOrigin = [self originForLineAtIndex:lineIndex];
+    CGPoint caretOrigin = lineOrigin;
+    caretOrigin.x += (offset - 1.0);
+    caretOrigin.y -= ([line ascent] + 1.0);
+    CGRect caretRect;
+    caretRect.origin = caretOrigin;
+    caretRect.size.height = [line ascent] + [line descent] + 2.0;
+    caretRect.size.width = 3.0;
+    caret.frame = caretRect;
+    [caret startBlinking];
+}
+
+#pragma mark -
+#pragma mark Hit-Testing Lines
+
+- (NSInteger)closestLineIndexToPoint:(CGPoint)point {
+    NSInteger lineIndex = (NSInteger)floor((point.y - self.margins.top) / self.lineHeight);
+    return lineIndex;
+}
+
+#pragma mark -
+#pragma mark Getting Line Coordinates
+
+- (CGPoint)originForLineAtIndex:(NSInteger)index {
+    // First baseline = top margin + line height
+    CGFloat y = margins.top + (((CGFloat)index + 1.0) * self.lineHeight);
+    CGPoint lineOrigin = CGPointMake(self.margins.left, y);
+    return lineOrigin;
+}
+
+- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSInteger)index {
+    CGPoint lineOrigin = [self originForLineAtIndex:index];
+    CGPoint localPoint = CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
+    return localPoint;
+}
+
+#pragma mark -
+#pragma mark Geometry and Hit-Testing Methods
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point {    
+    NSInteger lineIndex = [self closestLineIndexToPoint:point];
+    
+    // Handle points outside of typesetted lines specially
+    if (lineIndex < 0) {
+        return [NKTTextPosition textPositionWithIndex:0];
+    } else if (lineIndex > [typesettedLines count] - 1) {
+        return [NKTTextPosition textPositionWithIndex:[typesettedLines count] - 1];
+    }
+    
+    NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
+    CGPoint localPoint = [self convertPoint:point toLineAtIndex:lineIndex];
+    return [line closestTextPositionToPoint:localPoint];
 }
 
 @end
+
+/*
+#pragma mark -
+#pragma mark UITextInput
+
+#pragma mark -
+#pragma mark Replacing and Returning Text
+
+- (NSString *)textInRange:(UITextRange *)textRange {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    return [[self.text string] substringWithRange:((NKTTextRange *)textRange).nsRange];
+}
+
+- (void)replaceRange:(UITextRange *)range withText:(NSString *)text {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+}
+
+#pragma mark -
+#pragma mark Working with Marked and Selected Text
+
+@synthesize selectedTextRange;
+
+- (void)setSelectedTextRange:(UITextRange *)newSelectedTextRange {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    if (selectedTextRange != newSelectedTextRange) {
+        [selectedTextRange release];
+        selectedTextRange = [newSelectedTextRange copy];
+        
+        NSInteger lineIndex = 0;
+        
+        // Find line position is in
+        for (NKTLine *line in typesettedLines) {
+            NKTTextRange *lineTextRange = [line textRange];
+            
+            // If new selected text range begins on line, use line
+            if ([selectedTextRange startsInTextRange:lineTextRange]) {
+                CGFloat offset = [line offsetForTextAtIndex:selectedTextRange.startIndex];
+                CGFloat y = self.margins.top + ((CGFloat)(lineIndex) + 0.7) * self.lineHeight;
+                CGPoint caretLocation = CGPointMake(self.margins.left + offset, y);
+                caret.center = caretLocation;
+                [caret startBlinking];
+            }
+            
+            ++lineIndex;
+        }
+    }
+}
+
+//@synthesize markedTextRange;
+//@synthesize markedTextStyle;
+
+- (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+}
+
+- (void)unmarkText {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+}
+
+#pragma mark -
+#pragma mark Computing Text Ranges and Text Positions
+
+- (UITextRange *)textRangeFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSUInteger location = ((NKTTextPosition *)fromPosition).index;
+    NSUInteger length = ((NKTTextPosition *)toPosition).index - location;
+    return [NKTTextRange textRangeWithNSRange:NSMakeRange(location, length)];
+}
+
+- (UITextPosition *)positionFromPosition:(UITextPosition *)position offset:(NSInteger)offset {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSInteger index = ((NKTTextPosition *)position).index + offset;
+    return [NKTTextPosition textPositionWithIndex:index];
+}
+
+- (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+    return position;
+}
+
+- (UITextPosition *)beginningOfDocument {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    return [NKTTextPosition textPositionWithIndex:0];
+}
+
+- (UITextPosition *)endOfDocument {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    return [NKTTextPosition textPositionWithIndex:[self.text length] - 1];
+}
+
+#pragma mark -
+#pragma mark Evaluating Text Positions
+
+- (NSComparisonResult)comparePosition:(UITextPosition *)position toPosition:(UITextPosition *)otherPosition {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSInteger index = ((NKTTextPosition *)position).index;
+    NSInteger otherIndex = ((NKTTextPosition *)otherPosition).index;
+    
+    if (index < otherIndex) {
+        return NSOrderedAscending;
+    } else if (index > otherIndex) {
+        return NSOrderedDescending;
+    } else {
+        return NSOrderedSame;
+    }
+}
+
+- (NSInteger)offsetFromPosition:(UITextPosition *)fromPosition toPosition:(UITextPosition *)toPosition {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSInteger fromIndex = ((NKTTextPosition *)fromPosition).index;
+    NSInteger toIndex = ((NKTTextPosition *)toPosition).index;
+    return toIndex - fromIndex;
+}
+
+#pragma mark -
+#pragma mark Determining Layout and Writing Direction
+
+- (UITextPosition *)positionWithinRange:(UITextRange *)range farthestInDirection:(UITextLayoutDirection)direction {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+    NSInteger index = ((NKTTextRange *)range).nsRange.location;
+    return [NKTTextPosition textPositionWithIndex:index];
+}
+
+- (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+    NSInteger index = ((NKTTextPosition *)position).index;
+    return [NKTTextRange textRangeWithNSRange:NSMakeRange(index, 0)];
+}
+
+- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+    return UITextWritingDirectionNatural;
+}
+
+- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)range {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+}
+
+#pragma mark -
+#pragma mark Geometry and Hit-Testing Methods
+
+- (CGRect)firstRectForRange:(UITextRange *)range {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+    int index = ((NKTTextRange *)range).nsRange.location;
+    NSInteger location = ((NKTTextRange *)range).nsRange.location;
+    NSInteger length = ((NKTTextRange *)range).nsRange.length;
+    
+    // Iterate over all lines
+    for (NSUInteger i = 0; i < [typesettedLines count]; ++i) {
+        NKTLine *line = [typesettedLines objectAtIndex:i];
+        CTLineRef ctLine = line.ctLine;
+        CFRange lineRange = CTLineGetStringRange(ctLine);
+        // Local index is index of input range relative to line
+        int localIndex = index - lineRange.location;
+        
+        if (localIndex >= 0 && localIndex < lineRange.length) {
+            int finalIndex = MIN(lineRange.location + lineRange.length,
+                                 location + length);
+            
+            CGFloat xStart = CTLineGetOffsetForStringIndex(ctLine, index, NULL);
+            CGFloat xEnd = CTLineGetOffsetForStringIndex(ctLine, finalIndex, NULL);
+
+            CGFloat lineY = self.margins.top + (CGFloat)i * self.lineHeight;
+            CGPoint origin = CGPointMake(self.margins.left, lineY);
+            
+            CGFloat ascent, descent;
+            CTLineGetTypographicBounds(ctLine, &ascent, &descent, NULL);
+            
+            return CGRectMake(xStart, origin.y - descent, xEnd - xStart, ascent + descent);
+        }
+    }
+    
+    return CGRectNull;
+}
+
+- (CGRect)caretRectForPosition:(UITextPosition *)position {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    // TODO: implement this correctly
+    return CGRectMake(0.0, 0.0, 3.0, 30.0);
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    
+    NSInteger lineIndex = (NSInteger)floor((point.y - margins.top) / lineHeight);
+    
+    if (lineIndex < 0) {
+        return [NKTTextPosition textPositionWithIndex:0];
+    } else if (lineIndex > [typesettedLines count] - 1) {
+        return [NKTTextPosition textPositionWithIndex:[typesettedLines count] - 1];
+    }
+    
+    // Convert point to line space
+    CGFloat lineY = margins.top + (CGFloat)lineIndex * lineHeight;
+    CGPoint lineOrigin = CGPointMake(margins.left, lineY);
+    CGPoint localPoint = CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
+    NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)lineIndex];
+    return [line closestTextPositionToPoint:localPoint];
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)range {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    return [NKTTextPosition textPositionWithIndex:0];
+}
+
+- (UITextRange *)characterRangeAtPoint:(CGPoint)point {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
+    return [NKTTextRange textRangeWithNSRange:NSMakeRange(0, 0)];
+}
+
+#pragma mark -
+#pragma mark Text Input Delegate and Text Input Tokenizer
+
+//@synthesize inputDelegate;
+
+//- (id<UITextInputTokenizer>)tokenizer;
+//{
+//    NSLog(@"%s", __PRETTY_FUNCTION__);
+//    if (tokenizer == nil) {
+//        tokenizer = [[[UITextInputStringTokenizer alloc] initWithTextInput:self] retain];
+//    }
+//    
+//    return tokenizer;
+//}
+*/

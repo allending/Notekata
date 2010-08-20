@@ -24,7 +24,7 @@
 #pragma mark -
 #pragma mark Managing Blinking
 
-- (void)restartBlinking {
+- (void)startBlinking {
     self.alpha = 1.0;
     [UIView beginAnimations:@"NKTCaret" context:nil];
     [UIView setAnimationRepeatCount:CGFLOAT_MAX];

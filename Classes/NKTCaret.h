@@ -9,9 +9,9 @@
 }
 
 #pragma mark -
-#pragma mark Managing Blinking
+#pragma mark Controlling Blinking
 
-- (void)restartBlinking;
+- (void)startBlinking;
 - (void)stopBlinking;
 
 @end

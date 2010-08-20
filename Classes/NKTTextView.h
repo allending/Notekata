@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 
 @class NKTCaret;
+@class NKTTextRange;
 
 @interface NKTTextView : UIScrollView <UIKeyInput> {
 @private
@@ -27,7 +28,15 @@
     NSMutableSet *reusableSections;
     
     UITapGestureRecognizer *tapGestureRecognizer;
+    
     NKTCaret *caret;
+    
+    NKTTextRange *selectedTextRange;
+    
+//    UITextRange *markedTextRange;
+//    NSDictionary *markedTextStyle;
+//    id <UITextInputDelegate> inputDelegate;
+//    UITextInputStringTokenizer *tokenizer;
     
 #if !defined(NKT_STRIP_DEBUG_SUPPORT)
     
