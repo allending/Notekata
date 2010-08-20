@@ -1,10 +1,17 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
 
 @class NKTTextRange;
+
+//===================================================================================================
+// NKTTextPosition is a subclass of UITextPosition. It represents an indexed position into the 
+// backing string of a text view.
+//===================================================================================================
 
 @interface NKTTextPosition : UITextPosition {
 @private
@@ -14,9 +21,9 @@
 #pragma mark -
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)position;
+- (id)initWithIndex:(NSUInteger)index;
 
-+ (id)textPositionWithIndex:(NSUInteger)position;
++ (id)textPositionWithIndex:(NSUInteger)index;
 
 #pragma mark -
 #pragma mark Accessing the Index

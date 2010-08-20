@@ -1,6 +1,8 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import "NKTTextRange.h"
 #import "NKTTextPosition.h"
@@ -12,21 +14,21 @@
 #pragma mark -
 #pragma mark Initializing
 
-- (id)initWithNSRange:(NSRange)theNSRange {
+- (id)initWithNSRange:(NSRange)aNSRange {
     if ((self = [super init])) {
-        if (theNSRange.location == NSNotFound) {
+        if (aNSRange.location == NSNotFound) {
             [self release];
             return nil;
         }
         
-        nsRange = theNSRange;
+        nsRange = aNSRange;
     }
     
     return self;
 }
 
-+ (id)textRangeWithNSRange:(NSRange)range {
-    return [[[self alloc] initWithNSRange:range] autorelease];
++ (id)textRangeWithNSRange:(NSRange)nsRange {
+    return [[[self alloc] initWithNSRange:nsRange] autorelease];
 }
 
 #pragma mark -

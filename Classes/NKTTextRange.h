@@ -1,10 +1,17 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
 
 @class NKTTextPosition;
+
+//===================================================================================================
+// NKTTextRange is a subclass of UITextRange that creates NKTTextPosition objects to represent its
+// text positions.
+//===================================================================================================
 
 @interface NKTTextRange : UITextRange {
 @private
@@ -19,13 +26,14 @@
 + (id)textRangeWithNSRange:(NSRange)nsRange;
 
 #pragma mark -
-#pragma mark Accessing the Range
+#pragma mark Accessing the NSRange
 
 @property (nonatomic, readonly) NSRange nsRange;
 
 #pragma mark -
 #pragma mark Accessing Range Indices
 
+// TODO: needed?
 @property (nonatomic, readonly) NSUInteger startIndex;
 @property (nonatomic, readonly) NSUInteger endIndex;
 

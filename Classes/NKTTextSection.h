@@ -1,8 +1,14 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
+
+//===================================================================================================
+// NKTTextSection renders a frame's worth of typesetted text. It is used internally by NKTTextView.
+//===================================================================================================
 
 @interface NKTTextSection : UIView {
 @private
@@ -24,24 +30,15 @@
 }
 
 #pragma mark -
-#pragma mark Accessing the Index
+#pragma mark Configuring the Text Section
 
 @property (nonatomic, readwrite) NSInteger index;
 
-#pragma mark -
-#pragma mark Accessing the Typesetted Lines
-
 @property (nonatomic, readwrite, retain) NSArray *typesettedLines;
-
-#pragma mark -
-#pragma mark Configuring Text Layout
 
 @property (nonatomic, readwrite) UIEdgeInsets margins;
 @property (nonatomic, readwrite) CGFloat lineHeight;
 @property (nonatomic, readwrite) NSUInteger numberOfSkirtLines;
-
-#pragma mark -
-#pragma mark Configuring the View Style
 
 @property (nonatomic, readwrite) BOOL horizontalRulesEnabled;
 @property (nonatomic, readwrite, retain) UIColor *horizontalRuleColor;

@@ -1,10 +1,16 @@
+//===================================================================================================
 //
-//  Copyright Allen Ding 2010. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
 
 @class NotekataViewController;
+
+//===================================================================================================
+// NotekataAppDelegate
+//===================================================================================================
 
 @interface NotekataAppDelegate : NSObject <UIApplicationDelegate> {
     UIWindow *window;

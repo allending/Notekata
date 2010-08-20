@@ -1,8 +1,14 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
+
+//===================================================================================================
+// NKTCaret visually marks a location in text.
+//===================================================================================================
 
 @interface NKTCaret : UIView {
 
@@ -12,6 +18,5 @@
 #pragma mark Controlling Blinking
 
 - (void)startBlinking;
-- (void)stopBlinking;
 
 @end

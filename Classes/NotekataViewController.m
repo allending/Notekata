@@ -1,6 +1,8 @@
+//===================================================================================================
 //
-//  Copyright Allen Ding 2010. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import "NotekataViewController.h"
 #import "NKTTestText.h"

@@ -1,12 +1,18 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>
 
 @class NKTTextRange;
 @class NKTTextPosition;
+
+//===================================================================================================
+// NKTLine represents a typesetted line that renders a range of text.
+//===================================================================================================
 
 @interface NKTLine : NSObject {
 @private
@@ -31,14 +37,18 @@
 #pragma mark -
 #pragma mark Getting Typographic Bounds
 
-- (CGFloat)ascent;
-- (CGFloat)descent;
-- (CGFloat)leading;
+@property (nonatomic, readonly) CGFloat ascent;
+@property (nonatomic, readonly) CGFloat descent;
+@property (nonatomic, readonly) CGFloat leading;
 
 #pragma mark -
-#pragma mark Getting Line Positioning
+#pragma mark Getting Offsets
 
-- (CGFloat)offsetForTextAtIndex:(NSUInteger)index;
+- (CGFloat)offsetForTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark -
+#pragma mark Hit Testing
+
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
 #pragma mark -

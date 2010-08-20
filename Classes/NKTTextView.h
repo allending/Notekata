@@ -1,11 +1,18 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import <UIKit/UIKit.h>
 
 @class NKTCaret;
 @class NKTTextRange;
+
+//===================================================================================================
+// NKTTextView implements the behavior for a view similar to UITextView, but with support for text
+// styling with attributes, and customizations to simulate printed pages.
+//===================================================================================================
 
 @interface NKTTextView : UIScrollView <UIKeyInput> {
 @private
@@ -28,11 +35,9 @@
     NSMutableSet *reusableSections;
     
     UITapGestureRecognizer *tapGestureRecognizer;
-    
+
     NKTCaret *caret;
-    
     NKTTextRange *selectedTextRange;
-    
 //    UITextRange *markedTextRange;
 //    NSDictionary *markedTextStyle;
 //    id <UITextInputDelegate> inputDelegate;
@@ -51,13 +56,10 @@
 @property (nonatomic, readwrite, copy) NSAttributedString *text;
 
 #pragma mark -
-#pragma mark Configuring Text Layout
+#pragma mark Configuring Text Layout and Style
 
 @property (nonatomic, readwrite) UIEdgeInsets margins;
 @property (nonatomic, readwrite) CGFloat lineHeight;
-
-#pragma mark -
-#pragma mark Configuring the View Style
 
 @property (nonatomic, readwrite) BOOL horizontalRulesEnabled;
 @property (nonatomic, readwrite, retain) UIColor *horizontalRuleColor;

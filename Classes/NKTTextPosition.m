@@ -1,6 +1,8 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
@@ -12,9 +14,15 @@
 #pragma mark -
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)theIndex {
+- (id)initWithIndex:(NSUInteger)anIndex {
     if ((self = [super init])) {
-        index = theIndex;
+        if (anIndex == NSNotFound) {
+            // TODO: log this
+            [self release];
+            return nil;
+        }
+        
+        index = anIndex;
     }
     
     return self;
@@ -28,7 +36,7 @@
 #pragma mark Creating Text Ranges
 
 - (NKTTextRange *)emptyTextRange {
-    return [NKTTextRange textRangeWithNSRange:NSMakeRange(self.index, 0)];
+    return [NKTTextRange textRangeWithNSRange:NSMakeRange(index, 0)];
 }
 
 @end

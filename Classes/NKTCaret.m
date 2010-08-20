@@ -1,6 +1,8 @@
+//===================================================================================================
 //
-//  Copyright 2010 Allen Ding. All rights reserved.
+// Copyright 2010 Allen Ding. All rights reserved.
 //
+//===================================================================================================
 
 #import "NKTCaret.h"
 
@@ -31,11 +33,6 @@
     [UIView setAnimationDuration:0.85];
     self.alpha = 0.0;
     [UIView commitAnimations];
-}
-
-- (void)stopBlinking {
-    // This cancels pending animations on alpha
-    self.alpha = 1.0;
 }
 
 @end

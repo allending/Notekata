@@ -17,6 +17,7 @@ Issue: Caret should be sized with ascent + descent
 Start on input - implement UIKeyInput protocol
 Optimization: Typeset at line granularity lazily
 Optimization: Low memory - purge recycled sections
+Optimization: Don't need skirt lines - can use typographic bounds
 
 x Issue: Make position computations clearer in text section
 x Issue: Default Line Height + Large Margins -> last horizontal rule missing
