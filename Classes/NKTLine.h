@@ -1,8 +1,8 @@
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 //
 // Copyright 2010 Allen Ding. All rights reserved.
 //
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
 #import <CoreText/CoreText.h>
@@ -10,19 +10,20 @@
 @class NKTTextRange;
 @class NKTTextPosition;
 
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 // NKTLine represents a typesetted line that renders a range of text.
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 @interface NKTLine : NSObject {
 @private
+    NSAttributedString *text;
     CTLineRef ctLine;
 }
 
 #pragma mark -
 #pragma mark Initializing
 
-- (id)initWithCTLine:(CTLineRef)ctLine;
+- (id)initWithText:(NSAttributedString *)text CTLine:(CTLineRef)ctLine;
 
 #pragma mark -
 #pragma mark Accessing the CTLine
@@ -44,11 +45,18 @@
 #pragma mark -
 #pragma mark Getting Offsets
 
-- (CGFloat)offsetForTextPosition:(NKTTextPosition *)textPosition;
+- (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark -
 #pragma mark Hit Testing
 
+// Returns a text position usable for the next character to be inserted on the line. Relative to
+// the line's text range, the index of the text position returned will be no less than the start
+// index and no more than the last string index plus 1.
+//
+// If the last character on the line is a line break, the text position returned will no more than
+// the last string index. This is so that insertions using the returned text position can be used
+// to insert text on the same line before the line break.
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
 #pragma mark -

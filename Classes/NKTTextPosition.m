@@ -1,8 +1,8 @@
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 //
 // Copyright 2010 Allen Ding. All rights reserved.
 //
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
@@ -33,9 +33,16 @@
 }
 
 #pragma mark -
+#pragma mark Creating Text Positions
+
+- (NKTTextPosition *)nextPosition {
+    return [[[[self class] alloc] initWithIndex:index + 1] autorelease];
+}
+
+#pragma mark -
 #pragma mark Creating Text Ranges
 
-- (NKTTextRange *)emptyTextRange {
+- (NKTTextRange *)textRange {
     return [NKTTextRange textRangeWithNSRange:NSMakeRange(index, 0)];
 }
 

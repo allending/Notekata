@@ -11,14 +11,19 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-Iteration goals
-Issue: Tap beyong line should place caret at end of line.
-Issue: Caret should be sized with ascent + descent
-Start on input - implement UIKeyInput protocol
+Deferred Issue: Whitespace at end of line not being handled properly
+Issue: Emulate api of UITextView more
+Feature: Scrolling behavior while editing
 Optimization: Typeset at line granularity lazily
-Optimization: Low memory - purge recycled sections
 Optimization: Don't need skirt lines - can use typographic bounds
+Optimization: Low memory - purge recycled sections
 
+Done
+----
+x Refactor: Make caret creation and rect clearer
+x Issue: Text view layout wrong when no text on start
+x Issue: Tap beyong line should place caret at end of line.
+x Issue: Caret should be sized with ascent + descent
 x Issue: Make position computations clearer in text section
 x Issue: Default Line Height + Large Margins -> last horizontal rule missing
 x Issue: Text view doesn't rotate properly

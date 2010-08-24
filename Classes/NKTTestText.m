@@ -1,8 +1,8 @@
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 //
 // Copyright 2010 Allen Ding. All rights reserved.
 //
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 #import "NKTTestText.h"
 #import <CoreText/CoreText.h>
@@ -44,7 +44,7 @@ static NSString * const TestText =
     "Drawing is a relatively expensive operation on any platform, and optimizing your drawing code should always be an important step in your development process. Table 2-2 lists several tips for ensuring that your drawing code is as optimal as possible. In addition to these tips, you should always use the available performance tools to test your code and remove hotspots and redundancies.\n"
     "FIN";
 
-NSAttributedString *NKTTestText() {
+NSMutableAttributedString *NKTTestText() {
     CTFontRef helvetica = CTFontCreateWithName(CFSTR("Helvetica"), 16.0, nil);
     CGColorRef color = [UIColor blackColor].CGColor;
     NSDictionary *baseAttributes = [NSDictionary dictionaryWithObjectsAndKeys:

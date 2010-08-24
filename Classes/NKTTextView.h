@@ -1,22 +1,22 @@
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 //
 // Copyright 2010 Allen Ding. All rights reserved.
 //
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
 
 @class NKTCaret;
 @class NKTTextRange;
 
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 // NKTTextView implements the behavior for a view similar to UITextView, but with support for text
 // styling with attributes, and customizations to simulate printed pages.
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 @interface NKTTextView : UIScrollView <UIKeyInput> {
 @private
-    NSAttributedString *text;
+    NSMutableAttributedString *text;
     
     UIEdgeInsets margins;
     CGFloat lineHeight;
@@ -24,7 +24,6 @@
     BOOL horizontalRulesEnabled;
     UIColor *horizontalRuleColor;
     CGFloat horizontalRuleOffset;
-    
     BOOL verticalMarginEnabled;
     UIColor *verticalMarginColor;
     CGFloat verticalMarginInset;
@@ -53,7 +52,7 @@
 #pragma mark -
 #pragma mark Accessing the Text
 
-@property (nonatomic, readwrite, copy) NSAttributedString *text;
+@property (nonatomic, readwrite, retain) NSMutableAttributedString *text;
 
 #pragma mark -
 #pragma mark Configuring Text Layout and Style
@@ -64,7 +63,6 @@
 @property (nonatomic, readwrite) BOOL horizontalRulesEnabled;
 @property (nonatomic, readwrite, retain) UIColor *horizontalRuleColor;
 @property (nonatomic, readwrite) CGFloat horizontalRuleOffset;
-
 @property (nonatomic, readwrite) BOOL verticalMarginEnabled;
 @property (nonatomic, readwrite, retain) UIColor *verticalMarginColor;
 @property (nonatomic, readwrite) CGFloat verticalMarginInset;

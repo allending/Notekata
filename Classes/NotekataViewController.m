@@ -1,12 +1,13 @@
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 //
 // Copyright 2010 Allen Ding. All rights reserved.
 //
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 #import "NotekataViewController.h"
 #import "NKTTestText.h"
 #import "NKTTextView.h"
+#import <CoreText/CoreText.h>
 
 @implementation NotekataViewController
 
@@ -43,15 +44,24 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    self.textView.debug_alternatesSectionBackgroundColors = NO;
-    
+        
     UIImage *edgePattern = [UIImage imageNamed:@"RedCoverPattern.png"];
     self.edgeView.backgroundColor = [UIColor colorWithPatternImage:edgePattern];
     
     UIImage *backgroundPattern = [UIImage imageNamed:@"CreamPaperPattern.png"];
     self.view.backgroundColor = [UIColor colorWithPatternImage:backgroundPattern];
     
+//    CTParagraphStyleSetting pss[1];
+//    pss[0].spec = kCTParagraphStyleSpecifierLineBreakMode;
+//    CTLineBreakMode lbm = kCTLineBreakByClipping;
+//    pss[0].value = &lbm;
+//    pss[0].valueSize = sizeof(lbm);
+//    CTParagraphStyleRef ps = CTParagraphStyleCreate(pss, 1);
+//    NSDictionary *dict = [NSDictionary dictionaryWithObject:(id)ps forKey:(id)kCTParagraphStyleAttributeName];
+    
+//    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:@"Hello World\nFoobar"];
+//    self.textView.text = string;
+//    [string release];
     self.textView.text = NKTTestText();
     
     UIBarButtonItem *defaultLineHeight = [[UIBarButtonItem alloc] initWithTitle:@"Default Line Height"

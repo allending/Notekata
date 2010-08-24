@@ -1,8 +1,8 @@
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 //
 // Copyright 2010 Allen Ding. All rights reserved.
 //
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
@@ -12,7 +12,15 @@
 #import "NKTTextRange.h"
 #import "NKTTextSection.h"
 
+#pragma mark -
+#pragma mark NKTTextView Private API
+
 @interface NKTTextView()
+
+#pragma mark -
+#pragma mark Generating the View Contents
+
+- (void)regenerateContents;
 
 #pragma mark -
 #pragma mark Typesetting
@@ -23,7 +31,7 @@
 #pragma mark Tiling Sections
 
 - (void)tileSections;
-- (void)removeAllVisibleSections;
+- (void)untileVisibleSections;
 - (BOOL)isDisplayingSectionAtIndex:(NSInteger)index;
 - (NKTTextSection *)dequeueReusableSection;
 - (void)configureSection:(NKTTextSection *)section atIndex:(NSInteger)index;
@@ -35,33 +43,42 @@
 - (void)tap;
 
 #pragma mark -
-#pragma mark Hit-Testing Lines
+#pragma mark Hit-Testing
 
-// TODO: line indices should be NSUInteger
-- (NSInteger)indexForClosestLineToPoint:(CGPoint)point;
+- (void)getClosestTextPosition:(NKTTextPosition **)textPosition sourceLineIndex:(NSUInteger *)originatingLineIndex toPoint:(CGPoint)point;
 
 #pragma mark -
-#pragma mark Getting Line Coordinates
+#pragma mark Getting and Converting Coordinates
 
-// TODO: NSUInteger
-- (CGPoint)originForLineAtIndex:(NSInteger)index;
-- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSInteger)index;
+- (CGPoint)originForLineAtIndex:(NSUInteger)index;
+- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSUInteger)index;
+
+#pragma mark -
+#pragma mark Getting Line Indices
+
+- (NSInteger)indexForVirtualLineSpanningVerticalOffset:(CGFloat)verticalOffset;
+- (NSUInteger)indexForLineContainingTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark -
+#pragma mark Getting Font Metrics at Text Positions
+
+- (void)getFontAscent:(CGFloat *)ascent descent:(CGFloat *)descent atTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark -
 #pragma mark - Managing the Caret
 
-- (void)moveCaretToTextPosition:(NKTTextPosition *)textPosition;
+- (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition withSourceLineAtIndex:(NSUInteger)sourceLineIndex;
 
 #pragma mark -
-#pragma mark UITextInput Methods
+#pragma mark Working with Marked and Selected Text
+
+- (void)setSelectedTextRange:(NKTTextRange *)textRange withSourceLineAtIndex:(NSUInteger)sourceLineIndex;
 
 @property(nonatomic, readwrite, copy) UITextRange *selectedTextRange;
 
-- (UITextPosition *)closestPositionToPoint:(CGPoint)point;
-
 @end
 
-//===================================================================================================
+//--------------------------------------------------------------------------------------------------
 
 @implementation NKTTextView
 
@@ -73,7 +90,6 @@
 @synthesize horizontalRulesEnabled;
 @synthesize horizontalRuleColor;
 @synthesize horizontalRuleOffset;
-
 @synthesize verticalMarginEnabled;
 @synthesize verticalMarginColor;
 @synthesize verticalMarginInset;
@@ -86,11 +102,15 @@
 
 #endif // #if !defined(NKT_STRIP_DEBUG_SUPPORT)
 
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark -
 #pragma mark Initializing
 
 - (void)commonInit_NKTTextView {
     self.alwaysBounceVertical = YES;
+    
+    text = [[NSMutableAttributedString alloc] init];
     
     margins = UIEdgeInsetsMake(60.0, 80.0, 80.0, 60.0);
     lineHeight = 32.0;
@@ -100,7 +120,6 @@
     horizontalRulesEnabled = YES;
     horizontalRuleColor = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
     horizontalRuleOffset = 3.0;
-    
     verticalMarginEnabled = YES;
     verticalMarginColor = [[UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0] retain];
     verticalMarginInset = 60.0;
@@ -116,6 +135,8 @@
     caret = [[NKTCaret alloc] initWithFrame:CGRectMake(0.0, 0.0, 3.0, 30.0)];
     caret.hidden = YES;
     [self addSubview:caret];
+    
+    selectedTextRange = [[NKTTextRange alloc] initWithNSRange:NSMakeRange(0, 0)];
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -151,6 +172,8 @@
     [super dealloc];
 }
 
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark -
 #pragma mark Updating the Content Size
 
@@ -160,17 +183,21 @@
     self.contentSize = size;
 }
 
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Modifying the Bounds and Frame Rectangles
+
 - (void)setFrame:(CGRect)frame {
     if (CGRectEqualToRect(self.frame, frame)) {
         return;
     }
     
     [super setFrame:frame];
-    [self typesetText];
-    [self removeAllVisibleSections];
-    [self tileSections];
-    [self updateContentSize];
+    [self regenerateContents];
 }
+
+//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Laying out Views
@@ -181,37 +208,50 @@
     [self tileSections];
 }
 
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark -
 #pragma mark Accessing the Text
 
-- (void)setText:(NSAttributedString *)newText {
-    if (text != newText) {
-        [text release];
-        text = [newText copy];
-        [self typesetText];
-        [self removeAllVisibleSections];
-        [self tileSections];
-        [self updateContentSize];
-    }
+// TODO: follow UITextView conventions on ownership
+- (void)setText:(NSMutableAttributedString *)newText {
+    [newText retain];
+    [text release];
+    text = newText;
+    [self regenerateContents];
 }
+
+//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Configuring Text Layout and Style
 
 - (void)setLineHeight:(CGFloat)newLineHeight {
     lineHeight = newLineHeight;
-    [self removeAllVisibleSections];
+    // Don't need to typeset since the line width is not changing
+    [self untileVisibleSections];
     [self tileSections];
     [self updateContentSize];
 }
 
 - (void)setMargins:(UIEdgeInsets)newMargins {
     margins = newMargins;
+    [self regenerateContents];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Generating the View Contents
+
+- (void)regenerateContents {
     [self typesetText];
-    [self removeAllVisibleSections];
+    [self untileVisibleSections];
     [self tileSections];
     [self updateContentSize];
 }
+
+//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Typesetting
@@ -233,9 +273,10 @@
     
     while (charIndex < length) {
         CFIndex charCount = CTTypesetterSuggestLineBreak(typesetter, charIndex, lineWidth);
+        // TODO: white space fucks this up
         CFRange range = CFRangeMake(charIndex, charCount);
         CTLineRef ctLine = CTTypesetterCreateLine(typesetter, range);
-        NKTLine *line = [[NKTLine alloc] initWithCTLine:ctLine];
+        NKTLine *line = [[NKTLine alloc] initWithText:text CTLine:ctLine];
         CFRelease(ctLine);
         [typesettedLines addObject:line];
         [line release];
@@ -245,13 +286,15 @@
     CFRelease(typesetter);
 }
 
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark -
 #pragma mark Tiling Sections
 
 - (void)tileSections {
     CGRect bounds = self.bounds;
-    NSInteger firstVisibleSectionIndex = floorf(CGRectGetMinY(bounds) / CGRectGetHeight(bounds));
-    NSInteger lastVisibleSectionIndex = floorf((CGRectGetMaxY(bounds) - 1.0) / CGRectGetHeight(bounds));
+    NSInteger firstVisibleSectionIndex = (NSInteger)floorf(CGRectGetMinY(bounds) / CGRectGetHeight(bounds));
+    NSInteger lastVisibleSectionIndex = (NSInteger)floorf((CGRectGetMaxY(bounds) - 1.0) / CGRectGetHeight(bounds));
     
     // Recycle no longer visible sections
     for (NKTTextSection *section in visibleSections) {
@@ -279,7 +322,7 @@
     }
 }
 
-- (void)removeAllVisibleSections {
+- (void)untileVisibleSections {
     for (NKTTextSection *section in visibleSections) {
         [reusableSections addObject:section];
         [section removeFromSuperview];
@@ -348,21 +391,12 @@
     return sectionFrame;
 }
 
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark -
 #pragma mark Managing the Responder Chain
 
 - (BOOL)canBecomeFirstResponder {
-    return YES;
-}
-
-- (BOOL)becomeFirstResponder {
-    BOOL acceptsFirstResponder = [super becomeFirstResponder];
-    
-    if (!acceptsFirstResponder) {
-        return NO;
-    }
-    
-    caret.hidden = NO;
     return YES;
 }
 
@@ -373,9 +407,12 @@
         return NO;
     }
 
+    // TODO: Hide all ranges etc...
     caret.hidden = YES;
     return YES;
 }
+
+//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Responding to Gestures
@@ -386,15 +423,16 @@
     }
     
     CGPoint tapLocation = [tapGestureRecognizer locationInView:self];
-    NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:tapLocation];
-    NKTTextRange *textRange = [textPosition emptyTextRange];
-    [self setSelectedTextRange:textRange];
+    NKTTextPosition *textPosition = nil;
+    NSUInteger sourceLineIndex = NSNotFound;
+    [self getClosestTextPosition:&textPosition sourceLineIndex:&sourceLineIndex toPoint:tapLocation];
+    [self setSelectedTextRange:[textPosition textRange] withSourceLineAtIndex:sourceLineIndex];
 }
+
+//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Inserting and Deleting Text
-
-// TODO: implement these
 
 - (BOOL)hasText {
     NSLog(@"%s", __PRETTY_FUNCTION__);
@@ -402,104 +440,239 @@
 }
 
 - (void)insertText:(NSString *)theText {
-    NSLog(@"%s", __PRETTY_FUNCTION__);
+    NSLog(@"%s %@", __PRETTY_FUNCTION__, theText);
+    NKTTextPosition *textPosition = (NKTTextPosition *)selectedTextRange.start;
+    NSUInteger textIndex = textPosition.index;
+    // replaceCharactersInRange: treats the length of the string as a valid range value
+    [text replaceCharactersInRange:NSMakeRange(textIndex, 0) withString:theText];
+    [self typesetText];
+    [self untileVisibleSections];
+    [self tileSections];
+    [self updateContentSize];
+    self.selectedTextRange = [[textPosition nextPosition] textRange];
 }
 
 - (void)deleteBackward {
     NSLog(@"%s", __PRETTY_FUNCTION__);
+    NKTTextPosition *textPosition = (NKTTextPosition *)selectedTextRange.start;
+    NSUInteger textIndex = textPosition.index;
+    
+    if (textIndex == 0) {
+        return;
+    } else {
+        --textIndex;
+    }
+    
+    [text deleteCharactersInRange:NSMakeRange(textIndex, 1)];
+    [self typesetText];
+    [self untileVisibleSections];
+    [self tileSections];
+    [self updateContentSize];
+    self.selectedTextRange = [NKTTextRange textRangeWithNSRange:NSMakeRange(textIndex, 0)];
 }
 
-#pragma mark -
-#pragma mark Searching for Lines
+//--------------------------------------------------------------------------------------------------
 
-- (NSUInteger)lineIndexContainingTextPosition:(NKTTextPosition *)textPosition {
-    NSUInteger index = 0;
+#pragma mark -
+#pragma mark Hit Testing
+
+// The index of the text position returned will be between 0 and the last string index plus 1.
+- (void)getClosestTextPosition:(NKTTextPosition **)textPosition sourceLineIndex:(NSUInteger *)sourceLineIndex toPoint:(CGPoint)point {
+    NSInteger virtualLineIndex = [self indexForVirtualLineSpanningVerticalOffset:point.y];
+    
+    // Point lies before the first real line
+    if (virtualLineIndex < 0 || [typesettedLines count] == 0) {
+        if (textPosition != NULL) {
+            *textPosition = [NKTTextPosition textPositionWithIndex:0];
+        }
+        
+        if (sourceLineIndex != NULL) {
+            *sourceLineIndex = NSNotFound;
+        }
+        
+        return;
+    }
+    
+    // Point lies beyond the last real line
+    if (virtualLineIndex >= (NSInteger)[typesettedLines count]) {
+        if (textPosition != NULL) {
+            *textPosition = [NKTTextPosition textPositionWithIndex:[text length]];
+        }
+        
+        if (sourceLineIndex != NULL) {
+            *sourceLineIndex = NSNotFound;
+        }
+        
+        return;
+    }
+    
+    // By this point, the virtual line index indexes a real line, so use it
+    
+    if (textPosition != NULL) {
+        CGPoint lineLocalPoint = [self convertPoint:point toLineAtIndex:(NSUInteger)virtualLineIndex];
+        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)virtualLineIndex];
+        *textPosition = [line closestTextPositionToPoint:lineLocalPoint];
+    }
+    
+    if (sourceLineIndex != NULL) {
+        *sourceLineIndex = (NSUInteger)virtualLineIndex;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Getting and Converting Coordinates
+
+- (CGPoint)originForLineAtIndex:(NSUInteger)index {
+    CGFloat y = margins.top + lineHeight + ((CGFloat)index * lineHeight);
+    CGPoint lineOrigin = CGPointMake(margins.left, y);
+    return lineOrigin;
+}
+
+- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSUInteger)index {
+    CGPoint lineOrigin = [self originForLineAtIndex:index];
+    return CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Getting Line Indices
+
+- (NSInteger)indexForVirtualLineSpanningVerticalOffset:(CGFloat)verticalOffset {
+    return (NSInteger)floor((verticalOffset - margins.top) / lineHeight);
+}
+
+// Returns NSNotFound if no line contains the text position.
+- (NSUInteger)indexForLineContainingTextPosition:(NKTTextPosition *)textPosition {    
+    NSUInteger lineIndex = 0;
     
     for (NKTLine *line in typesettedLines) {
         NKTTextRange *textRange = [line textRange];
         
         if ([textRange containsTextPosition:textPosition]) {
-            return index;
+            return lineIndex;
         }
         
-        ++index;
+        ++lineIndex;
     }
     
     return NSNotFound;
 }
 
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Getting Font Metrics at Text Positions
+
+// Returns font metrics at the text position if available, otherwise returns the default system font
+// metrics. The metrics at a text position are found by querying the font attributes of the
+// preceding character if available, otherwise of the following character.
+- (void)getFontAscent:(CGFloat *)ascent descent:(CGFloat *)descent atTextPosition:(NKTTextPosition *)textPosition {
+    CTFontRef font = NULL;
+    
+    // Look for available font attribute at the text position
+    if ([text length] > 0) {
+        NSUInteger textIndex = (NSUInteger)MAX(0, (NSInteger)textPosition.index - 1);
+        textIndex = (NSUInteger)MIN(textIndex, ((NSInteger)[text length] - 1));
+        NSDictionary *textAttributes = [text attributesAtIndex:textIndex effectiveRange:NULL];
+        font = (CTFontRef)[textAttributes objectForKey:(id)kCTFontAttributeName];
+    }
+    
+    if (font != NULL) {
+        if (ascent != NULL) {
+            *ascent = CTFontGetAscent(font);
+        }
+        
+        if (descent != NULL) {
+            *descent = CTFontGetDescent(font);
+        }
+    } else {
+        if (ascent != NULL) {
+            *ascent = 12.0 * 0.77;
+        }
+        
+        if (descent != NULL) {
+            *descent = 12.0 * 0.23;
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark -
+#pragma mark Managing the Caret
+
+- (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition withSourceLineAtIndex:(NSUInteger)sourceLineIndex {
+    const CGFloat caretWidth = 2.0;
+    const CGFloat caretVerticalPadding = 1.0;
+
+    // Get the ascent and descent at the text position
+    CGFloat ascent = 0.0;
+    CGFloat descent = 0.0;
+    [self getFontAscent:&ascent descent:&descent atTextPosition:textPosition];
+    
+    // Get the line origin and offset for the text position
+    CGPoint lineOrigin = CGPointZero;
+    CGFloat charOffset = 0.0;
+    
+    if (sourceLineIndex != NSNotFound) {
+        NKTLine *line = [typesettedLines objectAtIndex:sourceLineIndex];
+        lineOrigin = [self originForLineAtIndex:sourceLineIndex];
+        charOffset = [line offsetForCharAtTextPosition:textPosition];
+    } else if (textPosition.index == 0) {
+        lineOrigin = [self originForLineAtIndex:0];
+    } else if (textPosition.index == [text length]) {
+        NSAssert([typesettedLines count] > 0, @"there should be at least one typesetted line");
+        // Text length guaranteed to be > 0 here because we accounted for index 0 above
+        
+        if ([[text string] characterAtIndex:((NSInteger)[text length] - 1)] == '\n') {
+            // The last character is a line break, set the line origin to be the origin of where
+            // the line beyond the last real line would actually be.
+            lineOrigin = [self originForLineAtIndex:[typesettedLines count]];
+        } else {
+            // Last character is not a line break, so caret rect lies on the last real line.
+            NSUInteger lastLineIndex = [typesettedLines count] - 1;
+            NKTLine *line = [typesettedLines objectAtIndex:lastLineIndex];
+            lineOrigin = [self originForLineAtIndex:lastLineIndex];
+            charOffset = [line offsetForCharAtTextPosition:textPosition];
+        }
+    } else {
+        // Fallback to getting the line index manually
+        NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
+        NSAssert(lineIndex != NSNotFound, @"already accounted for edge cases, so the text position should be on a typesetted line");
+        NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
+        lineOrigin = [self originForLineAtIndex:lineIndex];
+        charOffset = [line offsetForCharAtTextPosition:textPosition];
+    }
+    
+    CGRect caretFrame = CGRectZero;
+    caretFrame.origin.x = lineOrigin.x + charOffset;
+    caretFrame.origin.y = lineOrigin.y - ascent - caretVerticalPadding;
+    caretFrame.size.width = caretWidth;
+    caretFrame.size.height = ascent + descent + (caretVerticalPadding * 2.0);
+    return caretFrame;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark -
 #pragma mark Working with Marked and Selected Text
 
-- (void)setSelectedTextRange:(UITextRange *)textRange {
-    if (selectedTextRange == textRange) {
-        return;
-    }
-    
-    [selectedTextRange release];
+- (void)setSelectedTextRange:(NKTTextRange *)textRange withSourceLineAtIndex:(NSUInteger)sourceLineIndex {
+    [selectedTextRange autorelease];
     selectedTextRange = [textRange copy];
-    // For now support simple caret movement only
-    [self moveCaretToTextPosition:(NKTTextPosition *)selectedTextRange.start];
-}
-
-#pragma mark -
-#pragma mark - Managing the Caret
-
-- (void)moveCaretToTextPosition:(NKTTextPosition *)textPosition {
-    NSUInteger lineIndex = [self lineIndexContainingTextPosition:textPosition];
-    NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
-    CGFloat offset = [line offsetForTextPosition:textPosition];
-    CGPoint lineOrigin = [self originForLineAtIndex:lineIndex];
-    CGRect caretRect;
-    const CGFloat caretWidth = 3.0;
-    const CGFloat caretVerticalPadding = 1.0;
-    caretRect.origin.x = lineOrigin.x + offset - caretVerticalPadding;
-    caretRect.origin.y = lineOrigin.y - line.ascent - caretVerticalPadding;
-    caretRect.size.width = caretWidth;
-    caretRect.size.height = line.ascent + line.descent + (caretVerticalPadding * 2.0);
-    caret.frame = caretRect;
-    [caret startBlinking];
-}
-
-#pragma mark -
-#pragma mark Hit-Testing Lines
-
-- (NSInteger)indexForClosestLineToPoint:(CGPoint)point {
-    NSInteger lineIndex = (NSInteger)floor((point.y - margins.top) / lineHeight);
-    return lineIndex;
-}
-
-#pragma mark -
-#pragma mark Getting Line Coordinates
-
-- (CGPoint)originForLineAtIndex:(NSInteger)index {
-    // First baseline = top margin + line height
-    CGFloat y = margins.top + (((CGFloat)index + 1.0) * lineHeight);
-    CGPoint lineOrigin = CGPointMake(margins.left, y);
-    return lineOrigin;
-}
-
-- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSInteger)index {
-    CGPoint lineOrigin = [self originForLineAtIndex:index];
-    CGPoint localPoint = CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
-    return localPoint;
-}
-
-#pragma mark -
-#pragma mark Geometry and Hit-Testing Methods
-
-- (UITextPosition *)closestPositionToPoint:(CGPoint)point {    
-    NSInteger lineIndex = [self indexForClosestLineToPoint:point];
     
-    if (lineIndex < 0) {
-        return [NKTTextPosition textPositionWithIndex:0];
-    } else if (lineIndex > [typesettedLines count] - 1) {
-        return [NKTTextPosition textPositionWithIndex:[typesettedLines count] - 1];
+    if (selectedTextRange.empty) {
+        caret.frame = [self frameForCaretAtTextPosition:(NKTTextPosition *)selectedTextRange.start withSourceLineAtIndex:sourceLineIndex];
+        caret.hidden = NO;
+        [caret startBlinking];
     }
-    
-    NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
-    CGPoint localPoint = [self convertPoint:point toLineAtIndex:lineIndex];
-    return [line closestTextPositionToPoint:localPoint];
+}
+
+- (void)setSelectedTextRange:(UITextRange *)textRange {
+    [self setSelectedTextRange:(NKTTextRange *)textRange withSourceLineAtIndex:NSNotFound];
 }
 
 @end
