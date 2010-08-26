@@ -1,20 +1,20 @@
 //--------------------------------------------------------------------------------------------------
-//
 // Copyright 2010 Allen Ding. All rights reserved.
-//
 //--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
 
 @class NKTCaret;
+@class NKTTextPosition;
 @class NKTTextRange;
+@class NKTTextViewGestureRecognizerDelegate;
 
 //--------------------------------------------------------------------------------------------------
 // NKTTextView implements the behavior for a view similar to UITextView, but with support for text
 // styling with attributes, and customizations to simulate printed pages.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextView : UIScrollView <UIKeyInput> {
+@interface NKTTextView : UIScrollView <UIKeyInput, UIGestureRecognizerDelegate> {
 @private
     NSMutableAttributedString *text;
     
@@ -33,28 +33,24 @@
     NSMutableSet *visibleSections;
     NSMutableSet *reusableSections;
     
-    UITapGestureRecognizer *tapGestureRecognizer;
-
-    NKTCaret *caret;
     NKTTextRange *selectedTextRange;
-//    UITextRange *markedTextRange;
-//    NSDictionary *markedTextStyle;
-//    id <UITextInputDelegate> inputDelegate;
-//    UITextInputStringTokenizer *tokenizer;
     
-#if !defined(NKT_STRIP_DEBUG_SUPPORT)
+    NKTCaret *selectedTextPositionCaret;
+    UIView *selectedTextRangeBandTop;
+    UIView *selectedTextRangeBandMiddle;
+    UIView *selectedTextRangeBandBottom;
     
-    BOOL debug_alternatesSectionBackgroundColors;
-    
-#endif // #if !defined(NKT_STRIP_DEBUG_SUPPORT)
+    NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
+    UITapGestureRecognizer *nonFirstResponderTapGestureRecognizer;
+    UITapGestureRecognizer *tapGestureRecognizer;
+    UILongPressGestureRecognizer *doubleTapAndDragGestureRecognizer;
+    NKTTextPosition *doubleTapStartTextPosition;
 }
 
-#pragma mark -
 #pragma mark Accessing the Text
 
 @property (nonatomic, readwrite, retain) NSMutableAttributedString *text;
 
-#pragma mark -
 #pragma mark Configuring Text Layout and Style
 
 @property (nonatomic, readwrite) UIEdgeInsets margins;
@@ -67,13 +63,10 @@
 @property (nonatomic, readwrite, retain) UIColor *verticalMarginColor;
 @property (nonatomic, readwrite) CGFloat verticalMarginInset;
 
-#if !defined(NKT_STRIP_DEBUG_SUPPORT)
+#pragma mark Accessing Gesture Recognizers
 
-#pragma mark -
-#pragma mark Debugging
-
-@property (nonatomic, readwrite) BOOL debug_alternatesSectionBackgroundColors;
-
-#endif // #if !defined(NKT_STRIP_DEBUG_SUPPORT)
+@property (nonatomic, readonly) UITapGestureRecognizer *nonFirstResponderTapGestureRecognizer;
+@property (nonatomic, readonly) UITapGestureRecognizer *tapGestureRecognizer;
+@property (nonatomic, readonly) UILongPressGestureRecognizer *doubleTapAndDragGestureRecognizer;
 
 @end

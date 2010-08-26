@@ -1,7 +1,5 @@
 //--------------------------------------------------------------------------------------------------
-//
 // Copyright 2010 Allen Ding. All rights reserved.
-//
 //--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
@@ -13,29 +11,26 @@
 // backing string of a text view.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextPosition : UITextPosition {
+@interface NKTTextPosition : UITextPosition
+{
 @private
     NSUInteger index;
 }
 
-#pragma mark -
 #pragma mark Initializing
 
 - (id)initWithIndex:(NSUInteger)index;
 
 + (id)textPositionWithIndex:(NSUInteger)index;
 
-#pragma mark -
 #pragma mark Accessing the Index
 
 @property (nonatomic, readonly) NSUInteger index;
 
-#pragma mark -
 #pragma mark Creating Text Positions
 
 - (NKTTextPosition *)nextPosition;
 
-#pragma mark -
 #pragma mark Creating Text Ranges
 
 - (NKTTextRange *)textRange;

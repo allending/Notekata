@@ -1,32 +1,36 @@
 //--------------------------------------------------------------------------------------------------
-//
 // Copyright 2010 Allen Ding. All rights reserved.
-//
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTCaret.h"
 
 @implementation NKTCaret
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Initializing
 
-- (id)initWithFrame:(CGRect)frame {
-    if ((self = [super initWithFrame:frame])) {
+- (id)initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+    {
         self.backgroundColor = [UIColor blueColor];
     }
     
     return self;
 }
 
-- (void)dealloc {
+- (void)dealloc
+{
     [super dealloc];
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Managing Blinking
 
-- (void)startBlinking {
+- (void)startBlinking
+{
     self.alpha = 1.0;
     [UIView beginAnimations:@"NKTCaret" context:nil];
     [UIView setAnimationRepeatCount:CGFLOAT_MAX];

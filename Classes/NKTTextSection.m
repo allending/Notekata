@@ -1,7 +1,5 @@
 //--------------------------------------------------------------------------------------------------
-//
 // Copyright 2010 Allen Ding. All rights reserved.
-//
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextSection.h"
@@ -9,19 +7,16 @@
 
 @interface NKTTextSection()
 
-#pragma mark -
 #pragma mark Getting Indices
 
 - (NSUInteger)indexForFirstVisibleHorizontalRule;
 
-#pragma mark -
 #pragma mark Getting Offsets
 
 - (CGFloat)verticalOffset;
 - (CGFloat)verticalOffsetForLineAtIndex:(NSUInteger)anIndex;
 - (CGFloat)verticalOffsetForHorizontalRuleAtIndex:(NSUInteger)anIndex;
 
-#pragma mark -
 #pragma mark Drawing
 
 - (void)drawHorizontalRulesInContext:(CGContextRef)context;
@@ -30,6 +25,8 @@
 - (NSRange)typesettedLineRangeForDrawing;
 
 @end
+
+#pragma mark -
 
 //--------------------------------------------------------------------------------------------------
 
@@ -51,11 +48,14 @@
 @synthesize verticalMarginColor;
 @synthesize verticalMarginInset;
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Initializing
 
-- (id)initWithFrame:(CGRect)frame {
-    if ((self = [super initWithFrame:frame])) {
+- (id)initWithFrame:(CGRect)frame
+{
+    if ((self = [super initWithFrame:frame]))
+    {
         self.backgroundColor = [UIColor clearColor];
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
@@ -65,17 +65,20 @@
     return self;
 }
 
-- (void)dealloc {
+- (void)dealloc
+{
     [typesettedLines release];
     [horizontalRuleColor release];
     [verticalMarginColor release];
     [super dealloc];
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Getting Indices
 
-- (NSUInteger)indexForFirstVisibleHorizontalRule {
+- (NSUInteger)indexForFirstVisibleHorizontalRule
+{
     CGFloat topRuleOffset = [self verticalOffsetForHorizontalRuleAtIndex:0];
     CGFloat sectionOffset = [self verticalOffset];
     NSInteger firstVisibleRuleIndex = (NSInteger)ceil((sectionOffset - topRuleOffset) / lineHeight);
@@ -83,22 +86,27 @@
     return (NSUInteger)firstVisibleRuleIndex;
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Getting Offsets
 
-- (CGFloat)verticalOffset {
+- (CGFloat)verticalOffset
+{
     return (CGFloat)index * CGRectGetHeight(self.bounds);
 }
 
-- (CGFloat)verticalOffsetForLineAtIndex:(NSUInteger)anIndex {
+- (CGFloat)verticalOffsetForLineAtIndex:(NSUInteger)anIndex
+{
     return margins.top + ((CGFloat)(anIndex + 1) * lineHeight);
 }
 
-- (CGFloat)verticalOffsetForHorizontalRuleAtIndex:(NSUInteger)anIndex {
+- (CGFloat)verticalOffsetForHorizontalRuleAtIndex:(NSUInteger)anIndex
+{
     return [self verticalOffsetForLineAtIndex:anIndex] + horizontalRuleOffset;
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Drawing
 
 - (void)drawRect:(CGRect)rect {    
@@ -108,9 +116,11 @@
     [self drawTypesettedLinesInContext:context];
 }
 
-- (void)drawHorizontalRulesInContext:(CGContextRef)context {
+- (void)drawHorizontalRulesInContext:(CGContextRef)context
+{
     // Horizontal rules are not drawn above the first typesetted line
-    if (index < 0 || !horizontalRulesEnabled || horizontalRuleColor == nil) {
+    if (index < 0 || !horizontalRulesEnabled || horizontalRuleColor == nil)
+    {
         return;
     }
     
@@ -127,7 +137,8 @@
     CGFloat width = CGRectGetWidth(self.bounds);
     CGFloat height = CGRectGetHeight(self.bounds);
     
-    for (CGFloat y = localOffset; y < height; y += lineHeight) {
+    for (CGFloat y = localOffset; y < height; y += lineHeight)
+    {
         CGContextMoveToPoint(context, 0.0, y);
         CGContextAddLineToPoint(context, width, y);
     }
@@ -137,8 +148,10 @@
     CGContextRestoreGState(context);
 }
 
-- (void)drawVerticalMarginInContext:(CGContextRef)context {
-    if (!verticalMarginEnabled || verticalMarginColor == nil) {
+- (void)drawVerticalMarginInContext:(CGContextRef)context
+{
+    if (!verticalMarginEnabled || verticalMarginColor == nil)
+    {
         return;
     }
     
@@ -155,10 +168,12 @@
     CGContextRestoreGState(context);
 }
 
-- (void)drawTypesettedLinesInContext:(CGContextRef)context {
+- (void)drawTypesettedLinesInContext:(CGContextRef)context
+{
     NSRange lineRange = [self typesettedLineRangeForDrawing];
     
-    if (lineRange.location == NSNotFound) {
+    if (lineRange.location == NSNotFound)
+    {
         return;
     }
     
@@ -171,7 +186,8 @@
     NSUInteger lastLineIndex = lineRange.location + lineRange.length;
     CGFloat baselineOffset = -[self verticalOffsetForLineAtIndex:lineRange.location];
     
-    for (NSUInteger lineIndex = lineRange.location; lineIndex < lastLineIndex; ++lineIndex) {
+    for (NSUInteger lineIndex = lineRange.location; lineIndex < lastLineIndex; ++lineIndex)
+    {
         CGContextSetTextPosition(context, 0.0, baselineOffset);
         NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
         [line drawInContext:context];
@@ -183,7 +199,8 @@
 
 - (NSRange)typesettedLineRangeForDrawing {
     // Text sections with negative indices don't have any typesetted lines
-    if (index < 0) {
+    if (index < 0)
+    {
         return NSMakeRange(NSNotFound, 0);
     }
     
@@ -193,7 +210,8 @@
     firstLineIndex -= numberOfSkirtLines;
     firstLineIndex = MAX(firstLineIndex, 0);
     
-    if (firstLineIndex > [typesettedLines count] - 1) {
+    if (firstLineIndex > [typesettedLines count] - 1)
+    {
         return NSMakeRange(NSNotFound, 0);
     }
     

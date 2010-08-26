@@ -1,7 +1,5 @@
 //--------------------------------------------------------------------------------------------------
-//
 // Copyright 2010 Allen Ding. All rights reserved.
-//
 //--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
@@ -10,7 +8,8 @@
 // NKTTextSection renders a frame's worth of typesetted text. It is used internally by NKTTextView.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextSection : UIView {
+@interface NKTTextSection : UIView
+{
 @private
     NSInteger index;
     
@@ -29,7 +28,6 @@
     CGFloat verticalMarginInset;
 }
 
-#pragma mark -
 #pragma mark Configuring the Text Section
 
 @property (nonatomic, readwrite) NSInteger index;

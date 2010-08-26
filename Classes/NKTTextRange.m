@@ -1,7 +1,5 @@
 //--------------------------------------------------------------------------------------------------
-//
 // Copyright 2010 Allen Ding. All rights reserved.
-//
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextRange.h"
@@ -11,12 +9,16 @@
 
 @synthesize nsRange;
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Initializing
 
-- (id)initWithNSRange:(NSRange)aNSRange {
-    if ((self = [super init])) {
-        if (aNSRange.location == NSNotFound) {
+- (id)initWithNSRange:(NSRange)aNSRange
+{
+    if ((self = [super init]))
+    {
+        if (aNSRange.location == NSNotFound)
+        {
             [self release];
             return nil;
         }
@@ -27,47 +29,71 @@
     return self;
 }
 
-+ (id)textRangeWithNSRange:(NSRange)nsRange {
++ (id)textRangeWithNSRange:(NSRange)nsRange
+{
     return [[[self alloc] initWithNSRange:nsRange] autorelease];
 }
 
-#pragma mark -
++ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition
+{
+    if (textPosition.index <= otherTextPosition.index)
+    {
+        return [self textRangeWithNSRange:NSMakeRange(textPosition.index, otherTextPosition.index - textPosition.index)];
+    }
+    else
+    {
+        return [self textRangeWithNSRange:NSMakeRange(otherTextPosition.index, textPosition.index - otherTextPosition.index)];
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Copying
 
-- (id)copyWithZone:(NSZone *)zone {
+- (id)copyWithZone:(NSZone *)zone
+{
     return [[NKTTextRange allocWithZone:zone] initWithNSRange:nsRange];
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Defining Ranges of Text
 
-- (UITextPosition *)start {
+- (UITextPosition *)start
+{
     return [NKTTextPosition textPositionWithIndex:self.startIndex];
 }
 
-- (UITextPosition *)end {
+- (UITextPosition *)end
+{
     return [NKTTextPosition textPositionWithIndex:self.endIndex];
 }
 
-- (BOOL)isEmpty {
+- (BOOL)isEmpty
+{
     return nsRange.length == 0;
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Accessing Range Indices
 
-- (NSUInteger)startIndex {
+- (NSUInteger)startIndex
+{
     return nsRange.location;
 }
 
-- (NSUInteger)endIndex {
+- (NSUInteger)endIndex
+{
     return nsRange.location + nsRange.length;
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Checking Text Positions
 
-- (BOOL)containsTextPosition:(NKTTextPosition *)textPosition {
+- (BOOL)containsTextPosition:(NKTTextPosition *)textPosition
+{
     return textPosition.index >= self.startIndex && textPosition.index < self.endIndex;
 }
 
