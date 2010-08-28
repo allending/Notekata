@@ -39,9 +39,19 @@
 
 #pragma mark Creating Text Positions
 
-- (NKTTextPosition *)nextPosition
+- (NKTTextPosition *)previousTextPosition
 {
-    return [[[[self class] alloc] initWithIndex:index + 1] autorelease];
+    if (index == 0)
+    {
+        return nil;
+    }
+    
+    return [[self class] textPositionWithIndex:index - 1];
+}
+
+- (NKTTextPosition *)nextTextPosition
+{
+    return [[self class] textPositionWithIndex:index + 1];
 }
 
 //--------------------------------------------------------------------------------------------------

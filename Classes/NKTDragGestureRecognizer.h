@@ -2,24 +2,21 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <UIKit/UIKit.h>
-
-@class NKTTextView;
+#import <Foundation/Foundation.h>
 
 //--------------------------------------------------------------------------------------------------
-// NotekataViewController
+// NKTDragGestureRecognizer is a gesture recognizer subclass that detects tap to drag gestures.
 //--------------------------------------------------------------------------------------------------
 
-@interface NotekataViewController : UIViewController <UIScrollViewDelegate>
+@interface NKTDragGestureRecognizer : UIGestureRecognizer
 {
 @private
-    UIToolbar *toolbar;
-    UIView *edgeView;
-    NKTTextView *textView;
+    NSUInteger numberOfTapsRequired;
 }
 
-@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
-@property (nonatomic, retain) IBOutlet UIView *edgeView;
-@property (nonatomic, retain) IBOutlet NKTTextView *textView;
+#pragma mark Configuring the Gesture
+
+// The default numberOfTapsRequired is 2.
+@property (nonatomic, readwrite) NSUInteger numberOfTapsRequired;
 
 @end

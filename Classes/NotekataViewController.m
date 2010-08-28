@@ -13,34 +13,40 @@
 @synthesize edgeView;
 @synthesize textView;
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Initializing
 
-- (void)dealloc {
+- (void)dealloc
+{
     [toolbar release];
     [edgeView release];
     [textView release];
     [super dealloc];
 }
+//--------------------------------------------------------------------------------------------------
 
-#pragma mark -
 #pragma mark Managing Memory
 
-- (void)didReceiveMemoryWarning {
+- (void)didReceiveMemoryWarning
+{
     [super didReceiveMemoryWarning];
 }
 
-- (void)viewDidUnload {
+- (void)viewDidUnload
+{
     [super viewDidUnload];
     self.toolbar = nil;
     self.edgeView = nil;
     self.textView = nil;
 }
 
-#pragma mark -
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Managing Views
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
         
     UIImage *edgePattern = [UIImage imageNamed:@"RedCoverPattern.png"];

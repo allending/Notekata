@@ -15,6 +15,10 @@
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License.txt */; };
+		9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */; };
+		9FDDDDC412291912009BFCED /* NKTGestureRecognizerUtilites.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */; };
+		9FDDDF5E12295FAA009BFCED /* NKTLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* NKTLogging.m */; };
+		9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDE03912296A4C009BFCED /* NKTFont.m */; };
 		9FFAD4B31226A8AD00218B2A /* NotekataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */; };
 		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
 		F520394E12097D3600675702 /* NKTTestText.m in Sources */ = {isa = PBXBuildFile; fileRef = F520394D12097D3600675702 /* NKTTestText.m */; };
@@ -46,6 +50,14 @@
 		9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewGestureRecognizerDelegate.h; sourceTree = "<group>"; };
 		9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewGestureRecognizerDelegate.m; sourceTree = "<group>"; };
 		9F4F217E1226D37C00FC2367 /* License.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License.txt; sourceTree = "<group>"; };
+		9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTDragGestureRecognizer.h; sourceTree = "<group>"; };
+		9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTDragGestureRecognizer.m; sourceTree = "<group>"; };
+		9FDDDDC212291912009BFCED /* NKTGestureRecognizerUtilites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTGestureRecognizerUtilites.h; sourceTree = "<group>"; };
+		9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTGestureRecognizerUtilites.m; sourceTree = "<group>"; };
+		9FDDDF5C12295FAA009BFCED /* NKTLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLogging.h; sourceTree = "<group>"; };
+		9FDDDF5D12295FAA009BFCED /* NKTLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTLogging.m; sourceTree = "<group>"; };
+		9FDDE03812296A4C009BFCED /* NKTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFont.h; sourceTree = "<group>"; };
+		9FDDE03912296A4C009BFCED /* NKTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFont.m; sourceTree = "<group>"; };
 		9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataViewController.m; sourceTree = "<group>"; };
 		F5030A7811D3555B002CD3BD /* NotekataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotekataViewController.h; sourceTree = "<group>"; };
 		F520393412097B1B00675702 /* NotekataViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotekataViewController.xib; sourceTree = "<group>"; };
@@ -92,6 +104,7 @@
 				F5632AAB11DD92D800868F7B /* Models */,
 				F5632AAC11DD92DE00868F7B /* Views */,
 				F5632AAA11DD92CF00868F7B /* Controllers */,
+				9FDDDE2D12291C42009BFCED /* Support */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -152,6 +165,17 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		9FDDDE2D12291C42009BFCED /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				9FDDDDC212291912009BFCED /* NKTGestureRecognizerUtilites.h */,
+				9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */,
+				9FDDDF5C12295FAA009BFCED /* NKTLogging.h */,
+				9FDDDF5D12295FAA009BFCED /* NKTLogging.m */,
+			);
+			name = Support;
+			sourceTree = "<group>";
+		};
 		F5632AAA11DD92CF00868F7B /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -177,6 +201,10 @@
 			children = (
 				F5267D9D121AD23D003CA42D /* NKTCaret.h */,
 				F5267D9E121AD23D003CA42D /* NKTCaret.m */,
+				9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */,
+				9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */,
+				9FDDE03812296A4C009BFCED /* NKTFont.h */,
+				9FDDE03912296A4C009BFCED /* NKTFont.m */,
 				F5D12A9E11F2ECA20049C2CE /* NKTLine.h */,
 				F5D12A9F11F2ECA20049C2CE /* NKTLine.m */,
 				F52EFA9D121B7492007A4951 /* NKTTextPosition.h */,
@@ -271,6 +299,10 @@
 				F52EFAA4121B74B7007A4951 /* NKTTextRange.m in Sources */,
 				9FFAD4B31226A8AD00218B2A /* NotekataViewController.m in Sources */,
 				9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */,
+				9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */,
+				9FDDDDC412291912009BFCED /* NKTGestureRecognizerUtilites.m in Sources */,
+				9FDDDF5E12295FAA009BFCED /* NKTLogging.m in Sources */,
+				9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +318,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = "NKT_LOGGING_DEBUG_ENABLED=1";
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Notekata-Info.plist";

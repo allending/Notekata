@@ -15,19 +15,20 @@
 @interface NKTLine : NSObject
 {
 @private
+    NSUInteger index;
     NSAttributedString *text;
     CTLineRef ctLine;
 }
 
 #pragma mark Initializing
 
-- (id)initWithText:(NSAttributedString *)text CTLine:(CTLineRef)ctLine;
+- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text CTLine:(CTLineRef)ctLine;
 
-#pragma mark Accessing the CTLine
+#pragma mark Accessing Line Information
 
-@property (nonatomic, readonly) CTLineRef ctLine;
+@property (nonatomic, readonly) NSUInteger index;
 
-#pragma mark Accessing the Text Range
+#pragma mark Getting Text Ranges
 
 @property (nonatomic, readonly) NKTTextRange *textRange;
 

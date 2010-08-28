@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 
 @class NKTCaret;
+@class NKTDragGestureRecognizer;
 @class NKTTextPosition;
 @class NKTTextRange;
 @class NKTTextViewGestureRecognizerDelegate;
@@ -14,7 +15,8 @@
 // styling with attributes, and customizations to simulate printed pages.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextView : UIScrollView <UIKeyInput, UIGestureRecognizerDelegate> {
+@interface NKTTextView : UIScrollView <UIKeyInput, UIGestureRecognizerDelegate>
+{
 @private
     NSMutableAttributedString *text;
     
@@ -35,15 +37,15 @@
     
     NKTTextRange *selectedTextRange;
     
-    NKTCaret *selectedTextPositionCaret;
-    UIView *selectedTextRangeBandTop;
-    UIView *selectedTextRangeBandMiddle;
-    UIView *selectedTextRangeBandBottom;
+    NKTCaret *selectionCaret;
+    UIView *selectionBandTop;
+    UIView *selectionBandMiddle;
+    UIView *selectectionBandBottom;
     
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
-    UITapGestureRecognizer *nonFirstResponderTapGestureRecognizer;
+    UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;
     UITapGestureRecognizer *tapGestureRecognizer;
-    UILongPressGestureRecognizer *doubleTapAndDragGestureRecognizer;
+    NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
     NKTTextPosition *doubleTapStartTextPosition;
 }
 
@@ -65,8 +67,8 @@
 
 #pragma mark Accessing Gesture Recognizers
 
-@property (nonatomic, readonly) UITapGestureRecognizer *nonFirstResponderTapGestureRecognizer;
+@property (nonatomic, readonly) UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;
 @property (nonatomic, readonly) UITapGestureRecognizer *tapGestureRecognizer;
-@property (nonatomic, readonly) UILongPressGestureRecognizer *doubleTapAndDragGestureRecognizer;
+@property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
 
 @end

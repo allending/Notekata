@@ -33,6 +33,7 @@
 // TODO: needed?
 @property (nonatomic, readonly) NSUInteger startIndex;
 @property (nonatomic, readonly) NSUInteger endIndex;
+@property (nonatomic, readonly) NSUInteger length;
 
 #pragma mark Checking Text Positions
 

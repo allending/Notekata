@@ -3,23 +3,31 @@
 //--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
-
-@class NKTTextView;
+#import <CoreText/CoreText.h>
 
 //--------------------------------------------------------------------------------------------------
-// NotekataViewController
+// NKTFont is a thin wrapper for CTFont that provides convenient access to the font's attributes.
 //--------------------------------------------------------------------------------------------------
 
-@interface NotekataViewController : UIViewController <UIScrollViewDelegate>
+@interface NKTFont : NSObject
 {
 @private
-    UIToolbar *toolbar;
-    UIView *edgeView;
-    NKTTextView *textView;
+    CTFontRef ctFont;
 }
 
-@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
-@property (nonatomic, retain) IBOutlet UIView *edgeView;
-@property (nonatomic, retain) IBOutlet NKTTextView *textView;
+#pragma mark Initializing
+
+- (id)initWithCTFont:(CTFontRef)ctFont;
+
++ (id)fontWithCTFont:(CTFontRef)ctFont;
+
+#pragma mark Creating System Fonts
+
++ (id)systemFont;
+
+#pragma mark Getting Font Metrics
+
+@property (nonatomic, readonly) CGFloat ascent;
+@property (nonatomic, readonly) CGFloat descent;
 
 @end

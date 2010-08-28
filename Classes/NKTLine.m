@@ -8,23 +8,24 @@
 
 @implementation NKTLine
 
-@synthesize ctLine;
+@synthesize index;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithText:(NSAttributedString *)theText CTLine:(CTLineRef)theCTLine
+- (id)initWithIndex:(NSUInteger)theIndex text:(NSAttributedString *)theText CTLine:(CTLineRef)theCTLine
 {
     if ((self = [super init]))
     {
         if (theText == nil || theCTLine == NULL)
         {
-            NSLog(@"%s: nil input arguments, releasing and returning nil", __PRETTY_FUNCTION__);
+            NSLog(@"%s: invalid initialization arguments", __PRETTY_FUNCTION__);
             [self release];
             return nil;
         }
         
+        index = theIndex;
         text = [theText retain];
         ctLine = CFRetain(theCTLine);
     }
@@ -41,7 +42,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Accessing the Text Range
+#pragma mark Getting Text Ranges
 
 - (NKTTextRange *)textRange
 {
@@ -94,17 +95,17 @@
     
     if (textRange.empty)
     {
-        return (NKTTextPosition *)[textRange start];
+        return (NKTTextPosition *)textRange.start;
     }
     
-    NSUInteger index = (NSUInteger)CTLineGetStringIndexForPosition(ctLine, point);
+    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine, point);
     
-    if (index > textRange.startIndex && [[text string] characterAtIndex:(index - 1)] == '\n')
+    if (charIndex > textRange.startIndex && [[text string] characterAtIndex:(charIndex - 1)] == '\n')
     {
-        --index;
+        --charIndex;
     }
     
-    return [NKTTextPosition textPositionWithIndex:index];
+    return [NKTTextPosition textPositionWithIndex:charIndex];
 }
 
 //--------------------------------------------------------------------------------------------------

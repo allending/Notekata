@@ -29,17 +29,14 @@
     {
         return [textView isFirstResponder];
     }
-    else if (gestureRecognizer == textView.nonFirstResponderTapGestureRecognizer)
+    else if (gestureRecognizer == textView.preFirstResponderTapGestureRecognizer)
     {
         return ![textView isFirstResponder];
     }
-    
-    return YES;
-}
-
-- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
-{
-    return YES;
+    else
+    {
+        return YES;
+    }
 }
 
 @end

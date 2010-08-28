@@ -88,6 +88,11 @@
     return nsRange.location + nsRange.length;
 }
 
+- (NSUInteger)length
+{
+    return nsRange.length;
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Checking Text Positions

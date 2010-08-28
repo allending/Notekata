@@ -11,18 +11,21 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-Issue: Selection color off
-Issue: Drawing order of selection etc.
-Design: Decouple some logic for selection, fonts, etc
-Deferred Issue: Whitespace at end of line not being handled properly
 Issue: Emulate api of UITextView more
 Feature: Scrolling behavior while editing
 Optimization: Typeset at line granularity lazily
 Optimization: Don't need skirt lines - can use typographic bounds
 Optimization: Low memory - purge recycled sections
 
+Deferred
+--------
+Issue: Whitespace at end of line not being handled properly
+Issue: Selection color off
+
 Done
 ----
+x Issue: Drawing order of selection etc.
+x Design: Decouple some logic for selection, fonts, etc
 x Issue: Enter/exit responder multiple times not interacting well with selection
 x Refactor: Make caret creation and rect clearer
 x Issue: Text view layout wrong when no text on start

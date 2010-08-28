@@ -29,7 +29,8 @@
 
 #pragma mark Creating Text Positions
 
-- (NKTTextPosition *)nextPosition;
+- (NKTTextPosition *)previousTextPosition;
+- (NKTTextPosition *)nextTextPosition;
 
 #pragma mark Creating Text Ranges
 

@@ -2,24 +2,29 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <UIKit/UIKit.h>
-
-@class NKTTextView;
+#import <Foundation/Foundation.h>
 
 //--------------------------------------------------------------------------------------------------
-// NotekataViewController
+// A simple logging framework.
 //--------------------------------------------------------------------------------------------------
 
-@interface NotekataViewController : UIViewController <UIScrollViewDelegate>
-{
-@private
-    UIToolbar *toolbar;
-    UIView *edgeView;
-    NKTTextView *textView;
-}
+#if NKT_LOGGING_DEBUG_ENABLED && !NKT_LOGGING_STRIP_DEBUG
 
-@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
-@property (nonatomic, retain) IBOutlet UIView *edgeView;
-@property (nonatomic, retain) IBOutlet NKTTextView *textView;
+#define NKTLogDebug(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
 
-@end
+#else
+
+#define NKTLogDebug(...)
+
+#endif
+
+
+#if NKT_LOGGING_WARNING_ENABLED && !NKT_LOGGING_STRIP_WARNING
+
+#define NKTLogWarning(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
+
+#else
+
+#define NKTLogWarning(...)
+
+#endif

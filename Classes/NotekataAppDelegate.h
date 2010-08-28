@@ -10,7 +10,8 @@
 // NotekataAppDelegate
 //--------------------------------------------------------------------------------------------------
 
-@interface NotekataAppDelegate : NSObject <UIApplicationDelegate> {
+@interface NotekataAppDelegate : NSObject <UIApplicationDelegate>
+{
     UIWindow *window;
     NotekataViewController *viewController;
 }
