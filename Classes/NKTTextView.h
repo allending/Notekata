@@ -4,6 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
+@class NKTBandLoupe;
 @class NKTCaret;
 @class NKTDragGestureRecognizer;
 @class NKTTextPosition;
@@ -41,6 +42,7 @@
     UIView *selectionBandTop;
     UIView *selectionBandMiddle;
     UIView *selectectionBandBottom;
+    NKTBandLoupe *selectionBandLoupe;
     
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
     UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;

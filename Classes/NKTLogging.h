@@ -16,8 +16,7 @@
 
 #define NKTLogDebug(...)
 
-#endif
-
+#endif // #if NKT_LOGGING_DEBUG_ENABLED && !NKT_LOGGING_STRIP_DEBUG
 
 #if NKT_LOGGING_WARNING_ENABLED && !NKT_LOGGING_STRIP_WARNING
 
@@ -27,4 +26,4 @@
 
 #define NKTLogWarning(...)
 
-#endif
+#endif // #if NKT_LOGGING_WARNING_ENABLED && !NKT_LOGGING_STRIP_WARNING

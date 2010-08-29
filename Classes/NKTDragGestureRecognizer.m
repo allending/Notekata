@@ -7,7 +7,6 @@
 #import "NKTGestureRecognizerUtilites.h"
 
 #define NKT_LOGGING_STRIP_DEBUG 1
-
 #import "NKTLogging.h"
 
 @implementation NKTDragGestureRecognizer

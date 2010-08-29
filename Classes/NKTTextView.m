@@ -4,11 +4,13 @@
 
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
+#import "KBMGeometry.h"
 #import "NKTCaret.h"
 #import "NKTDragGestureRecognizer.h"
 #import "NKTFont.h"
 #import "NKTGestureRecognizerUtilites.h"
 #import "NKTLine.h"
+#import "NKTBandLoupe.h"
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
 #import "NKTTextSection.h"
@@ -76,9 +78,13 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 #pragma mark Managing Selection Visuals
 
 - (void)showSelectionCaretOnLine:(NKTLine *)line;
-- (void)showSelectionBand;
 - (void)hideSelectionCaret;
+
+- (void)showSelectionBand;
 - (void)hideSelectionBand;
+
+- (void)showSelectionBandLoupeAtPoint:(CGPoint)point;
+- (void)hideSelectionBandLoupe;
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition;
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition onLine:(NKTLine *)line;
@@ -218,6 +224,7 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     [selectionBandTop release];
     [selectionBandMiddle release];
     [selectectionBandBottom release];
+    [selectionBandLoupe release];
 
     [gestureRecognizerDelegate release];
     [preFirstResponderTapGestureRecognizer release];
@@ -508,14 +515,17 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         doubleTapStartTextPosition = [hitResult.textPosition retain];
+        [self showSelectionBandLoupeAtPoint:touchLocation];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
         NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:doubleTapStartTextPosition textPosition:hitResult.textPosition];
         [self setSelectedTextRange:textRange];
+        [self showSelectionBandLoupeAtPoint:touchLocation];
     }
     else
     {
+        [self hideSelectionBandLoupe];
         [doubleTapStartTextPosition release];
         doubleTapStartTextPosition = nil;
     }
@@ -525,6 +535,7 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 #pragma mark Hit Testing
 
+// TODO: get rid of this and move extra line info into the text position
 - (NKTTextHitResult)textHitTestAtPoint:(CGPoint)point
 {
     NKTTextHitResult result;
@@ -620,6 +631,11 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     selectionCaret.hidden = NO;
 }
 
+- (void)hideSelectionCaret
+{
+    selectionCaret.hidden = YES;
+}
+
 // TODO: refactor this
 - (void)showSelectionBand
 {
@@ -658,16 +674,33 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     }
 }
 
-- (void)hideSelectionCaret
-{
-    selectionCaret.hidden = YES;
-}
-
 - (void)hideSelectionBand
 {
     selectionBandTop.hidden = YES;
     selectionBandMiddle.hidden = YES;
     selectectionBandBottom.hidden = YES;
+}
+
+// the selection band is anchored to a desired point, the anchor point is computed and passed to the loupe
+- (void)showSelectionBandLoupeAtPoint:(CGPoint)point
+{
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    
+    if (selectionBandLoupe == nil)
+    {
+        selectionBandLoupe = [[NKTBandLoupe alloc] init];
+        // TODO: when to remove this?
+        [keyWindow addSubview:selectionBandLoupe];
+    }
+    
+    CGPoint clampedPoint = KBMClampPointToRect(point, self.bounds);
+    selectionBandLoupe.anchor = [self convertPoint:clampedPoint toView:keyWindow];
+    selectionBandLoupe.hidden = NO;
+}
+
+- (void)hideSelectionBandLoupe
+{
+    selectionBandLoupe.hidden = YES;
 }
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition
