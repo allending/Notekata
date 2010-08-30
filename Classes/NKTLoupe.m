@@ -148,7 +148,7 @@
         return;
     }
 
-    // Always not hidden intially if animating
+    // Always not hidden initially if animating
     self.hidden = NO;
     
     // Animate from not hidden to hidden
@@ -203,7 +203,7 @@
     UIImage *zoomedRegion = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    // Mask out portion of region under the loupe
+    // Mask out portion of zoomed region under the loupe
 	CGImageRef maskedRegion = CGImageCreateWithMask(zoomedRegion.CGImage, mask);
     
     // Render composite of masked region and overlay

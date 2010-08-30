@@ -13,18 +13,6 @@
 @class NKTTextViewGestureRecognizerDelegate;
 
 //--------------------------------------------------------------------------------------------------
-//
-//--------------------------------------------------------------------------------------------------
-
-@protocol NKTTextViewDelegate <UIScrollViewDelegate>
-
-- (UIView *)viewForMagnifyingInTextView:(NKTTextView *)textView;
-
-@end
-
-#pragma mark -
-
-//--------------------------------------------------------------------------------------------------
 // NKTTextView implements the behavior for a view similar to UITextView, but with support for text
 // styling with attributes, and customizations to simulate printed pages.
 //--------------------------------------------------------------------------------------------------
@@ -64,10 +52,6 @@
     NKTTextPosition *doubleTapStartTextPosition;
 }
 
-#pragma mark Managing the Delegate
-
-@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
-
 #pragma mark Accessing the Text
 
 @property (nonatomic, readwrite, retain) NSMutableAttributedString *text;
@@ -92,3 +76,24 @@
 
 @end
 
+#pragma mark -
+
+//--------------------------------------------------------------------------------------------------
+
+@protocol NKTTextViewDelegate <UIScrollViewDelegate>
+
+- (UIView *)viewForMagnifyingInTextView:(NKTTextView *)textView;
+
+@end
+
+#pragma mark -
+
+//--------------------------------------------------------------------------------------------------
+
+@interface NKTTextView(PropertyRedeclarations)
+
+#pragma mark Managing the Delegate
+
+@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
+
+@end

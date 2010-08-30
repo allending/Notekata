@@ -16,18 +16,6 @@
 #import "NKTTextSection.h"
 #import "NKTTextViewGestureRecognizerDelegate.h"
 
-struct NKTTextHitResult
-{
-    NKTTextPosition *textPosition;
-    NKTLine *line;
-};
-
-typedef struct NKTTextHitResult NKTTextHitResult;
-
-#pragma mark -
-
-//--------------------------------------------------------------------------------------------------
-
 @interface NKTTextView()
 
 #pragma mark Initializing
@@ -58,41 +46,41 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer;
 
-#pragma mark Hit-Testing
+#pragma mark Hit Testing
 
-- (NKTTextHitResult)textHitTestAtPoint:(CGPoint)point;
+- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
 #pragma mark Getting and Converting Coordinates
 
 - (CGPoint)originForLineAtIndex:(NSUInteger)index;
 - (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line;
 
-#pragma mark Getting Line Indices
+#pragma mark Getting Lines
 
+- (NSInteger)virtualIndexForLineContainingPoint:(CGPoint)point;
+- (NKTLine *)closestLineContainingPoint:(CGPoint)point;
 - (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Getting Fonts at Text Positions
 
 - (NKTFont *)fontAtTextPosition:(NKTTextPosition *)textPosition;
 
-#pragma mark Managing Selection Visuals
+#pragma mark Managing Selection Views
 
-- (void)showSelectionCaretOnLine:(NKTLine *)line;
+- (void)showSelectionCaret;
 - (void)hideSelectionCaret;
 
 - (void)showSelectionBand;
 - (void)hideSelectionBand;
 
-- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)point onLine:(NKTLine *)line;
+- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)touchLocation;
 - (void)hideSelectionBandLoupe;
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition;
-- (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition onLine:(NKTLine *)line;
 
 #pragma mark Working with Marked and Selected Text
 
 - (void)setSelectedTextPosition:(NKTTextPosition *)textPosition;
-- (void)setSelectedTextPosition:(NKTTextPosition *)textPosition placingCaretOnLine:(NKTLine *)line;
 - (void)setSelectedTextRange:(UITextRange *)textRange;
 
 @end
@@ -517,25 +505,25 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     }
     
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
-    NKTTextHitResult hitResult = [self textHitTestAtPoint:touchLocation];
-    [self setSelectedTextPosition:hitResult.textPosition placingCaretOnLine:hitResult.line];
+    NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
+    [self setSelectedTextPosition:textPosition];
 }
 
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer
 {    
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
-    NKTTextHitResult hitResult = [self textHitTestAtPoint:touchLocation];
+    NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
-        doubleTapStartTextPosition = [hitResult.textPosition retain];
-        [self showSelectionBandLoupeWithTouchLocation:touchLocation onLine:hitResult.line];
+        doubleTapStartTextPosition = [textPosition retain];
+        [self showSelectionBandLoupeWithTouchLocation:touchLocation];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:doubleTapStartTextPosition textPosition:hitResult.textPosition];
+        NKTTextRange *textRange = [doubleTapStartTextPosition textRangeWithTextPosition:textPosition];
         [self setSelectedTextRange:textRange];
-        [self showSelectionBandLoupeWithTouchLocation:touchLocation onLine:hitResult.line];
+        [self showSelectionBandLoupeWithTouchLocation:touchLocation];
     }
     else
     {
@@ -549,31 +537,24 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 #pragma mark Hit Testing
 
-// TODO: get rid of this and move extra line info into the text position
-- (NKTTextHitResult)textHitTestAtPoint:(CGPoint)point
+- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point
 {
-    NKTTextHitResult result;
-    NSInteger lineIndex = (NSInteger)floor((point.y - margins.top) / lineHeight);
+    NSInteger virtualLineIndex = [self virtualIndexForLineContainingPoint:point];
     
-    if (lineIndex < 0 || [typesettedLines count] == 0)
+    if (virtualLineIndex < 0 || [typesettedLines count] == 0)
     {
-        result.textPosition = [NKTTextPosition textPositionWithIndex:0];
-        result.line = nil;
+        return [NKTTextPosition textPositionWithIndex:0];
     }
-    else if (lineIndex >= (NSInteger)[typesettedLines count])
+    else if ((NSUInteger)virtualLineIndex >= [typesettedLines count])
     {
-        result.textPosition = [NKTTextPosition textPositionWithIndex:[text length]];
-        result.line = nil;
+        return [NKTTextPosition textPositionWithIndex:[text length]];
     }
     else
     {
-        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)lineIndex];
+        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)virtualLineIndex];
         CGPoint localPoint = [self convertPoint:point toLine:line];
-        result.textPosition = [line closestTextPositionToPoint:localPoint];
-        result.line = line;
+        return [line closestTextPositionToPoint:localPoint];
     }
-    
-    return result;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -595,7 +576,27 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Line Indices
+#pragma mark Getting Lines
+
+- (NSInteger)virtualIndexForLineContainingPoint:(CGPoint)point
+{
+    return (NSInteger)floor((point.y - margins.top) / lineHeight);
+}
+
+- (NKTLine *)closestLineContainingPoint:(CGPoint)point
+{
+    NSUInteger lineCount = [typesettedLines count];
+    
+    if (lineCount == 0)
+    {
+        return nil;
+    }
+    
+    NSInteger virtualLineIndex = [self virtualIndexForLineContainingPoint:point];
+    NSUInteger lineIndex = (NSUInteger)MAX(virtualLineIndex, 0);
+    lineIndex = MIN(lineIndex, lineCount - 1);
+    return [typesettedLines objectAtIndex:lineIndex];
+}
 
 - (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition
 { 
@@ -612,7 +613,7 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Font Metrics at Text Positions
+#pragma mark Getting Fonts at Text Positions
 
 // Returns font at the text position if available, otherwise returns the default system font.
 - (NKTFont *)fontAtTextPosition:(NKTTextPosition *)textPosition
@@ -636,11 +637,11 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Managing Selection Visuals
+#pragma mark Managing Selection Views
 
-- (void)showSelectionCaretOnLine:(NKTLine *)line
+- (void)showSelectionCaret
 {
-    selectionCaret.frame = [self frameForCaretAtTextPosition:(NKTTextPosition *)selectedTextRange.start onLine:line];
+    selectionCaret.frame = [self frameForCaretAtTextPosition:selectedTextRange.start];
     [selectionCaret startBlinking];
     selectionCaret.hidden = NO;
 }
@@ -653,8 +654,8 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 // TODO: refactor this
 - (void)showSelectionBand
 {
-    CGRect startCaretFrame = [self frameForCaretAtTextPosition:(NKTTextPosition *)selectedTextRange.start];
-    CGRect endCaretFrame = [self frameForCaretAtTextPosition:(NKTTextPosition *)selectedTextRange.end];
+    CGRect startCaretFrame = [self frameForCaretAtTextPosition:selectedTextRange.start];
+    CGRect endCaretFrame = [self frameForCaretAtTextPosition:selectedTextRange.end];
     
     // Single line
     if (startCaretFrame.origin.y == endCaretFrame.origin.y)
@@ -696,15 +697,8 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 }
 
 // TODO: Change name to present/update?
-// TODO: Not crazy about having an onLine: component here
-- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)touchLocation onLine:(NKTLine *)line
+- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)touchLocation
 {
-    if (line == nil)
-    {
-        [selectionBandLoupe setHidden:YES animated:NO];
-        return;
-    }
-    
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     
     if (selectionBandLoupe == nil)
@@ -722,6 +716,7 @@ typedef struct NKTTextHitResult NKTTextHitResult;
         [keyWindow addSubview:selectionBandLoupe];
     }
     
+    NKTLine *line = [self closestLineContainingPoint:touchLocation];
     CGPoint lineOrigin = [self originForLineAtIndex:line.index];
     
     CGPoint magnifiedCenter = CGPointMake(touchLocation.x, lineOrigin.y);
@@ -742,34 +737,25 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition
 {
-    return [self frameForCaretAtTextPosition:textPosition onLine:nil];
-}
-
-- (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition onLine:(NKTLine *)line
-{
     CGPoint lineOrigin = CGPointZero;
     CGFloat charOffset = 0.0;
     NSUInteger textLength = [text length];
     NSUInteger lineCount = [typesettedLines count];
     
-    // Line provided
-    if (line != nil)
-    {
-        lineOrigin = [self originForLineAtIndex:line.index];
-        charOffset = [line offsetForCharAtTextPosition:textPosition];
-    }
     // No lines or start of text
-    else if (lineCount == 0 || textPosition.index == 0)
+    if (lineCount == 0 || textPosition.index == 0)
     {
         lineOrigin = [self originForLineAtIndex:0];
     }
     // End of text
-    else if (textPosition.index == textLength)
+    else if (textPosition.index >= textLength)
     {
+        // Last character is a line break, caret is on the line following the last typesetted one
         if ([[text string] characterAtIndex:(textLength - 1)] == '\n')
         {
             lineOrigin = [self originForLineAtIndex:lineCount];
         }
+        // Last character is not a line break, caret is on the last typesetted line
         else
         {
             NKTLine *lastLine = [typesettedLines objectAtIndex:(lineCount - 1)];
@@ -777,17 +763,14 @@ typedef struct NKTTextHitResult NKTTextHitResult;
             charOffset = [lastLine offsetForCharAtTextPosition:textPosition];
         }
     }
-    // Search for line
+    // Search for the typesetted one containing the text position
     else
     {
         NKTLine *line = [self lineContainingTextPosition:textPosition];
         lineOrigin = [self originForLineAtIndex:line.index];
         charOffset = [line offsetForCharAtTextPosition:textPosition];
     }
-    
-    const CGFloat caretWidth = 2.0;
-    const CGFloat caretVerticalPadding = 1.0;
-    
+        
     NKTFont *font = nil;
     
     // The caret is based on the font of the text that would be inserted at the text position
@@ -799,6 +782,9 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     {
         font = [self fontAtTextPosition:[textPosition previousTextPosition]];
     }
+    
+    const CGFloat caretWidth = 2.0;
+    const CGFloat caretVerticalPadding = 1.0;
     
     CGRect caretFrame = CGRectZero;
     caretFrame.origin.x = lineOrigin.x + charOffset;
@@ -814,15 +800,10 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 
 - (void)setSelectedTextPosition:(NKTTextPosition *)textPosition
 {
-    [self setSelectedTextPosition:textPosition placingCaretOnLine:nil];
-}
-
-- (void)setSelectedTextPosition:(NKTTextPosition *)textPosition placingCaretOnLine:(NKTLine *)line
-{
     [selectedTextRange release];
     selectedTextRange = [[textPosition textRange] copy];
     [self hideSelectionBand];
-    [self showSelectionCaretOnLine:line]; 
+    [self showSelectionCaret]; 
 }
 
 - (void)setSelectedTextRange:(UITextRange *)textRange
@@ -854,7 +835,7 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 {
     [text replaceCharactersInRange:selectedTextRange.nsRange withString:theText];
     [self regenerateContents];
-    NSUInteger newIndex = selectedTextRange.startIndex + [theText length];
+    NSUInteger newIndex = selectedTextRange.start.index + [theText length];
     [self setSelectedTextPosition:[NKTTextPosition textPositionWithIndex:newIndex]];
 }
 
@@ -862,13 +843,13 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 {
     NSRange deletionRange;
     
-    if (selectedTextRange.startIndex == 0)
+    if (selectedTextRange.start.index == 0)
     {
-        deletionRange = NSMakeRange(0, selectedTextRange.length);
+        deletionRange = selectedTextRange.nsRange;
     }
     else
     {
-        deletionRange = NSMakeRange(selectedTextRange.startIndex - 1, selectedTextRange.length + 1);
+        deletionRange = [selectedTextRange growLeft].nsRange;
     }
     
     [text deleteCharactersInRange:deletionRange];

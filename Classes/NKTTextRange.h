@@ -6,37 +6,47 @@
 
 @class NKTTextPosition;
 
-//--------------------------------------------------------------------------------------------------=
+//--------------------------------------------------------------------------------------------------
 // NKTTextRange is a subclass of UITextRange that creates NKTTextPosition objects to represent its
 // text positions.
-//--------------------------------------------------------------------------------------------------=
+//--------------------------------------------------------------------------------------------------
 
 @interface NKTTextRange : UITextRange
 {
 @private
-    NSRange nsRange;
+    NKTTextPosition *start;
+    NSUInteger length;
 }
 
 #pragma mark Initializing
 
-- (id)initWithNSRange:(NSRange)nsRange;
+- (id)initWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length;
+- (id)initWithIndex:(NSUInteger)index length:(NSUInteger)length;
 
-+ (id)textRangeWithNSRange:(NSRange)nsRange;
-+ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition;
++ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length;
++ (id)textRangeWithIndex:(NSUInteger)index length:(NSUInteger)length;
 
-#pragma mark Accessing the NSRange
+#pragma mark Getting NSRanges
 
-@property (nonatomic, readonly) NSRange nsRange;
-
-#pragma mark Accessing Range Indices
-
-// TODO: needed?
-@property (nonatomic, readonly) NSUInteger startIndex;
-@property (nonatomic, readonly) NSUInteger endIndex;
-@property (nonatomic, readonly) NSUInteger length;
+- (NSRange)nsRange;
 
 #pragma mark Checking Text Positions
 
 - (BOOL)containsTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark Creating Text Ranges
+
+- (NKTTextRange *)growLeft;
+
+@end
+
+#pragma mark -
+
+//--------------------------------------------------------------------------------------------------
+
+@interface NKTTextRange(PropertyRedeclarations)
+
+@property (nonatomic, readonly) NKTTextPosition *start;
+@property (nonatomic, readonly) NKTTextPosition *end;
 
 @end

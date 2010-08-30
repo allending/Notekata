@@ -35,5 +35,6 @@
 #pragma mark Creating Text Ranges
 
 - (NKTTextRange *)textRange;
+- (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition;
 
 @end

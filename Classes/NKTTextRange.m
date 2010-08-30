@@ -7,43 +7,52 @@
 
 @implementation NKTTextRange
 
-@synthesize nsRange;
-
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithNSRange:(NSRange)aNSRange
+- (id)initWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)theLength
 {
     if ((self = [super init]))
     {
-        if (aNSRange.location == NSNotFound)
-        {
-            [self release];
-            return nil;
-        }
-        
-        nsRange = aNSRange;
+        start = [textPosition retain];
+        length = theLength;
     }
     
     return self;
 }
 
-+ (id)textRangeWithNSRange:(NSRange)nsRange
+- (id)initWithIndex:(NSUInteger)index length:(NSUInteger)theLength
 {
-    return [[[self alloc] initWithNSRange:nsRange] autorelease];
+    return [self initWithTextPosition:[NKTTextPosition textPositionWithIndex:index] length:theLength];
 }
 
-+ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition
++ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length
 {
-    if (textPosition.index <= otherTextPosition.index)
-    {
-        return [self textRangeWithNSRange:NSMakeRange(textPosition.index, otherTextPosition.index - textPosition.index)];
-    }
-    else
-    {
-        return [self textRangeWithNSRange:NSMakeRange(otherTextPosition.index, textPosition.index - otherTextPosition.index)];
-    }
+    return [[[self alloc] initWithTextPosition:textPosition length:length] autorelease];
+}
+
++ (id)textRangeWithIndex:(NSUInteger)index length:(NSUInteger)length
+{
+    return [[[self alloc] initWithIndex:index length:length] autorelease];
+}
+
+//+ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition
+//{
+//    if (textPosition.index <= otherTextPosition.index)
+//    {
+//        return [self textRangeWithNSRange:NSMakeRange(textPosition.index, otherTextPosition.index - textPosition.index)];
+//    }
+//    else
+//    {
+//        return [self textRangeWithNSRange:NSMakeRange(otherTextPosition.index, textPosition.index - otherTextPosition.index)];
+//    }
+//}
+
+- (void)dealloc
+{
+    [start release];
+    [super dealloc];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -52,45 +61,35 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [[NKTTextRange allocWithZone:zone] initWithNSRange:nsRange];
+    return [self retain];
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Defining Ranges of Text
 
-- (UITextPosition *)start
+- (NKTTextPosition *)start
 {
-    return [NKTTextPosition textPositionWithIndex:self.startIndex];
+    return start;
 }
 
-- (UITextPosition *)end
+- (NKTTextPosition *)end
 {
-    return [NKTTextPosition textPositionWithIndex:self.endIndex];
+    return [NKTTextPosition textPositionWithIndex:start.index + length];
 }
 
 - (BOOL)isEmpty
 {
-    return nsRange.length == 0;
+    return length == 0;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Accessing Range Indices
+#pragma mark Getting NSRanges
 
-- (NSUInteger)startIndex
+- (NSRange)nsRange
 {
-    return nsRange.location;
-}
-
-- (NSUInteger)endIndex
-{
-    return nsRange.location + nsRange.length;
-}
-
-- (NSUInteger)length
-{
-    return nsRange.length;
+    return NSMakeRange(start.index, length);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -99,7 +98,23 @@
 
 - (BOOL)containsTextPosition:(NKTTextPosition *)textPosition
 {
-    return textPosition.index >= self.startIndex && textPosition.index < self.endIndex;
+    return textPosition.index >= start.index && textPosition.index < start.index + length;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Creating Text Ranges
+
+- (NKTTextRange *)growLeft
+{
+    if (start.index > 0)
+    {
+        return [NKTTextRange textRangeWithIndex:(start.index - 1) length:length + 1];
+    }
+    else
+    {
+        return self;
+    }
 }
 
 @end

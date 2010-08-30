@@ -46,8 +46,8 @@
 
 - (NKTTextRange *)textRange
 {
-    CFRange cfRange = CTLineGetStringRange(ctLine);
-    return [NKTTextRange textRangeWithNSRange:NSMakeRange((NSUInteger)cfRange.location, (NSUInteger)cfRange.length)];
+    CFRange range = CTLineGetStringRange(ctLine);
+    return [NKTTextRange textRangeWithIndex:range.location length:range.length];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -89,20 +89,28 @@
 
 #pragma mark Hit Testing
 
+// TODO: document the specifics of what this does
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point
 {
     NKTTextRange *textRange = self.textRange;
     
     if (textRange.empty)
     {
-        return (NKTTextPosition *)textRange.start;
+        return textRange.start;
     }
     
     NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine, point);
+    NSUInteger textLength = [text length];
     
-    if (charIndex > textRange.startIndex && [[text string] characterAtIndex:(charIndex - 1)] == '\n')
+    // Adjust the character index if it is beyond the text range of the line
+    if (charIndex == textRange.end.index)
     {
-        --charIndex;
+        // Decrement unless the character index one past the last in the text and the last
+        // character is line break
+        if (charIndex != textLength || [[text string] characterAtIndex:(textLength - 1)] == '\n')
+        {
+            --charIndex;
+        }
     }
     
     return [NKTTextPosition textPositionWithIndex:charIndex];

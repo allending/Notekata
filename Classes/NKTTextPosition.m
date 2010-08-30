@@ -13,18 +13,18 @@
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)anIndex
+- (id)initWithIndex:(NSUInteger)theIndex
 {
     if ((self = [super init]))
     {
-        if (anIndex == NSNotFound)
+        if (theIndex == NSNotFound)
         {
-            // TODO: log this
+            KBCLogWarning(@"index is NSNotFound, returning nil");
             [self release];
             return nil;
         }
         
-        index = anIndex;
+        index = theIndex;
     }
     
     return self;
@@ -60,7 +60,19 @@
 
 - (NKTTextRange *)textRange
 {
-    return [NKTTextRange textRangeWithNSRange:NSMakeRange(index, 0)];
+    return [NKTTextRange textRangeWithTextPosition:self length:0];
+}
+
+- (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition
+{
+    if (index < textPosition.index)
+    {
+        return [NKTTextRange textRangeWithTextPosition:self length:textPosition.index - index];
+    }
+    else
+    {
+        return [NKTTextRange textRangeWithTextPosition:textPosition length:index - textPosition.index];
+    }
 }
 
 @end
