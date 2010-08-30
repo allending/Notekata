@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <UIKit/UIKit.h>
+#import "KobaCore.h"
 #import <CoreText/CoreText.h>
 
 @class NKTTextRange;

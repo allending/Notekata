@@ -2,12 +2,11 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
+#define KBC_LOGGING_STRIP_DEBUG 1
+
 #import "NKTDragGestureRecognizer.h"
 #import <UIKit/UIGestureRecognizerSubclass.h>
 #import "NKTGestureRecognizerUtilites.h"
-
-#define NKT_LOGGING_STRIP_DEBUG 1
-#import "NKTLogging.h"
 
 @implementation NKTDragGestureRecognizer
 
@@ -46,7 +45,7 @@
     
     if ([touches count] != 1)
     {
-        NKTLogDebug(@"(non-failed) -> failed (more than 1 touch began)");
+        KBCLogDebug(@"(non-failed) -> failed (more than 1 touch began)");
         self.state = UIGestureRecognizerStateFailed;
         return;
     }
@@ -54,7 +53,7 @@
     // Don't interrupt gestures in progress
     if (self.state != UIGestureRecognizerStatePossible)
     {
-        NKTLogDebug(@"touches began while gesture in progress, ignoring");
+        KBCLogDebug(@"touches began while gesture in progress, ignoring");
         return;
     }
     
@@ -62,7 +61,7 @@
     
     if (touch.tapCount == numberOfTapsRequired)
     {
-        NKTLogDebug(@"possible -> began (tap count met)");
+        KBCLogDebug(@"possible -> began (tap count met)");
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(abortPossibleGesture) object:nil];
         self.state = UIGestureRecognizerStateBegan;
     }
@@ -74,7 +73,7 @@
     
     if (self.state == UIGestureRecognizerStateBegan)
     {
-        NKTLogDebug(@"began -> changed");
+        KBCLogDebug(@"began -> changed");
         self.state = UIGestureRecognizerStateChanged;
     }
 }
@@ -85,12 +84,12 @@
     
     if (self.state == UIGestureRecognizerStateChanged || self.state == UIGestureRecognizerStateBegan)
     {
-        NKTLogDebug(@"(began/changed) -> ended");
+        KBCLogDebug(@"(began/changed) -> ended");
         self.state = UIGestureRecognizerStateEnded;
     }
     else if (self.state == UIGestureRecognizerStatePossible)
     {
-        NKTLogDebug(@"scheduling gesture expiry");
+        KBCLogDebug(@"scheduling gesture expiry");
         [self performSelector:@selector(abortPossibleGesture) withObject:nil afterDelay:0.35];
     }
 }
@@ -99,7 +98,7 @@
 {
     [super touchesCancelled:touches withEvent:event];
     
-    NKTLogDebug(@"(any) -> cancelled");
+    KBCLogDebug(@"(any) -> cancelled");
     self.state = UIGestureRecognizerStateCancelled;
 }
 
@@ -111,7 +110,7 @@
 {
     if (self.state == UIGestureRecognizerStatePossible)
     {
-        NKTLogDebug(@"possible -> failed (time allowance expired)");
+        KBCLogDebug(@"possible -> failed (time allowance expired)");
         self.state = UIGestureRecognizerStateFailed;
     }
 }

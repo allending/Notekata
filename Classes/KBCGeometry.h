@@ -5,4 +5,4 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-CGPoint KBMClampPointToRect(CGPoint point, CGRect rect);
+CGPoint KBCClampPointToRect(CGPoint point, CGRect rect);

@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <UIKit/UIKit.h>
+#import "KobaCore.h"
 
 //--------------------------------------------------------------------------------------------------
 // NKTTextSection renders a frame's worth of typesetted text. It is used internally by NKTTextView.

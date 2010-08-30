@@ -13,10 +13,11 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
-		9F47A1B7122AC6C900285550 /* KBMGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBMGeometry.m */; };
+		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License.txt */; };
-		9FA540FC122A56A30005323E /* NKTBandLoupe.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA540FB122A56A30005323E /* NKTBandLoupe.m */; };
+		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
+		9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA540FB122A56A30005323E /* NKTLoupe.m */; };
 		9FA5410F122A59530005323E /* BandLoupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410A122A59530005323E /* BandLoupe.png */; };
 		9FA54110122A59530005323E /* BandLoupeMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410B122A59530005323E /* BandLoupeMask.png */; };
 		9FA54111122A59530005323E /* CaretHandle.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410C122A59530005323E /* CaretHandle.png */; };
@@ -24,7 +25,7 @@
 		9FA54113122A59530005323E /* CaretLoupeMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410E122A59530005323E /* CaretLoupeMask.png */; };
 		9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */; };
 		9FDDDDC412291912009BFCED /* NKTGestureRecognizerUtilites.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */; };
-		9FDDDF5E12295FAA009BFCED /* NKTLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* NKTLogging.m */; };
+		9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* KBCLogging.m */; };
 		9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDE03912296A4C009BFCED /* NKTFont.m */; };
 		9FFAD4B31226A8AD00218B2A /* NotekataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */; };
 		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
@@ -54,13 +55,15 @@
 		28AD735F0D9D9599002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Notekata-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Notekata-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
-		9F47A1B5122AC6C900285550 /* KBMGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBMGeometry.h; sourceTree = "<group>"; };
-		9F47A1B6122AC6C900285550 /* KBMGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBMGeometry.m; sourceTree = "<group>"; };
+		9F47A1B5122AC6C900285550 /* KBCGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCGeometry.h; sourceTree = "<group>"; };
+		9F47A1B6122AC6C900285550 /* KBCGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCGeometry.m; sourceTree = "<group>"; };
 		9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewGestureRecognizerDelegate.h; sourceTree = "<group>"; };
 		9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewGestureRecognizerDelegate.m; sourceTree = "<group>"; };
 		9F4F217E1226D37C00FC2367 /* License.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License.txt; sourceTree = "<group>"; };
-		9FA540FA122A56A30005323E /* NKTBandLoupe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTBandLoupe.h; sourceTree = "<group>"; };
-		9FA540FB122A56A30005323E /* NKTBandLoupe.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTBandLoupe.m; sourceTree = "<group>"; };
+		9F67110D122B901E00B0811B /* KobaCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaCore.h; sourceTree = "<group>"; };
+		9F6711CA122B9F4D00B0811B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		9FA540FA122A56A30005323E /* NKTLoupe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLoupe.h; sourceTree = "<group>"; };
+		9FA540FB122A56A30005323E /* NKTLoupe.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTLoupe.m; sourceTree = "<group>"; };
 		9FA5410A122A59530005323E /* BandLoupe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BandLoupe.png; sourceTree = "<group>"; };
 		9FA5410B122A59530005323E /* BandLoupeMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BandLoupeMask.png; sourceTree = "<group>"; };
 		9FA5410C122A59530005323E /* CaretHandle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CaretHandle.png; sourceTree = "<group>"; };
@@ -70,8 +73,8 @@
 		9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTDragGestureRecognizer.m; sourceTree = "<group>"; };
 		9FDDDDC212291912009BFCED /* NKTGestureRecognizerUtilites.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTGestureRecognizerUtilites.h; sourceTree = "<group>"; };
 		9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTGestureRecognizerUtilites.m; sourceTree = "<group>"; };
-		9FDDDF5C12295FAA009BFCED /* NKTLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLogging.h; sourceTree = "<group>"; };
-		9FDDDF5D12295FAA009BFCED /* NKTLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTLogging.m; sourceTree = "<group>"; };
+		9FDDDF5C12295FAA009BFCED /* KBCLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCLogging.h; sourceTree = "<group>"; };
+		9FDDDF5D12295FAA009BFCED /* KBCLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCLogging.m; sourceTree = "<group>"; };
 		9FDDE03812296A4C009BFCED /* NKTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFont.h; sourceTree = "<group>"; };
 		9FDDE03912296A4C009BFCED /* NKTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFont.m; sourceTree = "<group>"; };
 		9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataViewController.m; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
 				F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */,
+				9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,6 +147,7 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -189,12 +194,13 @@
 		9FDDDE2D12291C42009BFCED /* Support */ = {
 			isa = PBXGroup;
 			children = (
-				9F47A1B5122AC6C900285550 /* KBMGeometry.h */,
-				9F47A1B6122AC6C900285550 /* KBMGeometry.m */,
+				9F47A1B5122AC6C900285550 /* KBCGeometry.h */,
+				9F47A1B6122AC6C900285550 /* KBCGeometry.m */,
+				9FDDDF5C12295FAA009BFCED /* KBCLogging.h */,
+				9FDDDF5D12295FAA009BFCED /* KBCLogging.m */,
+				9F67110D122B901E00B0811B /* KobaCore.h */,
 				9FDDDDC212291912009BFCED /* NKTGestureRecognizerUtilites.h */,
 				9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */,
-				9FDDDF5C12295FAA009BFCED /* NKTLogging.h */,
-				9FDDDF5D12295FAA009BFCED /* NKTLogging.m */,
 			);
 			name = Support;
 			sourceTree = "<group>";
@@ -222,8 +228,8 @@
 		F5632AAC11DD92DE00868F7B /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				9FA540FA122A56A30005323E /* NKTBandLoupe.h */,
-				9FA540FB122A56A30005323E /* NKTBandLoupe.m */,
+				9FA540FA122A56A30005323E /* NKTLoupe.h */,
+				9FA540FB122A56A30005323E /* NKTLoupe.m */,
 				F5267D9D121AD23D003CA42D /* NKTCaret.h */,
 				F5267D9E121AD23D003CA42D /* NKTCaret.m */,
 				9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */,
@@ -331,10 +337,10 @@
 				9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */,
 				9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */,
 				9FDDDDC412291912009BFCED /* NKTGestureRecognizerUtilites.m in Sources */,
-				9FDDDF5E12295FAA009BFCED /* NKTLogging.m in Sources */,
+				9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */,
 				9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */,
-				9FA540FC122A56A30005323E /* NKTBandLoupe.m in Sources */,
-				9F47A1B7122AC6C900285550 /* KBMGeometry.m in Sources */,
+				9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */,
+				9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

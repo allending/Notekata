@@ -4,8 +4,6 @@
 
 #import "NKTFont.h"
 
-#import "NKTLogging.h"
-
 @implementation NKTFont
 
 //--------------------------------------------------------------------------------------------------
@@ -18,7 +16,7 @@
     {
         if (theCTFont == NULL)
         {
-            NKTLogWarning(@"theCTFont argument is nil, releasing self and returning nil");
+            KBCLogWarning(@"theCTFont argument is nil, releasing self and returning nil");
             [self release];
             return nil;
         }

@@ -2,9 +2,9 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KBMGeometry.h"
+#import "KBCGeometry.h"
 
-CGPoint KBMClampPointToRect(CGPoint point, CGRect rect)
+CGPoint KBCClampPointToRect(CGPoint point, CGRect rect)
 {
     CGPoint clampedPoint = point;
     clampedPoint.x = MAX(clampedPoint.x, CGRectGetMinX(rect));

@@ -8,22 +8,22 @@
 // A simple logging framework.
 //--------------------------------------------------------------------------------------------------
 
-#if NKT_LOGGING_DEBUG_ENABLED && !NKT_LOGGING_STRIP_DEBUG
+#if KBC_LOGGING_DEBUG_ENABLED && !KBC_LOGGING_STRIP_DEBUG
 
-#define NKTLogDebug(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
-
-#else
-
-#define NKTLogDebug(...)
-
-#endif // #if NKT_LOGGING_DEBUG_ENABLED && !NKT_LOGGING_STRIP_DEBUG
-
-#if NKT_LOGGING_WARNING_ENABLED && !NKT_LOGGING_STRIP_WARNING
-
-#define NKTLogWarning(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
+#define KBCLogDebug(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
 
 #else
 
-#define NKTLogWarning(...)
+#define KBCLogDebug(...)
 
-#endif // #if NKT_LOGGING_WARNING_ENABLED && !NKT_LOGGING_STRIP_WARNING
+#endif // #if KBC_LOGGING_DEBUG_ENABLED && !KBC_LOGGING_STRIP_DEBUG
+
+#if KBC_LOGGING_WARNING_ENABLED && !KBC_LOGGING_STRIP_WARNING
+
+#define KBCLogWarning(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
+
+#else
+
+#define KBCLogWarning(...)
+
+#endif // #if KBC_LOGGING_WARNING_ENABLED && !KBC_LOGGING_STRIP_WARNING

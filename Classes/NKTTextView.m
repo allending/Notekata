@@ -4,13 +4,13 @@
 
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
-#import "KBMGeometry.h"
+#import "KBCGeometry.h"
 #import "NKTCaret.h"
 #import "NKTDragGestureRecognizer.h"
 #import "NKTFont.h"
 #import "NKTGestureRecognizerUtilites.h"
 #import "NKTLine.h"
-#import "NKTBandLoupe.h"
+#import "NKTLoupe.h"
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
 #import "NKTTextSection.h"
@@ -83,7 +83,7 @@ typedef struct NKTTextHitResult NKTTextHitResult;
 - (void)showSelectionBand;
 - (void)hideSelectionBand;
 
-- (void)showSelectionBandLoupeAtPoint:(CGPoint)point;
+- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)point onLine:(NKTLine *)line;
 - (void)hideSelectionBandLoupe;
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition;
@@ -233,6 +233,20 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     [doubleTapStartTextPosition release];
     
     [super dealloc];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Managing the Delegate
+
+- (id <NKTTextViewDelegate>)delegate
+{
+    return (id <NKTTextViewDelegate>)[super delegate];
+}
+
+- (void)setDelegate:(id <NKTTextViewDelegate>)delegate
+{
+    [super setDelegate:delegate];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -515,13 +529,13 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         doubleTapStartTextPosition = [hitResult.textPosition retain];
-        [self showSelectionBandLoupeAtPoint:touchLocation];
+        [self showSelectionBandLoupeWithTouchLocation:touchLocation onLine:hitResult.line];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
         NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:doubleTapStartTextPosition textPosition:hitResult.textPosition];
         [self setSelectedTextRange:textRange];
-        [self showSelectionBandLoupeAtPoint:touchLocation];
+        [self showSelectionBandLoupeWithTouchLocation:touchLocation onLine:hitResult.line];
     }
     else
     {
@@ -681,26 +695,49 @@ typedef struct NKTTextHitResult NKTTextHitResult;
     selectectionBandBottom.hidden = YES;
 }
 
-// the selection band is anchored to a desired point, the anchor point is computed and passed to the loupe
-- (void)showSelectionBandLoupeAtPoint:(CGPoint)point
+// TODO: Change name to present/update?
+// TODO: Not crazy about having an onLine: component here
+- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)touchLocation onLine:(NKTLine *)line
 {
+    if (line == nil)
+    {
+        [selectionBandLoupe setHidden:YES animated:NO];
+        return;
+    }
+    
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     
     if (selectionBandLoupe == nil)
     {
-        selectionBandLoupe = [[NKTBandLoupe alloc] init];
-        // TODO: when to remove this?
+        selectionBandLoupe = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
+        selectionBandLoupe.hidden = YES;
+        UIView *magnifiedView = [self.delegate viewForMagnifyingInTextView:self];
+        
+        if (magnifiedView == nil)
+        {
+            magnifiedView = self.superview;
+        }
+        
+        selectionBandLoupe.zoomedView = magnifiedView;
         [keyWindow addSubview:selectionBandLoupe];
     }
     
-    CGPoint clampedPoint = KBMClampPointToRect(point, self.bounds);
-    selectionBandLoupe.anchor = [self convertPoint:clampedPoint toView:keyWindow];
-    selectionBandLoupe.hidden = NO;
+    CGPoint lineOrigin = [self originForLineAtIndex:line.index];
+    
+    CGPoint magnifiedCenter = CGPointMake(touchLocation.x, lineOrigin.y);
+    magnifiedCenter = [self convertPoint:magnifiedCenter toView:self.superview];
+    selectionBandLoupe.zoomCenter = magnifiedCenter;
+    
+    CGPoint anchor = CGPointMake(touchLocation.x, lineOrigin.y - lineHeight);
+    anchor = KBCClampPointToRect(anchor, self.bounds);
+    selectionBandLoupe.anchor = [self convertPoint:anchor toView:keyWindow];
+    
+    [selectionBandLoupe setHidden:NO animated:YES];
 }
 
 - (void)hideSelectionBandLoupe
 {
-    selectionBandLoupe.hidden = YES;
+    [selectionBandLoupe setHidden:YES animated:YES];
 }
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition

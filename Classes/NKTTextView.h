@@ -2,14 +2,27 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <UIKit/UIKit.h>
+#import "KobaCore.h"
 
-@class NKTBandLoupe;
+@class NKTLoupe;
 @class NKTCaret;
 @class NKTDragGestureRecognizer;
 @class NKTTextPosition;
 @class NKTTextRange;
+@class NKTTextView;
 @class NKTTextViewGestureRecognizerDelegate;
+
+//--------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------
+
+@protocol NKTTextViewDelegate <UIScrollViewDelegate>
+
+- (UIView *)viewForMagnifyingInTextView:(NKTTextView *)textView;
+
+@end
+
+#pragma mark -
 
 //--------------------------------------------------------------------------------------------------
 // NKTTextView implements the behavior for a view similar to UITextView, but with support for text
@@ -42,7 +55,7 @@
     UIView *selectionBandTop;
     UIView *selectionBandMiddle;
     UIView *selectectionBandBottom;
-    NKTBandLoupe *selectionBandLoupe;
+    NKTLoupe *selectionBandLoupe;
     
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
     UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;
@@ -50,6 +63,10 @@
     NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
     NKTTextPosition *doubleTapStartTextPosition;
 }
+
+#pragma mark Managing the Delegate
+
+@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
 
 #pragma mark Accessing the Text
 
@@ -74,3 +91,4 @@
 @property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
 
 @end
+

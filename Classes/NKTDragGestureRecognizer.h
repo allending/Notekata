@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <Foundation/Foundation.h>
+#import "KobaCore.h"
 
 //--------------------------------------------------------------------------------------------------
 // NKTDragGestureRecognizer is a gesture recognizer subclass that detects tap to drag gestures.
