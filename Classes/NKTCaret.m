@@ -27,7 +27,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Managing Blinking
+#pragma mark Controlling Blinking
 
 - (void)startBlinking
 {
@@ -37,6 +37,11 @@
     [UIView setAnimationDuration:0.85];
     self.alpha = 0.0;
     [UIView commitAnimations];
+}
+
+- (void)stopBlinking
+{
+    self.alpha = 1.0;
 }
 
 @end

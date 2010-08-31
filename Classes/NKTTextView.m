@@ -4,7 +4,6 @@
 
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
-#import "KBCGeometry.h"
 #import "NKTCaret.h"
 #import "NKTDragGestureRecognizer.h"
 #import "NKTFont.h"
@@ -73,7 +72,10 @@
 - (void)showSelectionBand;
 - (void)hideSelectionBand;
 
-- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)touchLocation;
+- (void)showSelectionCaretLoupeAtTouchLocation:(CGPoint)touchLocation;
+- (void)hideSelectionCaretLoupe;
+
+- (void)showSelectionBandLoupeAtTouchLocation:(CGPoint)touchLocation;
 - (void)hideSelectionBandLoupe;
 
 - (CGRect)frameForCaretAtTextPosition:(NKTTextPosition *)textPosition;
@@ -185,12 +187,16 @@
     tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     tapGestureRecognizer.delegate = gestureRecognizerDelegate;
     
+    longPressGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    longPressGestureRecognizer.delegate = gestureRecognizerDelegate;
+    
     doubleTapAndDragGestureRecognizer = [[NKTDragGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTapAndDrag:)];
     doubleTapAndDragGestureRecognizer.delegate = gestureRecognizerDelegate;
     
     [preFirstResponderTapGestureRecognizer requireGestureRecognizerToFail:doubleTapAndDragGestureRecognizer];
     [self addGestureRecognizer:tapGestureRecognizer];
     [self addGestureRecognizer:preFirstResponderTapGestureRecognizer];
+    [self addGestureRecognizer:longPressGestureRecognizer];
     [self addGestureRecognizer:doubleTapAndDragGestureRecognizer];
 }
 
@@ -212,6 +218,7 @@
     [selectionBandTop release];
     [selectionBandMiddle release];
     [selectectionBandBottom release];
+    [selectionCaretLoupe release];
     [selectionBandLoupe release];
 
     [gestureRecognizerDelegate release];
@@ -495,7 +502,7 @@
 #pragma mark Responding to Gestures
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
-{   
+{
     if (![self isFirstResponder])
     {
         if (![self becomeFirstResponder])
@@ -507,23 +514,51 @@
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
     [self setSelectedTextPosition:textPosition];
+    [selectionCaret startBlinking];
+}
+
+- (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
+{
+    CGPoint touchLocation = [gestureRecognizer locationInView:self];
+    NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
+    
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged)
+    {
+        [selectionCaret stopBlinking];
+        [self setSelectedTextPosition:textPosition];
+        [self showSelectionCaretLoupeAtTouchLocation:touchLocation];
+    }
+    else
+    {
+        [self hideSelectionCaretLoupe];
+        
+        // The selection caret was shown when the gesture began
+        if ([self isFirstResponder])
+        {
+            [selectionCaret startBlinking];
+        }
+        else
+        {
+            [self hideSelectionCaret];
+        }
+    }
 }
 
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer
-{    
+{
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         doubleTapStartTextPosition = [textPosition retain];
-        [self showSelectionBandLoupeWithTouchLocation:touchLocation];
+        [self showSelectionBandLoupeAtTouchLocation:touchLocation];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
         NKTTextRange *textRange = [doubleTapStartTextPosition textRangeWithTextPosition:textPosition];
         [self setSelectedTextRange:textRange];
-        [self showSelectionBandLoupeWithTouchLocation:touchLocation];
+        [self showSelectionBandLoupeAtTouchLocation:touchLocation];
     }
     else
     {
@@ -642,7 +677,6 @@
 - (void)showSelectionCaret
 {
     selectionCaret.frame = [self frameForCaretAtTextPosition:selectedTextRange.start];
-    [selectionCaret startBlinking];
     selectionCaret.hidden = NO;
 }
 
@@ -696,8 +730,42 @@
     selectectionBandBottom.hidden = YES;
 }
 
+- (void)showSelectionCaretLoupeAtTouchLocation:(CGPoint)touchLocation
+{
+    UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
+    
+    if (selectionCaretLoupe == nil)
+    {
+        selectionCaretLoupe = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
+        selectionCaretLoupe.hidden = YES;
+        UIView *zoomedView = [self.delegate viewForMagnifyingInTextView:self];
+        
+        if (zoomedView == nil)
+        {
+            zoomedView = self.superview;
+        }
+        
+        selectionCaretLoupe.zoomedView = zoomedView;
+        [keyWindow addSubview:selectionCaretLoupe];
+    }
+    
+    CGPoint zoomCenter = [self convertPoint:touchLocation toView:self.superview];
+    selectionCaretLoupe.zoomCenter = zoomCenter;
+    
+    CGPoint anchor = touchLocation;
+    anchor = KBCClampPointToRect(anchor, self.bounds);
+    selectionCaretLoupe.anchor = [self convertPoint:anchor toView:keyWindow];
+    
+    [selectionCaretLoupe setHidden:NO animated:YES];
+}
+
+- (void)hideSelectionCaretLoupe
+{
+    [selectionCaretLoupe setHidden:YES animated:YES];
+}
+
 // TODO: Change name to present/update?
-- (void)showSelectionBandLoupeWithTouchLocation:(CGPoint)touchLocation
+- (void)showSelectionBandLoupeAtTouchLocation:(CGPoint)touchLocation
 {
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
     
@@ -705,23 +773,23 @@
     {
         selectionBandLoupe = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
         selectionBandLoupe.hidden = YES;
-        UIView *magnifiedView = [self.delegate viewForMagnifyingInTextView:self];
+        UIView *zoomedView = [self.delegate viewForMagnifyingInTextView:self];
         
-        if (magnifiedView == nil)
+        if (zoomedView == nil)
         {
-            magnifiedView = self.superview;
+            zoomedView = self.superview;
         }
         
-        selectionBandLoupe.zoomedView = magnifiedView;
+        selectionBandLoupe.zoomedView = zoomedView;
         [keyWindow addSubview:selectionBandLoupe];
     }
     
     NKTLine *line = [self closestLineContainingPoint:touchLocation];
     CGPoint lineOrigin = [self originForLineAtIndex:line.index];
     
-    CGPoint magnifiedCenter = CGPointMake(touchLocation.x, lineOrigin.y);
-    magnifiedCenter = [self convertPoint:magnifiedCenter toView:self.superview];
-    selectionBandLoupe.zoomCenter = magnifiedCenter;
+    CGPoint zoomCenter = CGPointMake(touchLocation.x, lineOrigin.y);
+    zoomCenter = [self convertPoint:zoomCenter toView:self.superview];
+    selectionBandLoupe.zoomCenter = zoomCenter;
     
     CGPoint anchor = CGPointMake(touchLocation.x, lineOrigin.y - lineHeight);
     anchor = KBCClampPointToRect(anchor, self.bounds);
@@ -803,7 +871,7 @@
     [selectedTextRange release];
     selectedTextRange = [[textPosition textRange] copy];
     [self hideSelectionBand];
-    [self showSelectionCaret]; 
+    [self showSelectionCaret];
 }
 
 - (void)setSelectedTextRange:(UITextRange *)textRange
@@ -835,8 +903,11 @@
 {
     [text replaceCharactersInRange:selectedTextRange.nsRange withString:theText];
     [self regenerateContents];
+    
     NSUInteger newIndex = selectedTextRange.start.index + [theText length];
-    [self setSelectedTextPosition:[NKTTextPosition textPositionWithIndex:newIndex]];
+    NKTTextPosition *newTextPosition = [NKTTextPosition textPositionWithIndex:newIndex];
+    [self setSelectedTextPosition:newTextPosition];
+    [selectionCaret startBlinking];
 }
 
 - (void)deleteBackward
@@ -854,7 +925,10 @@
     
     [text deleteCharactersInRange:deletionRange];
     [self regenerateContents];
-    [self setSelectedTextPosition:[NKTTextPosition textPositionWithIndex:deletionRange.location]];
+    
+    NKTTextPosition *newTextPosition = [NKTTextPosition textPositionWithIndex:deletionRange.location];
+    [self setSelectedTextPosition:newTextPosition];
+    [selectionCaret startBlinking];
 }
 
 @end

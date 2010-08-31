@@ -43,11 +43,13 @@
     UIView *selectionBandTop;
     UIView *selectionBandMiddle;
     UIView *selectectionBandBottom;
+    NKTLoupe *selectionCaretLoupe;
     NKTLoupe *selectionBandLoupe;
     
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
     UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;
     UITapGestureRecognizer *tapGestureRecognizer;
+    UILongPressGestureRecognizer *longPressGestureRecognizer;
     NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
     NKTTextPosition *doubleTapStartTextPosition;
 }

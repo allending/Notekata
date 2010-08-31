@@ -13,5 +13,6 @@
 #pragma mark Controlling Blinking
 
 - (void)startBlinking;
+- (void)stopBlinking;
 
 @end

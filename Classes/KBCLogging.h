@@ -8,6 +8,8 @@
 // A simple logging framework.
 //--------------------------------------------------------------------------------------------------
 
+#define KBCLogTrace() NSLog(@"%s", __PRETTY_FUNCTION__)
+
 #if KBC_LOGGING_DEBUG_ENABLED && !KBC_LOGGING_STRIP_DEBUG
 
 #define KBCLogDebug(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
