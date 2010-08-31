@@ -17,7 +17,7 @@
 // styling with attributes, and customizations to simulate printed pages.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextView : UIScrollView <UIKeyInput, UIGestureRecognizerDelegate>
+@interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate>
 {
 @private
     NSMutableAttributedString *text;
@@ -38,6 +38,11 @@
     NSMutableSet *reusableSections;
     
     NKTTextRange *selectedTextRange;
+    NKTTextRange *markedTextRange;
+    NSDictionary *markedTextStyle;
+    NSString *markedText;
+    id <UITextInputDelegate> inputDelegate;
+    UITextInputStringTokenizer *tokenizer;
     
     NKTCaret *selectionCaret;
     UIView *selectionBandTop;

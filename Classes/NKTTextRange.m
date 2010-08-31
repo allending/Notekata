@@ -7,6 +7,8 @@
 
 @implementation NKTTextRange
 
+@synthesize length;
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
@@ -36,18 +38,6 @@
 {
     return [[[self alloc] initWithIndex:index length:length] autorelease];
 }
-
-//+ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition
-//{
-//    if (textPosition.index <= otherTextPosition.index)
-//    {
-//        return [self textRangeWithNSRange:NSMakeRange(textPosition.index, otherTextPosition.index - textPosition.index)];
-//    }
-//    else
-//    {
-//        return [self textRangeWithNSRange:NSMakeRange(otherTextPosition.index, textPosition.index - otherTextPosition.index)];
-//    }
-//}
 
 - (void)dealloc
 {

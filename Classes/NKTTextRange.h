@@ -26,6 +26,10 @@
 + (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length;
 + (id)textRangeWithIndex:(NSUInteger)index length:(NSUInteger)length;
 
+#pragma mark Getting Range Lengths
+
+@property (nonatomic, readonly) NSUInteger length;
+
 #pragma mark Getting NSRanges
 
 - (NSRange)nsRange;

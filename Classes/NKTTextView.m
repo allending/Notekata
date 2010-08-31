@@ -83,7 +83,7 @@
 #pragma mark Working with Marked and Selected Text
 
 - (void)setSelectedTextPosition:(NKTTextPosition *)textPosition;
-- (void)setSelectedTextRange:(UITextRange *)textRange;
+- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange;
 
 @end
 
@@ -213,6 +213,10 @@
     [reusableSections release];
     
     [selectedTextRange release];
+    [markedTextRange release];
+    [markedTextStyle release];
+    [markedText release];
+    [tokenizer release];
     
     [selectionCaret release];
     [selectionBandTop release];
@@ -511,10 +515,14 @@
         }
     }
     
+    [inputDelegate selectionWillChange:self];
+    
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
     [self setSelectedTextPosition:textPosition];
     [selectionCaret startBlinking];
+    
+    [inputDelegate selectionDidChange:self];
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
@@ -730,6 +738,7 @@
     selectectionBandBottom.hidden = YES;
 }
 
+// TODO: Refactor - shares logic with showSelectedBandLoupeAtTouchLocation:
 - (void)showSelectionCaretLoupeAtTouchLocation:(CGPoint)touchLocation
 {
     UIWindow *keyWindow = [[UIApplication sharedApplication] keyWindow];
@@ -738,6 +747,7 @@
     {
         selectionCaretLoupe = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
         selectionCaretLoupe.hidden = YES;
+        // TODO: ask for background color instead and use self
         UIView *zoomedView = [self.delegate viewForMagnifyingInTextView:self];
         
         if (zoomedView == nil)
@@ -864,22 +874,128 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark Inserting and Deleting Text
+
+- (BOOL)hasText
+{
+    KBCLogTrace();
+    
+    return [text length] > 0;
+}
+
+- (void)insertText:(NSString *)theText
+{
+    KBCLogTrace();
+    
+    NKTTextRange *targetTextRange = (markedTextRange != nil) ? markedTextRange : selectedTextRange;
+    
+    if (targetTextRange == nil)
+    {
+        KBCLogWarning(@"target text range is nil, ignoring");
+        return;
+    }
+    
+    [text replaceCharactersInRange:targetTextRange.nsRange withString:theText];
+    [self regenerateContents];
+    
+    NSUInteger newIndex = targetTextRange.start.index + [theText length];
+    NKTTextPosition *newTextPosition = [NKTTextPosition textPositionWithIndex:newIndex];
+    [self setSelectedTextPosition:newTextPosition];
+    [selectionCaret startBlinking];
+}
+
+- (void)deleteBackward
+{
+    KBCLogTrace();
+    
+    NKTTextRange *targetTextRange = (markedTextRange != nil) ? markedTextRange : selectedTextRange;
+    
+    if (targetTextRange == nil)
+    {
+        KBCLogWarning(@"target text range is nil, ignoring");
+        return;
+    }
+    
+    NKTTextRange *deletionTextRange = [targetTextRange growLeft];
+    
+    if (deletionTextRange.empty)
+    {
+        return;
+    }
+    
+    [text deleteCharactersInRange:deletionTextRange.nsRange];
+    [self regenerateContents];
+    [self setSelectedTextPosition:deletionTextRange.start];
+    [selectionCaret startBlinking];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Replacing and Returning Text
+
+- (NSString *)textInRange:(NKTTextRange *)textRange
+{
+    KBCLogTrace();
+    
+    return [[text string] substringWithRange:textRange.nsRange];
+}
+
+- (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)theText
+{
+    KBCLogTrace();
+    
+    [text replaceCharactersInRange:textRange.nsRange withString:theText];
+    [self regenerateContents];
+    
+    // The text range to be replaced lies fully before the selected text range
+    if (textRange.end.index <= selectedTextRange.start.index)
+    {
+        NSUInteger numberOfCharsDeleted = textRange.length - [theText length];
+        NSUInteger newIndex = selectedTextRange.start.index - numberOfCharsDeleted;
+        NKTTextRange *newTextRange = [NKTTextRange textRangeWithIndex:newIndex length:selectedTextRange.length];
+        [self setSelectedTextRange:newTextRange];
+    }
+    // The text range overlaps the selected text range
+    else if (textRange.start.index >= selectedTextRange.start.index && textRange.start.index < selectedTextRange.end.index)
+    {
+        NSUInteger newLength = textRange.start.index - selectedTextRange.start.index;
+        NKTTextRange *newTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange.start length:newLength];
+        [self setSelectedTextRange:newTextRange];
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Working with Marked and Selected Text
 
 - (void)setSelectedTextPosition:(NKTTextPosition *)textPosition
 {
-    [selectedTextRange release];
+    [selectedTextRange autorelease];
     selectedTextRange = [[textPosition textRange] copy];
     [self hideSelectionBand];
     [self showSelectionCaret];
 }
 
-- (void)setSelectedTextRange:(UITextRange *)textRange
+- (NKTTextRange *)selectedTextRange
 {
-    [selectedTextRange autorelease];
-    selectedTextRange = [textRange copy];
-    [self hideSelectionCaret];
+    KBCLogTrace();
+    
+    return selectedTextRange;
+}
 
+- (void)setSelectedTextRange:(NKTTextRange *)newSelectedTextRange
+{
+    KBCLogTrace();
+    
+    if (selectedTextRange == newSelectedTextRange)
+    {
+        return;
+    }
+    
+    [selectedTextRange release];
+    selectedTextRange = [newSelectedTextRange copy];
+    [self hideSelectionCaret];
+    
     if (selectedTextRange == nil)
     {
         [self hideSelectionBand];
@@ -890,45 +1006,424 @@
     }
 }
 
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Inserting and Deleting Text
-
-- (BOOL)hasText
+- (NKTTextRange *)markedTextRange
 {
-    return [text length] > 0;
+    KBCLogTrace();
+    
+    return markedTextRange;
 }
 
-- (void)insertText:(NSString *)theText
+- (NSDictionary *)markedTextStyle
 {
-    [text replaceCharactersInRange:selectedTextRange.nsRange withString:theText];
-    [self regenerateContents];
+    KBCLogTrace();
     
-    NSUInteger newIndex = selectedTextRange.start.index + [theText length];
-    NKTTextPosition *newTextPosition = [NKTTextPosition textPositionWithIndex:newIndex];
-    [self setSelectedTextPosition:newTextPosition];
-    [selectionCaret startBlinking];
+    return markedTextStyle;
 }
 
-- (void)deleteBackward
+- (void)setMarkedTextStyle:(NSDictionary *)newMarkedTextStyle
 {
-    NSRange deletionRange;
+    KBCLogTrace();
     
-    if (selectedTextRange.start.index == 0)
+    if (markedTextStyle == newMarkedTextStyle)
     {
-        deletionRange = selectedTextRange.nsRange;
+        return;
+    }
+    
+    [markedTextStyle release];
+    markedTextStyle = [newMarkedTextStyle copy];
+}
+
+- (void)setMarkedTextRange:(NKTTextRange *)newMarkedTextRange
+{
+    KBCLogTrace();
+    
+    if (markedTextRange == newMarkedTextRange)
+    {
+        return;
+    }
+    
+    [markedTextRange release];
+    markedTextRange = [newMarkedTextRange copy];
+}
+
+- (void)setMarkedText:(NSString *)newMarkedText selectedRange:(NSRange)relativeSelectedRange
+{
+    KBCLogTrace();
+
+    [markedText autorelease];
+    markedText = [newMarkedText copy];
+    
+    if (markedText == nil)
+    {
+        markedText = @"";
+    }
+
+    // Replace the current marked text
+    if (markedTextRange != nil)
+    {
+        [text replaceCharactersInRange:markedTextRange.nsRange withString:markedText];
+        [self regenerateContents];
+        NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:markedTextRange.start length:[markedText length]];
+        [self setMarkedTextRange:textRange];
     }
     else
     {
-        deletionRange = [selectedTextRange growLeft].nsRange;
+        [text replaceCharactersInRange:selectedTextRange.nsRange withString:markedText];
+        [self regenerateContents];
+        NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange.start length:[markedText length]];
+        [self setMarkedTextRange:textRange];
     }
     
-    [text deleteCharactersInRange:deletionRange];
-    [self regenerateContents];
+    // Update the selected text range within the marked text
+    NSUInteger newIndex = markedTextRange.start.index + relativeSelectedRange.location;
+    NKTTextRange *newTextRange = [NKTTextRange textRangeWithIndex:newIndex length:relativeSelectedRange.length];
+    [self setSelectedTextRange:newTextRange];
+}
+
+- (void)unmarkText
+{
+    KBCLogTrace();
+
+    [markedTextRange release];
+    markedTextRange = nil;
+    [markedText release];
+    markedText = nil;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Computing Text Ranges and Text Positions
+
+- (NKTTextRange *)textRangeFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
+{
+    KBCLogTrace();
     
-    NKTTextPosition *newTextPosition = [NKTTextPosition textPositionWithIndex:deletionRange.location];
-    [self setSelectedTextPosition:newTextPosition];
-    [selectionCaret startBlinking];
+    return [fromPosition textRangeWithTextPosition:toPosition];
+}
+
+- (NKTTextPosition *)positionFromPosition:(NKTTextPosition *)textPosition offset:(NSInteger)offset
+{
+    KBCLogTrace();
+    
+    NSInteger index = (NSInteger)textPosition.index + offset;
+    
+    if (index < 0 || index > [text length])
+    {
+        return nil;
+    }
+    
+    return [NKTTextPosition textPositionWithIndex:index];
+}
+
+- (UITextPosition *)positionFromPosition:(NKTTextPosition *)textPosition inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset
+{
+    KBCLogTrace();
+    
+    NKTTextPosition *offsetTextPosition = nil;
+    
+    switch (direction)
+    {
+        case UITextLayoutDirectionRight:
+        {
+            offsetTextPosition = (NKTTextPosition *)[self positionFromPosition:textPosition offset:offset];
+            break;
+        }
+        case UITextLayoutDirectionLeft:
+        {
+            offsetTextPosition = (NKTTextPosition *)[self positionFromPosition:textPosition offset:-offset];
+            break;
+        }
+        case UITextLayoutDirectionUp:
+        {
+            CGRect caretFrame = [self frameForCaretAtTextPosition:textPosition];
+            CGPoint pointAboveCaret = caretFrame.origin;
+            pointAboveCaret.y += (0.5 * lineHeight);
+            pointAboveCaret.y -= ((CGFloat)offset * lineHeight);
+            offsetTextPosition = [self closestTextPositionToPoint:pointAboveCaret];
+            break;
+        }
+        case UITextLayoutDirectionDown:
+        {
+            CGRect caretFrame = [self frameForCaretAtTextPosition:textPosition];
+            CGPoint pointAboveCaret = caretFrame.origin;
+            pointAboveCaret.y += (0.5 * lineHeight);
+            pointAboveCaret.y += ((CGFloat)offset * lineHeight);
+            offsetTextPosition = [self closestTextPositionToPoint:pointAboveCaret];
+            break;
+        }
+    }
+    
+    return offsetTextPosition;
+}
+
+- (UITextPosition *)beginningOfDocument
+{
+    KBCLogTrace();
+    
+    return [NKTTextPosition textPositionWithIndex:0];
+}
+
+- (UITextPosition *)endOfDocument
+{
+    KBCLogTrace();
+    // ???
+    return [NKTTextPosition textPositionWithIndex:[text length] - 1];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Evaluating Text Positions
+
+- (NSComparisonResult)comparePosition:(NKTTextPosition *)textPosition toPosition:(NKTTextPosition *)otherTextPosition
+{
+    KBCLogTrace();
+    
+    if (textPosition.index < otherTextPosition.index)
+    {
+        return NSOrderedAscending;
+    }
+    else if (textPosition.index > otherTextPosition.index)
+    {
+        return NSOrderedDescending;
+    }
+    else
+    {
+        return NSOrderedSame;
+    }
+}
+
+- (NSInteger)offsetFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
+{
+    KBCLogTrace();
+    
+    return (toPosition.index - fromPosition.index);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Determining Layout and Writing Direction
+
+- (UITextPosition *)positionWithinRange:(UITextRange *)uiTextRange farthestInDirection:(UITextLayoutDirection)direction
+{
+    KBCLogTrace();
+    
+    NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
+    NKTTextPosition *textPosition = nil;
+    
+    switch (direction)
+    {
+        case UITextLayoutDirectionRight:
+        {
+            textPosition = textRange.end;
+            break;
+        }
+        case UITextLayoutDirectionLeft:
+        {
+            textPosition = textRange.start;
+            break;
+        }
+        case UITextLayoutDirectionUp:
+        {
+            textPosition = textRange.start;
+            break;
+        }
+        case UITextLayoutDirectionDown:
+        {
+            textPosition = textRange.end;
+            break;
+        }
+    }
+    
+    return textPosition;
+}
+
+- (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)uiTextPosition inDirection:(UITextLayoutDirection)direction
+{
+    KBCLogTrace();
+    
+    NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
+    UITextRange *textRange = nil;
+    
+    switch (direction)
+    {
+        case UITextLayoutDirectionRight:
+        {
+            NKTLine *line = [self lineContainingTextPosition:textPosition];
+            textRange = [textPosition textRangeWithTextPosition:line.textRange.end];
+            break;
+        }
+        case UITextLayoutDirectionLeft:
+        {
+            NKTLine *line = [self lineContainingTextPosition:textPosition];
+            textRange = [textPosition textRangeWithTextPosition:line.textRange.start];
+            break;
+        }
+        case UITextLayoutDirectionUp:
+        {
+            textRange = [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self beginningOfDocument]];
+            break;
+        }
+        case UITextLayoutDirectionDown:
+        {
+            textRange = [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self endOfDocument]];
+            break;
+        }
+    }
+    
+    return textRange;
+}
+
+- (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)uiTextPosition inDirection:(UITextStorageDirection)direction
+{
+    KBCLogTrace();
+    
+    NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
+    UITextWritingDirection writingDirection = UITextWritingDirectionLeftToRight;
+    CTParagraphStyleRef paragraphStyle = (CTParagraphStyleRef)[text attribute:(id)kCTParagraphStyleAttributeName atIndex:textPosition.index effectiveRange:NULL];
+    
+    if (paragraphStyle != NULL)
+    {        
+        CTParagraphStyleGetValueForSpecifier(paragraphStyle,
+                                             kCTParagraphStyleSpecifierBaseWritingDirection,
+                                             sizeof(CTWritingDirection), &writingDirection);
+    }
+    
+    return writingDirection;
+}
+
+- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)uiTextRange
+{
+    KBCLogTrace();
+    
+    NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
+    
+    // WTF ... this is one fucked up API
+    CTParagraphStyleSetting settings[1];
+    settings[0].spec = kCTParagraphStyleSpecifierBaseWritingDirection;
+    settings[0].valueSize = sizeof(CTWritingDirection);
+    settings[0].value = &writingDirection;
+    
+    CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(settings, 1);
+    NSDictionary *attributes = [NSDictionary dictionaryWithObject:(id)paragraphStyle forKey:(id)kCTParagraphStyleAttributeName];
+    CFRelease(paragraphStyle);
+    // TODO: This should really be an attribute merge?
+    [text addAttributes:attributes range:textRange.nsRange];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Geometry and Hit-Testing Methods
+
+- (CGRect)firstRectForRange:(UITextRange *)uiTextRange
+{
+    KBCLogTrace();
+    
+    NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
+    NKTTextPosition *firstTextPosition = textRange.start;
+    NKTLine *line = [self lineContainingTextPosition:firstTextPosition];
+    NKTTextRange *lineTextRange = line.textRange;
+    NKTTextPosition *lastTextPosition = (textRange.end.index <= lineTextRange.end.index) ? textRange.end : lineTextRange.end;
+    CGRect firstCaretRect = [self frameForCaretAtTextPosition:firstTextPosition];
+    CGRect lastCaretRect = [self frameForCaretAtTextPosition:lastTextPosition];
+    CGFloat width = lastCaretRect.origin.x - firstCaretRect.origin.x;
+    return CGRectMake(firstCaretRect.origin.x, firstCaretRect.origin.y, width, firstCaretRect.size.height);
+}
+
+- (CGRect)caretRectForPosition:(UITextPosition *)uiTextPosition
+{
+    KBCLogTrace();
+    
+    return [self frameForCaretAtTextPosition:(NKTTextPosition *)uiTextPosition];
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point
+{
+    KBCLogTrace();
+    
+    return [self closestTextPositionToPoint:point];
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)uiTextRange
+{
+    KBCLogTrace();
+    
+    NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
+    NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
+
+    if (textPosition.index < textRange.start.index)
+    {
+        return textRange.start;
+    }
+    else if (textPosition.index > textRange.end.index)
+    {
+        return textRange.end;
+    }
+    else
+    {
+        return textPosition;
+    }
+}
+
+- (UITextRange *)characterRangeAtPoint:(CGPoint)point
+{
+    KBCLogTrace();
+    
+    NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
+    return [textPosition textRange];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Text Input Delegate and Text Input Tokenizer
+
+- (id <UITextInputDelegate>)inputDelegate
+{
+    KBCLogTrace();
+    
+    return inputDelegate;
+}
+
+- (void)setInputDelegate:(id <UITextInputDelegate>)newInputDelegate
+{
+    KBCLogTrace();
+    
+    inputDelegate = newInputDelegate;
+}
+
+- (id <UITextInputTokenizer>)tokenizer
+{
+    KBCLogTrace();
+    
+    if (tokenizer == nil)
+    {
+        tokenizer = [[UITextInputStringTokenizer alloc] initWithTextInput:self];
+    }
+    
+    return tokenizer;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Returning Text Styling Information
+
+- (NSDictionary *)textStylingAtPosition:(UITextPosition *)uiTextPosition inDirection:(UITextStorageDirection)direction
+{
+    KBCLogTrace();
+    
+    // TODO: implement this
+    return nil;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Returning the Text Input View
+
+- (UIView *)textInputView
+{
+    KBCLogTrace();
+    
+    // Is this right?
+    return self;
 }
 
 @end

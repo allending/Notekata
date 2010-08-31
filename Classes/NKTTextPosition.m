@@ -46,12 +46,12 @@
         return nil;
     }
     
-    return [[self class] textPositionWithIndex:index - 1];
+    return [[self class] textPositionWithIndex:(index - 1)];
 }
 
 - (NKTTextPosition *)nextTextPosition
 {
-    return [[self class] textPositionWithIndex:index + 1];
+    return [[self class] textPositionWithIndex:(index + 1)];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -67,11 +67,11 @@
 {
     if (index < textPosition.index)
     {
-        return [NKTTextRange textRangeWithTextPosition:self length:textPosition.index - index];
+        return [NKTTextRange textRangeWithTextPosition:self length:(textPosition.index - index)];
     }
     else
     {
-        return [NKTTextRange textRangeWithTextPosition:textPosition length:index - textPosition.index];
+        return [NKTTextRange textRangeWithTextPosition:textPosition length:(index - textPosition.index)];
     }
 }
 
