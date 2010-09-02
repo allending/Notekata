@@ -40,7 +40,10 @@
 
 #pragma mark Creating Text Ranges
 
-- (NKTTextRange *)growLeft;
+- (NKTTextRange *)textRangeByGrowingLeft;
+
+- (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)length;
+- (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)index;
 
 @end
 

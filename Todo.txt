@@ -11,6 +11,13 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
+Issue: blank -> (zh)ni (db) (db) (english) you
+Issue: blank -> (zh)na (db) (db) (english) abcd
+Issue: unmarkText not being called correctly?
+Issue: ni hao ma (space) n (delete backwards) -> crash
+Issue: n (db) (db) (db) crash on empty page
+Issue: Select all text and delete
+
 Issue: Emulate api of UITextView more
 Feature: Scrolling behavior while editing
 Optimization: Typeset at line granularity lazily

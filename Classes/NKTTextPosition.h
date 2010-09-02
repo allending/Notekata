@@ -31,6 +31,7 @@
 
 - (NKTTextPosition *)previousTextPosition;
 - (NKTTextPosition *)nextTextPosition;
+- (NKTTextPosition *)textPositionByApplyingOffset:(NSInteger)offset;
 
 #pragma mark Creating Text Ranges
 

@@ -54,6 +54,18 @@
     return [[self class] textPositionWithIndex:(index + 1)];
 }
 
+- (NKTTextPosition *)textPositionByApplyingOffset:(NSInteger)offset
+{
+    NSInteger newIndex = (NSInteger)index + offset;
+    
+    if (newIndex < 0)
+    {
+        return nil;
+    }
+    
+    return [[self class] textPositionWithIndex:newIndex];
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Creating Text Ranges

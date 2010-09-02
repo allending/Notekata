@@ -8,24 +8,26 @@
 // A simple logging framework.
 //--------------------------------------------------------------------------------------------------
 
-#define KBCLogTrace() NSLog(@"%s", __PRETTY_FUNCTION__)
+void KBCLog(const char *functionName, NSString *fmt, ...);
 
-#if KBC_LOGGING_DEBUG_ENABLED && !KBC_LOGGING_STRIP_DEBUG
+#define KBCLogTrace() KBCLog(__PRETTY_FUNCTION__, nil)
 
-#define KBCLogDebug(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
+#if !KBC_LOGGING_STRIP_DEBUG
+
+#define KBCLogDebug(...) KBCLog(__PRETTY_FUNCTION__, __VA_ARGS__)
 
 #else
 
 #define KBCLogDebug(...)
 
-#endif // #if KBC_LOGGING_DEBUG_ENABLED && !KBC_LOGGING_STRIP_DEBUG
+#endif
 
-#if KBC_LOGGING_WARNING_ENABLED && !KBC_LOGGING_STRIP_WARNING
+#if !KBC_LOGGING_STRIP_WARNING
 
-#define KBCLogWarning(...) NSLog(@"%s: %@", __PRETTY_FUNCTION__, __VA_ARGS__)
+#define KBCLogWarning(...) KBCLog(__PRETTY_FUNCTION__, __VA_ARGS__)
 
 #else
 
 #define KBCLogWarning(...)
 
-#endif // #if KBC_LOGGING_WARNING_ENABLED && !KBC_LOGGING_STRIP_WARNING
+#endif

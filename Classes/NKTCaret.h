@@ -8,11 +8,18 @@
 // NKTCaret visually marks a location in text.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTCaret : UIView 
+@interface NKTCaret : UIView
+{
+@private
+    BOOL blinkingEnabled;
+}
+
+//--------------------------------------------------------------------------------------------------
 
 #pragma mark Controlling Blinking
 
-- (void)startBlinking;
-- (void)stopBlinking;
+@property (nonatomic, readwrite, getter = isBlinkingEnabled) BOOL blinkingEnabled;
+
+- (void)restartBlinking;
 
 @end

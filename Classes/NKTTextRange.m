@@ -95,16 +95,26 @@
 
 #pragma mark Creating Text Ranges
 
-- (NKTTextRange *)growLeft
+- (NKTTextRange *)textRangeByGrowingLeft
 {
     if (start.index > 0)
     {
-        return [NKTTextRange textRangeWithIndex:(start.index - 1) length:length + 1];
+        return [[self class] textRangeWithIndex:(start.index - 1) length:length + 1];
     }
     else
     {
-        return self;
+        return [[self retain] autorelease];
     }
+}
+
+- (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)theLength
+{
+    return [[self class] textRangeWithIndex:start.index length:theLength];
+}
+
+- (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)theIndex
+{
+    return [[self class] textRangeWithIndex:theIndex length:length];
 }
 
 @end

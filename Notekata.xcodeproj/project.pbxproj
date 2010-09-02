@@ -17,6 +17,8 @@
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */; };
 		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
+		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
+		9F90F199122FAF030053BE7A /* KBCFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F90F198122FAF030053BE7A /* KBCFont.m */; };
 		9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA540FB122A56A30005323E /* NKTLoupe.m */; };
 		9FA5410F122A59530005323E /* BandLoupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410A122A59530005323E /* BandLoupe.png */; };
 		9FA54110122A59530005323E /* BandLoupeMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410B122A59530005323E /* BandLoupeMask.png */; };
@@ -62,6 +64,10 @@
 		9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License_TropicalPixels.txt; sourceTree = "<group>"; };
 		9F67110D122B901E00B0811B /* KobaCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaCore.h; sourceTree = "<group>"; };
 		9F6711CA122B9F4D00B0811B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTSelectionDisplayController.h; sourceTree = "<group>"; };
+		9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTSelectionDisplayController.m; sourceTree = "<group>"; };
+		9F90F197122FAF030053BE7A /* KBCFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCFont.h; sourceTree = "<group>"; };
+		9F90F198122FAF030053BE7A /* KBCFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCFont.m; sourceTree = "<group>"; };
 		9FA540FA122A56A30005323E /* NKTLoupe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLoupe.h; sourceTree = "<group>"; };
 		9FA540FB122A56A30005323E /* NKTLoupe.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTLoupe.m; sourceTree = "<group>"; };
 		9FA5410A122A59530005323E /* BandLoupe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BandLoupe.png; sourceTree = "<group>"; };
@@ -147,7 +153,6 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
-				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
@@ -187,6 +192,7 @@
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
 				F5632B0111DD9D1000868F7B /* CoreText.framework */,
+				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -194,6 +200,8 @@
 		9FDDDE2D12291C42009BFCED /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				9F90F197122FAF030053BE7A /* KBCFont.h */,
+				9F90F198122FAF030053BE7A /* KBCFont.m */,
 				9F47A1B5122AC6C900285550 /* KBCGeometry.h */,
 				9F47A1B6122AC6C900285550 /* KBCGeometry.m */,
 				9FDDDF5C12295FAA009BFCED /* KBCLogging.h */,
@@ -228,8 +236,6 @@
 		F5632AAC11DD92DE00868F7B /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				9FA540FA122A56A30005323E /* NKTLoupe.h */,
-				9FA540FB122A56A30005323E /* NKTLoupe.m */,
 				F5267D9D121AD23D003CA42D /* NKTCaret.h */,
 				F5267D9E121AD23D003CA42D /* NKTCaret.m */,
 				9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */,
@@ -238,6 +244,10 @@
 				9FDDE03912296A4C009BFCED /* NKTFont.m */,
 				F5D12A9E11F2ECA20049C2CE /* NKTLine.h */,
 				F5D12A9F11F2ECA20049C2CE /* NKTLine.m */,
+				9FA540FA122A56A30005323E /* NKTLoupe.h */,
+				9FA540FB122A56A30005323E /* NKTLoupe.m */,
+				9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */,
+				9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */,
 				F52EFA9D121B7492007A4951 /* NKTTextPosition.h */,
 				F52EFA9E121B7492007A4951 /* NKTTextPosition.m */,
 				F52EFAA2121B74B7007A4951 /* NKTTextRange.h */,
@@ -341,6 +351,8 @@
 				9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */,
 				9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */,
 				9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */,
+				9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */,
+				9F90F199122FAF030053BE7A /* KBCFont.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -356,7 +368,6 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = "NKT_LOGGING_DEBUG_ENABLED=1";
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = "Resources/Notekata-Info.plist";

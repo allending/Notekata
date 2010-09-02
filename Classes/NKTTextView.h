@@ -3,10 +3,11 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "KobaCore.h"
+#import "NKTSelectionDisplayController.h"
 
-@class NKTLoupe;
 @class NKTCaret;
 @class NKTDragGestureRecognizer;
+@class NKTLoupe;
 @class NKTTextPosition;
 @class NKTTextRange;
 @class NKTTextView;
@@ -17,7 +18,7 @@
 // styling with attributes, and customizations to simulate printed pages.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate>
+@interface NKTTextView : UIScrollView <UIKeyInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
 {
 @private
     NSMutableAttributedString *text;
@@ -44,10 +45,7 @@
     id <UITextInputDelegate> inputDelegate;
     UITextInputStringTokenizer *tokenizer;
     
-    NKTCaret *selectionCaret;
-    UIView *selectionBandTop;
-    UIView *selectionBandMiddle;
-    UIView *selectectionBandBottom;
+    NKTSelectionDisplayController *selectionDisplayController_;
     NKTLoupe *selectionCaretLoupe;
     NKTLoupe *selectionBandLoupe;
     
