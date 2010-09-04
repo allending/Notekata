@@ -59,6 +59,7 @@
         self.backgroundColor = [UIColor clearColor];
         self.opaque = YES;
         self.clearsContextBeforeDrawing = NO;
+        self.userInteractionEnabled = NO;
         numberOfSkirtLines = 1;
     }
     

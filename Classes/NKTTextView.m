@@ -6,10 +6,9 @@
 #define KBC_LOGGING_STRIP_DEBUG 0
 
 #import "NKTTextView.h"
-#import "KBCFont.h"
 #import <CoreText/CoreText.h>
+#import "KBCFont.h"
 #import "NKTDragGestureRecognizer.h"
-#import "NKTFont.h"
 #import "NKTGestureRecognizerUtilites.h"
 #import "NKTLine.h"
 #import "NKTLoupe.h"
@@ -172,8 +171,8 @@
     doubleTapAndDragGestureRecognizer.delegate = gestureRecognizerDelegate;
     
     [preFirstResponderTapGestureRecognizer requireGestureRecognizerToFail:doubleTapAndDragGestureRecognizer];
-    [self addGestureRecognizer:tapGestureRecognizer];
     [self addGestureRecognizer:preFirstResponderTapGestureRecognizer];
+    [self addGestureRecognizer:tapGestureRecognizer];
     [self addGestureRecognizer:longPressGestureRecognizer];
     [self addGestureRecognizer:doubleTapAndDragGestureRecognizer];
 }
@@ -471,6 +470,7 @@
         return NO;
     }
     
+    [self setSelectedTextRange:nil];
     return YES;
 }
 
@@ -488,15 +488,13 @@
         }
     }
     
-    // TODO: Don't move this because message should only be sent in a change external to UITextInput
-    //[inputDelegate selectionWillChange:self];
+    [inputDelegate selectionWillChange:self];
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
+    // TODO: movement should be bounded between marked text range
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
     [self setSelectedTextRange:[textPosition textRange]];
-    // TODO: yeah do this, but do it well and account for marked text
     [self setMarkedTextRange:nil];
-    // TODO: Don't move this because message should only be sent in a change external to UITextInput
-    //[inputDelegate selectionDidChange:self];
+    [inputDelegate selectionDidChange:self];
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
@@ -509,12 +507,10 @@
         selectionDisplayController_.caretVisible = YES;
         selectionDisplayController_.caretBlinkingEnabled = NO;
         
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionWillChange:self];
+        [inputDelegate selectionWillChange:self];
         [self setSelectedTextRange:[textPosition textRange]];
         [self showSelectionCaretLoupeAtTouchLocation:touchLocation];
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionDidChange:self];
+        [inputDelegate selectionDidChange:self];
     }
     else
     {
@@ -539,12 +535,10 @@
         NKTTextRange *textRange = [doubleTapStartTextPosition textRangeWithTextPosition:textPosition];
         // TODO: make sure selection isn't allowed to be empty
         
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionWillChange:self];
+        [inputDelegate selectionWillChange:self];
         [self setSelectedTextRange:textRange];
         [self showSelectionBandLoupeAtTouchLocation:touchLocation];
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionDidChange:self];
+        [inputDelegate selectionDidChange:self];
     }
     else
     {
@@ -762,50 +756,6 @@
 - (void)hideSelectionBandLoupe
 {
     [selectionBandLoupe setHidden:YES animated:YES];
-}
-
-- (CGRect)caretRectForPosition:(UITextPosition *)textPosition
-{
-    // Ask the controller since it is the one doing the actual caret display
-    return [selectionDisplayController_ caretRectForPosition:textPosition];
-}
-
-- (CGPoint)characterOriginForPosition:(UITextPosition *)uiTextPosition
-{
-    NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
-    NSUInteger textLength = [text length];
-    NSUInteger lineCount = [typesettedLines count];
-    
-    CGPoint lineOrigin = CGPointZero;
-    CGFloat charOffset = 0.0;
-    
-    if (lineCount == 0 || textPosition.index == 0)
-    {
-        lineOrigin = [self lineOriginForLineAtIndex:0];
-    }
-    else if (textPosition.index >= textLength)
-    {
-        // Last character is a line break, caret is on the line following the last typesetted one
-        if ([[text string] characterAtIndex:(textLength - 1)] == '\n')
-        {
-            lineOrigin = [self lineOriginForLineAtIndex:lineCount];
-        }
-        // Last character is not a line break, caret is on the last typesetted line
-        else
-        {
-            NKTLine *lastLine = [typesettedLines objectAtIndex:(lineCount - 1)];
-            lineOrigin = [self lineOriginForLineAtIndex:lastLine.index];
-            charOffset = [lastLine offsetForCharAtTextPosition:textPosition];
-        }
-    }
-    else
-    {
-        NKTLine *line = [self lineContainingTextPosition:textPosition];
-        lineOrigin = [self lineOriginForLineAtIndex:line.index];
-        charOffset = [line offsetForCharAtTextPosition:textPosition];
-    }
-    
-    return CGPointMake(lineOrigin.x + charOffset, lineOrigin.y);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1157,8 +1107,6 @@
 
 - (UITextRange *)characterRangeByExtendingPosition:(UITextPosition *)uiTextPosition inDirection:(UITextLayoutDirection)direction
 {
-    //KBCLogTrace();
-    
     NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
     UITextRange *textRange = nil;
     
@@ -1193,8 +1141,6 @@
 
 - (UITextWritingDirection)baseWritingDirectionForPosition:(UITextPosition *)uiTextPosition inDirection:(UITextStorageDirection)direction
 {
-    //KBCLogTrace();
-    
     NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
     UITextWritingDirection writingDirection = UITextWritingDirectionLeftToRight;
     CTParagraphStyleRef paragraphStyle = (CTParagraphStyleRef)[text attribute:(id)kCTParagraphStyleAttributeName atIndex:textPosition.index effectiveRange:NULL];
@@ -1210,12 +1156,10 @@
 }
 
 - (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(UITextRange *)uiTextRange
-{
-    //KBCLogTrace();
-    
+{    
     NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
     
-    // WTF ... this is one fucked up API
+    // WTF ... this is a fucked up API
     CTParagraphStyleSetting settings[1];
     settings[0].spec = kCTParagraphStyleSpecifierBaseWritingDirection;
     settings[0].valueSize = sizeof(CTWritingDirection);
@@ -1224,7 +1168,7 @@
     CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(settings, 1);
     NSDictionary *attributes = [NSDictionary dictionaryWithObject:(id)paragraphStyle forKey:(id)kCTParagraphStyleAttributeName];
     CFRelease(paragraphStyle);
-    // TODO: This should really be an attribute merge?
+    // TODO: This should really be an attribute merge right?
     [text addAttributes:attributes range:textRange.nsRange];
 }
 
@@ -1274,23 +1218,63 @@
     }
 }
 
+- (CGPoint)characterOriginForPosition:(UITextPosition *)uiTextPosition
+{
+    NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
+    NSUInteger textLength = [text length];
+    NSUInteger lineCount = [typesettedLines count];
+    
+    CGPoint lineOrigin = CGPointZero;
+    CGFloat charOffset = 0.0;
+    
+    if (lineCount == 0 || textPosition.index == 0)
+    {
+        lineOrigin = [self lineOriginForLineAtIndex:0];
+    }
+    else if (textPosition.index >= textLength)
+    {
+        // Last character is a line break, caret is on the line following the last typesetted one
+        if ([[text string] characterAtIndex:(textLength - 1)] == '\n')
+        {
+            lineOrigin = [self lineOriginForLineAtIndex:lineCount];
+        }
+        // Last character is not a line break, caret is on the last typesetted line
+        else
+        {
+            NKTLine *lastLine = [typesettedLines objectAtIndex:(lineCount - 1)];
+            lineOrigin = [self lineOriginForLineAtIndex:lastLine.index];
+            charOffset = [lastLine offsetForCharAtTextPosition:textPosition];
+        }
+    }
+    else
+    {
+        NKTLine *line = [self lineContainingTextPosition:textPosition];
+        lineOrigin = [self lineOriginForLineAtIndex:line.index];
+        charOffset = [line offsetForCharAtTextPosition:textPosition];
+    }
+    
+    return CGPointMake(lineOrigin.x + charOffset, lineOrigin.y);
+}
+
 - (CGRect)firstRectForRange:(UITextRange *)uiTextRange
 {
     NSArray *rects = [self orderedRectsForTextRange:uiTextRange];
     return [[rects objectAtIndex:0] CGRectValue];
 }
 
+- (CGRect)caretRectForPosition:(UITextPosition *)textPosition
+{
+    // Ask the controller since it's doing the actual caret display
+    return [selectionDisplayController_ caretRectForPosition:textPosition];
+}
+
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point
 {
-    //KBCLogTrace();
-    
     return [self closestTextPositionToPoint:point];
 }
 
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(UITextRange *)uiTextRange
 {
-    //KBCLogTrace();
-    
     NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
 
@@ -1310,8 +1294,6 @@
 
 - (UITextRange *)characterRangeAtPoint:(CGPoint)point
 {
-    //KBCLogTrace();
-    
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
     return [textPosition textRange];
 }
@@ -1356,9 +1338,7 @@
 #pragma mark Returning the Text Input View
 
 - (UIView *)textInputView
-{
-    //KBCLogTrace();
-    
+{    
     return self;
 }
 

@@ -7,7 +7,7 @@
 
 @interface NKTSelectionDisplayController()
 
-#pragma mark Managing Selection Element Views
+#pragma mark Managing Selection Elements
 
 @property (nonatomic, readonly) NKTCaret *caret;
 @property (nonatomic, readonly) UIView *selectionBandTop;
@@ -20,7 +20,7 @@
 - (void)showSelectionBand;
 - (void)hideSelectionBand;
 
-- (void)updateDisplay;
+- (void)updateDisplayedElements;
 
 @end
 
@@ -63,7 +63,7 @@
 - (void)setDelegate:(id <NKTSelectionDisplayControllerDelegate>)delegate
 {
     delegate_ = delegate;
-    [self updateDisplay];
+    [self updateDisplayedElements];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@
     self.selectionBandBottom.hidden = YES;
 }
 
-- (void)updateDisplay
+- (void)updateDisplayedElements
 {
     UITextRange *selectedTextRange = [delegate_ selectedTextRange];
     
@@ -216,7 +216,7 @@
 - (void)setCaretVisible:(BOOL)selectionElementsVisibleFlag
 {
     caretVisible_ = selectionElementsVisibleFlag;
-    [self updateDisplay];
+    [self updateDisplayedElements];
 }
 
 - (BOOL)isCaretBlinkingEnabled
@@ -232,7 +232,7 @@
 - (void)setSelectionBandVisible:(BOOL)selectionBandVisible
 {
     selectionBandVisible_ = selectionBandVisible;
-    [self updateDisplay];
+    [self updateDisplayedElements];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -241,7 +241,7 @@
 
 - (void)selectedTextRangeDidChange
 {
-    [self updateDisplay];
+    [self updateDisplayedElements];
 }
 
 //--------------------------------------------------------------------------------------------------

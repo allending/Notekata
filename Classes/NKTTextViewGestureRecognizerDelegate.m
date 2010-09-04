@@ -21,10 +21,11 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Controlling Simultaneous Gesture Recognition
+#pragma mark Regulating Gesture Recognition
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
+    // todo: must hit a text section
     if (gestureRecognizer == textView.tapGestureRecognizer)
     {
         return [textView isFirstResponder];

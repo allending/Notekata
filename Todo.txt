@@ -11,6 +11,7 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
+Issue: UITextInput autocorrection dying, workaround -> provide a fake view?
 Issue: blank -> (zh)ni (db) (db) (english) you
 Issue: blank -> (zh)na (db) (db) (english) abcd
 Issue: unmarkText not being called correctly?
