@@ -17,8 +17,7 @@
 
 #pragma mark Initializing
 
-- (void)requiredInit_NKTTextView;
-- (void)createSelectionViews;
+- (void)NKTTextView_requiredInit;
 - (void)createGestureRecognizers;
 
 #pragma mark Generating the View Contents
@@ -27,7 +26,7 @@
 
 #pragma mark Typesetting
 
-- (void)typesetText;
+- (void)typesetLines;
 
 #pragma mark Tiling Sections
 
@@ -69,7 +68,8 @@
 - (void)showSelectionBandLoupeAtTouchLocation:(CGPoint)touchLocation;
 - (void)hideSelectionBandLoupe;
 
-- (void)setSelectedTextRange:(UITextRange *)selectedTextRange;
+#pragma mark Working with Marked and Selected Text
+
 - (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
 @end
@@ -106,7 +106,7 @@
     {
         self.opaque = NO;
         self.clearsContextBeforeDrawing = YES;
-        [self requiredInit_NKTTextView];
+        [self NKTTextView_requiredInit];
     }
     
     return self;
@@ -114,10 +114,10 @@
 
 - (void)awakeFromNib
 {
-    [self requiredInit_NKTTextView];
+    [self NKTTextView_requiredInit];
 }
 
-- (void)requiredInit_NKTTextView
+- (void)NKTTextView_requiredInit
 {
     self.alwaysBounceVertical = YES;
     
@@ -138,14 +138,10 @@
     visibleSections = [[NSMutableSet alloc] init];
     reusableSections = [[NSMutableSet alloc] init];
     
-    [self createSelectionViews];
-    [self createGestureRecognizers];
-}
-
-- (void)createSelectionViews
-{
     selectionDisplayController_ = [[NKTSelectionDisplayController alloc] init];
     selectionDisplayController_.delegate = self;
+    
+    [self createGestureRecognizers];
 }
 
 - (void)createGestureRecognizers
@@ -279,7 +275,7 @@
 // e.g.: [self setLineWidthDirty];
 - (void)regenerateContents
 {
-    [self typesetText];
+    [self typesetLines];
     [self untileVisibleSections];
     [self tileSections];
     [self updateContentSize];
@@ -289,8 +285,8 @@
 
 #pragma mark Typesetting
 
-// TODO: delegate this work to someone else
-- (void)typesetText
+// TODO: delegate this work to someone else?
+- (void)typesetLines
 {
     [typesettedLines release];
     typesettedLines = nil;
@@ -531,30 +527,6 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Hit Testing
-
-- (UITextPosition *)closestPositionToPoint:(CGPoint)point
-{
-    NSInteger virtualLineIndex = [self virtualIndexForLineContainingPoint:point];
-    
-    if (virtualLineIndex < 0 || [typesettedLines count] == 0)
-    {
-        return [NKTTextPosition textPositionWithIndex:0];
-    }
-    else if ((NSUInteger)virtualLineIndex >= [typesettedLines count])
-    {
-        return [NKTTextPosition textPositionWithIndex:[text length]];
-    }
-    else
-    {
-        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)virtualLineIndex];
-        CGPoint localPoint = [self convertPoint:point toLine:line];
-        return [line closestTextPositionToPoint:localPoint];
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark Getting and Converting Coordinates
 
 - (CGPoint)lineOriginForLineAtIndex:(NSUInteger)index
@@ -573,7 +545,6 @@
 
 - (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line
 {
-    // TODO: is this right???
     CGPoint lineOrigin = [self lineOriginForLineAtIndex:line.index];
     return CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
 }
@@ -649,15 +620,6 @@
     }
     
     return font;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Getting Selection Views
-
-- (UIView *)viewForTextInputSelectionDisplayControllerElements:(NKTSelectionDisplayController *)controller
-{
-    return [[self retain] autorelease];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -828,7 +790,7 @@
     
     NKTTextRange *deletionTextRange = nil;
     
-    // TODO: why can't just use selected text range?
+    // TODO: why can't we just use the selected text range?
     if (markedTextRange != nil)
     {
         deletionTextRange = [markedTextRange textRangeByGrowingLeft];
@@ -1056,6 +1018,30 @@
 - (NSInteger)offsetFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
 {
     return (toPosition.index - fromPosition.index);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Geometry and Hit-Testing
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point
+{
+    NSInteger virtualLineIndex = [self virtualIndexForLineContainingPoint:point];
+    
+    if (virtualLineIndex < 0 || [typesettedLines count] == 0)
+    {
+        return [NKTTextPosition textPositionWithIndex:0];
+    }
+    else if ((NSUInteger)virtualLineIndex >= [typesettedLines count])
+    {
+        return [NKTTextPosition textPositionWithIndex:[text length]];
+    }
+    else
+    {
+        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)virtualLineIndex];
+        CGPoint localPoint = [self convertPoint:point toLine:line];
+        return [line closestTextPositionToPoint:localPoint];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -22,6 +22,7 @@ Optimization: Typeset at line granularity lazily
 Optimization: Don't need skirt lines - can use typographic bounds
 Optimization: Low memory - purge recycled sections
 Design: Change default font
+Optimization: Use a dirty marker for typesetting
 
 Deferred
 --------

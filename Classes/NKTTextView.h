@@ -60,10 +60,6 @@
 
 @property (nonatomic, readwrite, retain) NSMutableAttributedString *text;
 
-#pragma mark Managing the Delegate
-
-//@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
-
 #pragma mark Configuring Text Layout and Style
 
 @property (nonatomic, readwrite) UIEdgeInsets margins;
