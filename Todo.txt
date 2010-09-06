@@ -15,6 +15,7 @@ Text View
 Feature: Marked text visuals...
 Issue: Make meaning of text position styling / fonts consistent (autocorrect, insertion text, etc)
 Issue: Empty doc, double tap select, long press select, visual behavior
+Issue: Keyboard input
 Issue: Emulate api of UITextView more
 Feature: Scrolling behavior while editing
 Optimization: Typeset at line granularity lazily

@@ -39,7 +39,7 @@
     {
         return [textView isFirstResponder];
     }
-    else if (gestureRecognizer == textView.preFirstResponderTapGestureRecognizer)
+    else if (gestureRecognizer == textView.nonEditTapGestureRecognizer)
     {
         return ![textView isFirstResponder];
     }

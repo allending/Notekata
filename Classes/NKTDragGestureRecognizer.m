@@ -6,7 +6,6 @@
 
 #import "NKTDragGestureRecognizer.h"
 #import <UIKit/UIGestureRecognizerSubclass.h>
-#import "NKTGestureRecognizerUtilites.h"
 
 @implementation NKTDragGestureRecognizer
 

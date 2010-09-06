@@ -3,14 +3,13 @@
 //--------------------------------------------------------------------------------------------------
 
 #import <UIKit/UIKit.h>
-
-@class NKTTextView;
+#import "NKTTextView.h"
 
 //--------------------------------------------------------------------------------------------------
 // NotekataViewController
 //--------------------------------------------------------------------------------------------------
 
-@interface NotekataViewController : UIViewController <UIScrollViewDelegate>
+@interface NotekataViewController : UIViewController <NKTTextViewDelegate>
 {
 @private
     UIToolbar *toolbar;

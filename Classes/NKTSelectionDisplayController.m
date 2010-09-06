@@ -138,7 +138,7 @@
 - (void)showSelectionBand
 {
     UITextRange *selectedTextRange = [delegate_ selectedTextRange];
-    NSArray *rects = [delegate_ orderedRectsForTextRange:selectedTextRange];
+    NSArray *rects = [delegate_ rectsForTextRange:selectedTextRange];
     
     if ([rects count] == 0)
     {
