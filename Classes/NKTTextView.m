@@ -92,6 +92,8 @@
 @synthesize verticalMarginColor;
 @synthesize verticalMarginInset;
 
+@synthesize inputDelegate;
+
 @synthesize nonEditTapGestureRecognizer;
 @synthesize tapGestureRecognizer;
 @synthesize doubleTapAndDragGestureRecognizer;
@@ -183,16 +185,17 @@
     [markedTextRange release];
     [markedTextStyle release];
     [markedText release];
+    
     [tokenizer release];
     
     [selectionDisplayController_ release];
-
     [selectionCaretLoupe release];
     [selectionBandLoupe release];
 
     [gestureRecognizerDelegate release];
     [nonEditTapGestureRecognizer release];
     [tapGestureRecognizer release];
+    [longPressGestureRecognizer release];
     [doubleTapAndDragGestureRecognizer release];
     [doubleTapStartTextPosition release];
     
@@ -848,7 +851,7 @@
     return selectedTextRange;
 }
 
-- (void)setSelectedTextRange:(UITextRange *)newSelectedTextRange
+- (void)setSelectedTextRange:(NKTTextRange *)newSelectedTextRange
 {
     [selectedTextRange autorelease];
     selectedTextRange = [newSelectedTextRange copy];
@@ -1220,16 +1223,6 @@
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Text Input Delegate and Text Input Tokenizer
-
-- (id <UITextInputDelegate>)inputDelegate
-{
-    return inputDelegate;
-}
-
-- (void)setInputDelegate:(id <UITextInputDelegate>)newInputDelegate
-{
-    inputDelegate = newInputDelegate;
-}
 
 - (id <UITextInputTokenizer>)tokenizer
 {

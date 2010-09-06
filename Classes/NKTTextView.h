@@ -41,6 +41,7 @@
     NKTTextRange *markedTextRange;
     NSDictionary *markedTextStyle;
     NSString *markedText;
+    
     id <UITextInputDelegate> inputDelegate;
     UITextInputStringTokenizer *tokenizer;
     
