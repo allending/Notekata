@@ -1326,7 +1326,7 @@
     NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
     UIFont *textFont = [self insertionFontForTextPosition:textPosition];
     UIColor *textColor = [UIColor blackColor];
-    UIColor *textBackgroundColor = [UIColor cyanColor];
+    UIColor *textBackgroundColor = self.backgroundColor;
     return [NSDictionary dictionaryWithObjectsAndKeys:textBackgroundColor, UITextInputTextBackgroundColorKey,
                                                       textColor, UITextInputTextColorKey,
                                                       textFont, UITextInputTextFontKey, nil];
