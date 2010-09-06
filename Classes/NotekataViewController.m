@@ -66,7 +66,7 @@
 //    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:@"Hello World\nFoobar"];
 //    self.textView.text = string;
 //    [string release];
-    self.textView.text = NKTTestText();
+//    self.textView.text = NKTTestText();
     
     UIBarButtonItem *defaultLineHeight = [[UIBarButtonItem alloc] initWithTitle:@"Default Line Height"
                                                                           style:UIBarButtonItemStyleBordered

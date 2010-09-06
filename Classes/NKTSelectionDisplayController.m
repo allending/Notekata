@@ -86,6 +86,7 @@
 {
     UIView *selectionBandRegion = [[[UIView alloc] init] autorelease];
     selectionBandRegion.backgroundColor = [UIColor colorWithRed:0.25 green:0.45 blue:0.9 alpha:0.3];
+    selectionBandRegion.userInteractionEnabled = NO;
     selectionBandRegion.hidden = !selectionBandVisible_;
     [delegate_.selectionElementsView addSubview:selectionBandRegion];
     return selectionBandRegion;

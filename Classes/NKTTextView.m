@@ -2,14 +2,10 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#define KBC_LOGGING_DEBUG_ENABLED 1
-#define KBC_LOGGING_STRIP_DEBUG 0
-
 #import "NKTTextView.h"
-#import "KBCFont.h"
 #import <CoreText/CoreText.h>
+#import "KBCFont.h"
 #import "NKTDragGestureRecognizer.h"
-#import "NKTFont.h"
 #import "NKTGestureRecognizerUtilites.h"
 #import "NKTLine.h"
 #import "NKTLoupe.h"
@@ -449,19 +445,6 @@
     return YES;
 }
 
-- (BOOL)becomeFirstResponder
-{
-    BOOL acceptsFirstResponder = [super becomeFirstResponder];
-    
-    if (!acceptsFirstResponder)
-    {
-        return NO;
-    }
-    
-    selectionDisplayController_.caretVisible = YES;
-    return YES;
-}
-
 - (BOOL)resignFirstResponder
 {
     BOOL resignsFirstResponder = [super resignFirstResponder];
@@ -471,6 +454,7 @@
         return NO;
     }
     
+    [self setSelectedTextRange:nil];
     return YES;
 }
 
@@ -488,15 +472,14 @@
         }
     }
     
-    // TODO: Don't move this because message should only be sent in a change external to UITextInput
-    //[inputDelegate selectionWillChange:self];
+    selectionDisplayController_.caretVisible = YES;
+    [inputDelegate selectionWillChange:self];
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:touchLocation];
     [self setSelectedTextRange:[textPosition textRange]];
     // TODO: yeah do this, but do it well and account for marked text
     [self setMarkedTextRange:nil];
-    // TODO: Don't move this because message should only be sent in a change external to UITextInput
-    //[inputDelegate selectionDidChange:self];
+    [inputDelegate selectionDidChange:self];
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
@@ -509,12 +492,10 @@
         selectionDisplayController_.caretVisible = YES;
         selectionDisplayController_.caretBlinkingEnabled = NO;
         
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionWillChange:self];
+        [inputDelegate selectionWillChange:self];
         [self setSelectedTextRange:[textPosition textRange]];
         [self showSelectionCaretLoupeAtTouchLocation:touchLocation];
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionDidChange:self];
+        [inputDelegate selectionDidChange:self];
     }
     else
     {
@@ -538,13 +519,10 @@
     {
         NKTTextRange *textRange = [doubleTapStartTextPosition textRangeWithTextPosition:textPosition];
         // TODO: make sure selection isn't allowed to be empty
-        
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionWillChange:self];
+        [inputDelegate selectionWillChange:self];
         [self setSelectedTextRange:textRange];
         [self showSelectionBandLoupeAtTouchLocation:touchLocation];
-        // TODO: Don't move this because message should only be sent in a change external to UITextInput
-        //[inputDelegate selectionDidChange:self];
+        [inputDelegate selectionDidChange:self];
     }
     else
     {
@@ -820,7 +798,7 @@
 
 - (void)insertText:(NSString *)theText
 {
-    //KBCLogDebug(@"%@", theText);
+    KBCLogDebug(@"%@", theText);
     
     if (markedTextRange == nil && selectedTextRange == nil)
     {
@@ -849,7 +827,7 @@
 
 - (void)deleteBackward
 {
-    //KBCLogTrace();
+    KBCLogTrace();
 
     if (markedTextRange == nil && selectedTextRange == nil)
     {
@@ -891,7 +869,7 @@
 
 - (void)replaceRange:(UITextRange *)uiTextRange withText:(NSString *)replacementText
 {
-    //KBCLogTrace();
+    KBCLogTrace();
     
     NKTTextRange *textRange = (NKTTextRange *)uiTextRange;
     [text replaceCharactersInRange:textRange.nsRange withString:replacementText];
@@ -950,7 +928,7 @@
 
 - (void)setMarkedTextStyle:(NSDictionary *)newMarkedTextStyle
 {
-    //KBCLogTrace();
+    KBCLogTrace();
     
     if (markedTextStyle == newMarkedTextStyle)
     {
@@ -1311,7 +1289,6 @@
 - (UITextRange *)characterRangeAtPoint:(CGPoint)point
 {
     //KBCLogTrace();
-    
     NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
     return [textPosition textRange];
 }
@@ -1347,8 +1324,12 @@
 - (NSDictionary *)textStylingAtPosition:(UITextPosition *)uiTextPosition inDirection:(UITextStorageDirection)direction
 {
     NKTTextPosition *textPosition = (NKTTextPosition *)uiTextPosition;
-    UIFont *font = [self insertionFontForTextPosition:textPosition];
-    return [NSDictionary dictionaryWithObject:font forKey:UITextInputTextFontKey];
+    UIFont *textFont = [self insertionFontForTextPosition:textPosition];
+    UIColor *textColor = [UIColor blackColor];
+    UIColor *textBackgroundColor = [UIColor cyanColor];
+    return [NSDictionary dictionaryWithObjectsAndKeys:textBackgroundColor, UITextInputTextBackgroundColorKey,
+                                                      textColor, UITextInputTextColorKey,
+                                                      textFont, UITextInputTextFontKey, nil];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1357,8 +1338,6 @@
 
 - (UIView *)textInputView
 {
-    //KBCLogTrace();
-    
     return self;
 }
 

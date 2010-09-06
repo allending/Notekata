@@ -28,7 +28,6 @@
 		9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */; };
 		9FDDDDC412291912009BFCED /* NKTGestureRecognizerUtilites.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */; };
 		9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* KBCLogging.m */; };
-		9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDE03912296A4C009BFCED /* NKTFont.m */; };
 		9FFAD4B31226A8AD00218B2A /* NotekataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */; };
 		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
 		F520394E12097D3600675702 /* NKTTestText.m in Sources */ = {isa = PBXBuildFile; fileRef = F520394D12097D3600675702 /* NKTTestText.m */; };
@@ -81,8 +80,6 @@
 		9FDDDDC312291912009BFCED /* NKTGestureRecognizerUtilites.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTGestureRecognizerUtilites.m; sourceTree = "<group>"; };
 		9FDDDF5C12295FAA009BFCED /* KBCLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCLogging.h; sourceTree = "<group>"; };
 		9FDDDF5D12295FAA009BFCED /* KBCLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCLogging.m; sourceTree = "<group>"; };
-		9FDDE03812296A4C009BFCED /* NKTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFont.h; sourceTree = "<group>"; };
-		9FDDE03912296A4C009BFCED /* NKTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFont.m; sourceTree = "<group>"; };
 		9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataViewController.m; sourceTree = "<group>"; };
 		F5030A7811D3555B002CD3BD /* NotekataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotekataViewController.h; sourceTree = "<group>"; };
 		F520393412097B1B00675702 /* NotekataViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotekataViewController.xib; sourceTree = "<group>"; };
@@ -240,8 +237,6 @@
 				F5267D9E121AD23D003CA42D /* NKTCaret.m */,
 				9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */,
 				9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */,
-				9FDDE03812296A4C009BFCED /* NKTFont.h */,
-				9FDDE03912296A4C009BFCED /* NKTFont.m */,
 				F5D12A9E11F2ECA20049C2CE /* NKTLine.h */,
 				F5D12A9F11F2ECA20049C2CE /* NKTLine.m */,
 				9FA540FA122A56A30005323E /* NKTLoupe.h */,
@@ -348,7 +343,6 @@
 				9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */,
 				9FDDDDC412291912009BFCED /* NKTGestureRecognizerUtilites.m in Sources */,
 				9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */,
-				9FDDE03A12296A4C009BFCED /* NKTFont.m in Sources */,
 				9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */,
 				9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */,
 				9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */,

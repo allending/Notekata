@@ -18,7 +18,7 @@
 // styling with attributes, and customizations to simulate printed pages.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextView : UIScrollView <UIKeyInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
+@interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
 {
 @private
     NSMutableAttributedString *text;
