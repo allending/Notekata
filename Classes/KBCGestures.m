@@ -2,9 +2,9 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "NKTGestureRecognizerUtilites.h"
+#import "KBCGestures.h"
 
-NSString *NKTStringForGestureRecognizerState(UIGestureRecognizerState state)
+NSString *KBCStringForGestureRecognizerState(UIGestureRecognizerState state)
 {
     switch (state)
     {

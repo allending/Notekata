@@ -65,7 +65,7 @@
 
 #pragma mark Geometry and Hit-Testing Methods
 
-- (NSArray *)orderedRectsForTextRange:(UITextRange *)textRange;
+- (NSArray *)rectsForTextRange:(UITextRange *)textRange;
 - (CGPoint)characterOriginForPosition:(UITextPosition *)textPosition;
 
 #pragma mark Returning Text Styling Information

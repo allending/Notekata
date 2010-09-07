@@ -3,7 +3,8 @@ TODO
 
 General
 -------
-Make property access consistent
+OCD: Make property access consistent
+OCD: Use internal ivar names
 
 Controller
 ----------
@@ -11,6 +12,7 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
+<<<<<<< HEAD
 Issue: UITextInput autocorrection dying, workaround -> provide a fake view?
 Issue: blank -> (zh)ni (db) (db) (english) you
 Issue: blank -> (zh)na (db) (db) (english) abcd
@@ -19,11 +21,19 @@ Issue: ni hao ma (space) n (delete backwards) -> crash
 Issue: n (db) (db) (db) crash on empty page
 Issue: Select all text and delete
 
+=======
+Feature: Marked text visuals...
+Issue: Make meaning of text position styling / fonts consistent (autocorrect, insertion text, etc)
+Issue: Empty doc, double tap select, long press select, visual behavior
+Issue: Keyboard input
+>>>>>>> 92a3396ba6fe737c7af557b44e5fd0294f432d02
 Issue: Emulate api of UITextView more
 Feature: Scrolling behavior while editing
 Optimization: Typeset at line granularity lazily
 Optimization: Don't need skirt lines - can use typographic bounds
 Optimization: Low memory - purge recycled sections
+Design: Change default font
+Optimization: Use a dirty marker for typesetting
 
 Deferred
 --------
@@ -32,6 +42,12 @@ Issue: Selection color off
 
 Done
 ----
+x Issue: blank -> (zh)ni (db) (db) (english) you
+x Issue: blank -> (zh)na (db) (db) (english) abcd
+x Issue: unmarkText not being called correctly?
+x Issue: ni hao ma (space) n (delete backwards) -> crash
+x Issue: n (db) (db) (db) crash on empty page
+x Issue: Select all text and delete
 x Issue: Drawing order of selection etc.
 x Design: Decouple some logic for selection, fonts, etc
 x Issue: Enter/exit responder multiple times not interacting well with selection

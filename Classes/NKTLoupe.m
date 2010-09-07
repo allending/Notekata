@@ -64,7 +64,7 @@
                                  CGImageGetBytesPerRow(maskSourceCGImage),
                                  CGImageGetDataProvider(maskSourceCGImage),
                                  NULL,
-                                 true);
+                                 false);
         
         anchor = CGPointZero;
         inverseZoomScale = 1.0 / 1.3;
@@ -196,6 +196,9 @@
     // Render the relevant zoomed view region to an image context
     UIGraphicsBeginImageContext(CGSizeMake(zoomedWidth, zoomedHeight));
 	CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [UIColor yellowColor].CGColor);
+    CGContextFillRect(context, CGRectMake(0, 0, zoomedWidth, zoomedHeight));
+    // Apply inverse zoom center (in zoomed view local space) transform to center desired content
     CGContextTranslateCTM(context,
                           -zoomCenter.x + (zoomedWidth * 0.5),
                           -zoomCenter.y + (zoomedHeight * 0.5));

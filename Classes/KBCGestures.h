@@ -4,4 +4,4 @@
 
 #import <UIKit/UIKit.h>
 
-NSString *NKTStringForGestureRecognizerState(UIGestureRecognizerState state);
+NSString *KBCStringForGestureRecognizerState(UIGestureRecognizerState state);

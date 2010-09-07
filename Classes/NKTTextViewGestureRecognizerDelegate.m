@@ -25,12 +25,21 @@
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
-    // todo: must hit a text section
+    CGPoint touchLocation = [gestureRecognizer locationInView:textView];
+    UIView *hitView = [textView hitTest:touchLocation withEvent:nil];
+    
+    // The text view's gesture recognizers are only allowed to recognize the gesture if the text view
+    // is the hit view (not its subviews e.g. the UITextInput autocorrection prompt).
+    if (hitView != textView)
+    {
+        return NO;
+    }
+    
     if (gestureRecognizer == textView.tapGestureRecognizer)
     {
         return [textView isFirstResponder];
     }
-    else if (gestureRecognizer == textView.preFirstResponderTapGestureRecognizer)
+    else if (gestureRecognizer == textView.nonEditTapGestureRecognizer)
     {
         return ![textView isFirstResponder];
     }

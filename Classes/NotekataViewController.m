@@ -67,6 +67,8 @@
 //    self.textView.text = string;
 //    [string release];
     self.textView.text = NKTTestText();
+    self.textView.delegate = self;
+    
     
     UIBarButtonItem *defaultLineHeight = [[UIBarButtonItem alloc] initWithTitle:@"Default Line Height"
                                                                           style:UIBarButtonItemStyleBordered

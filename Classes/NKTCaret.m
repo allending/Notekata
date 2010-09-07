@@ -17,6 +17,7 @@
     if ((self = [super initWithFrame:frame]))
     {
         self.backgroundColor = [UIColor blueColor];
+        self.userInteractionEnabled = NO;
         blinkingEnabled = YES;
         [self restartBlinking];
     }

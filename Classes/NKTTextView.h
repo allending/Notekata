@@ -5,7 +5,6 @@
 #import "KobaCore.h"
 #import "NKTSelectionDisplayController.h"
 
-@class NKTCaret;
 @class NKTDragGestureRecognizer;
 @class NKTLoupe;
 @class NKTTextPosition;
@@ -14,8 +13,8 @@
 @class NKTTextViewGestureRecognizerDelegate;
 
 //--------------------------------------------------------------------------------------------------
-// NKTTextView implements the behavior for a view similar to UITextView, but with support for text
-// styling with attributes, and customizations to simulate printed pages.
+// NKTTextView implements the behavior for a view with support for text styling and printed-page
+// look styling.
 //--------------------------------------------------------------------------------------------------
 
 @interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
@@ -42,6 +41,7 @@
     NKTTextRange *markedTextRange;
     NSDictionary *markedTextStyle;
     NSString *markedText;
+    
     id <UITextInputDelegate> inputDelegate;
     UITextInputStringTokenizer *tokenizer;
     
@@ -50,7 +50,7 @@
     NKTLoupe *selectionBandLoupe;
     
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
-    UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;
+    UITapGestureRecognizer *nonEditTapGestureRecognizer;
     UITapGestureRecognizer *tapGestureRecognizer;
     UILongPressGestureRecognizer *longPressGestureRecognizer;
     NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
@@ -75,7 +75,7 @@
 
 #pragma mark Accessing Gesture Recognizers
 
-@property (nonatomic, readonly) UITapGestureRecognizer *preFirstResponderTapGestureRecognizer;
+@property (nonatomic, readonly) UITapGestureRecognizer *nonEditTapGestureRecognizer;
 @property (nonatomic, readonly) UITapGestureRecognizer *tapGestureRecognizer;
 @property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
 
@@ -84,10 +84,14 @@
 #pragma mark -
 
 //--------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------
 
 @protocol NKTTextViewDelegate <UIScrollViewDelegate>
 
-- (UIView *)viewForMagnifyingInTextView:(NKTTextView *)textView;
+@optional
+
+- (UIView *)textViewViewForZooming:(NKTTextView *)textView;
 
 @end
 
@@ -97,8 +101,6 @@
 
 @interface NKTTextView(PropertyRedeclarations)
 
-#pragma mark Managing the Delegate
-
-@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
+@property (nonatomic, readwrite, assign) id <NKTTextViewDelegate> delegate;
 
 @end
