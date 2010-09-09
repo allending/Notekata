@@ -72,6 +72,10 @@
 
 - (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
+#pragma mark Geometry and Hit-Testing Methods
+
+- (CGRect)rectForLine:(NKTLine *)line;
+
 @end
 
 #pragma mark -
@@ -138,7 +142,9 @@
     verticalMarginInset = 60.0;
     
     visibleSections = [[NSMutableSet alloc] init];
-    reusableSections = [[NSMutableSet alloc] init];
+    reusableSections = [[NSMutableSet alloc] init];    
+    underlayViews = [[NSMutableSet alloc] init];
+    overlayViews = [[NSMutableSet alloc] init];
     
     selectionDisplayController_ = [[NKTSelectionDisplayController alloc] init];
     selectionDisplayController_.delegate = self;
@@ -180,6 +186,8 @@
     
     [visibleSections release];
     [reusableSections release];
+    [underlayViews release];
+    [overlayViews release];
     
     [selectedTextRange release];
     [markedTextRange release];
@@ -191,7 +199,7 @@
     [selectionDisplayController_ release];
     [selectionCaretLoupe release];
     [selectionBandLoupe release];
-
+    
     [gestureRecognizerDelegate release];
     [nonEditTapGestureRecognizer release];
     [tapGestureRecognizer release];
@@ -358,7 +366,8 @@
             }
             
             [self configureSection:section atIndex:index];
-            [self insertSubview:section atIndex:0];
+            NSUInteger insertionIndex = [underlayViews count];
+            [self insertSubview:section atIndex:insertionIndex];
             [visibleSections addObject:section];
         }
     }
@@ -536,13 +545,6 @@
     CGFloat y = margins.top + lineHeight + ((CGFloat)index * lineHeight);
     CGPoint lineOrigin = CGPointMake(margins.left, y);
     return lineOrigin;
-}
-
-- (CGRect)rectForLineAtIndex:(NSUInteger)index
-{
-    CGPoint origin = [self lineOriginForLineAtIndex:index];
-    origin.y -= lineHeight;
-    return CGRectMake(origin.x, origin.y, self.bounds.size.width, lineHeight);
 }
 
 - (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line
@@ -886,6 +888,7 @@
 {
     [markedTextRange autorelease];
     markedTextRange = [newMarkedTextRange copy];
+    [selectionDisplayController_ markedTextRangeDidChange];
 }
 
 - (void)setMarkedText:(NSString *)newMarkedText selectedRange:(NSRange)relativeSelectedRange
@@ -1148,6 +1151,17 @@
 
 #pragma mark Geometry and Hit-Testing Methods
 
+- (CGRect)rectForLine:(NKTLine *)line
+{
+    CGFloat ascent = MIN(line.ascent, lineHeight);
+    CGFloat height = MIN(line.ascent + line.descent, lineHeight);
+    CGFloat width = self.bounds.size.width - margins.left - margins.right;
+    CGPoint origin = [self lineOriginForLineAtIndex:line.index];
+    origin.y -= ascent;
+    return CGRectMake(origin.x, origin.y, width,height);
+}
+
+// TODO: caret computed in this class and given to selection display controller .. makes more sense
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
 {
     NKTLine *firstLine = [self lineContainingTextPosition:textRange.start];
@@ -1155,34 +1169,36 @@
     
     if (firstLine == lastLine)
     {
-        CGRect firstRect = [self caretRectForPosition:textRange.start];
-        CGRect lastRect = [self caretRectForPosition:textRange.end];
-        CGRect lineRect = CGRectMake(firstRect.origin.x,
-                                     firstRect.origin.y,
-                                     lastRect.origin.x - firstRect.origin.x,
-                                     firstRect.size.height);
-        return [NSArray arrayWithObject:[NSValue valueWithCGRect:lineRect]];
+        CGFloat startOffset = [firstLine offsetForCharAtTextPosition:textRange.start];
+        CGFloat endOffset = [firstLine offsetForCharAtTextPosition:textRange.end];
+        CGRect rect = [self rectForLine:firstLine];
+        rect.origin.x += startOffset;
+        rect.size.width = endOffset - startOffset;
+        return [NSArray arrayWithObject:[NSValue valueWithCGRect:rect]];
     }
     else
     {
         NSMutableArray *rects = [[[NSMutableArray alloc] init] autorelease];
         
-        // Get first rect
-        CGRect firstRect = [self caretRectForPosition:textRange.start];
-        firstRect.size.width = self.bounds.size.width - margins.right - firstRect.origin.x;
+        // Rect for first line
+        CGRect firstRect = [self rectForLine:firstLine];
+        CGFloat firstRectOffset = [firstLine offsetForCharAtTextPosition:textRange.start];
+        firstRect.origin.x += firstRectOffset;
+        firstRect.size.width -= firstRectOffset;
         [rects addObject:[NSValue valueWithCGRect:firstRect]];
         
-        // Iterate over lines in the middle
+        // Rects for lines in between
         for (NSUInteger lineIndex = firstLine.index + 1; lineIndex < lastLine.index; ++lineIndex)
         {
-            CGRect rect = [self rectForLineAtIndex:lineIndex];
+            NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
+            CGRect rect = [self rectForLine:line];
             [rects addObject:[NSValue valueWithCGRect:rect]];
         }
         
-        // Get last rect
-        CGRect lastRect = [self caretRectForPosition:textRange.end];
-        lastRect.size.width = lastRect.origin.x - margins.left;
-        lastRect.origin.x = margins.left;
+        // Rect for last line
+        CGRect lastRect = [self rectForLine:lastLine];
+        CGFloat lastRectOffset = [lastLine offsetForCharAtTextPosition:textRange.end];
+        lastRect.size.width = lastRectOffset;
         [rects addObject:[NSValue valueWithCGRect:lastRect]];
         
         return rects;
@@ -1258,11 +1274,18 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Returning the View For Selection Elements
+#pragma mark Managing Selection Views
 
-- (UIView *)selectionElementsView
+- (void)addUnderlayView:(UIView *)view
 {
-    return self;
+    [self insertSubview:view atIndex:[underlayViews count]];
+    [underlayViews addObject:view];
+}
+
+- (void)addOverlayView:(UIView *)view
+{
+    [self insertSubview:view atIndex:[underlayViews count] + [visibleSections count]];
+    [overlayViews addObject:view];
 }
 
 @end

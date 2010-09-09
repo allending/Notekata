@@ -4,23 +4,19 @@
 
 #import "NKTSelectionDisplayController.h"
 #import "NKTCaret.h"
+#import "NKTHighlightRegion.h"
 
 @interface NKTSelectionDisplayController()
 
 #pragma mark Managing Selection Elements
 
 @property (nonatomic, readonly) NKTCaret *caret;
-@property (nonatomic, readonly) UIView *selectionBandTop;
-@property (nonatomic, readonly) UIView *selectionBandMiddle;
-@property (nonatomic, readonly) UIView *selectionBandBottom;
+@property (nonatomic, readonly) NKTHighlightRegion *selectedTextRegion;
+@property (nonatomic, readonly) NKTHighlightRegion *markedTextRegion;
 
-- (void)showSelectionCaret;
-- (void)hideSelectionCaret;
-
-- (void)showSelectionBand;
-- (void)hideSelectionBand;
-
-- (void)updateDisplayedElements;
+- (void)updateCaret;
+- (void)updateSelectedTextRegion;
+- (void)updateMarkedTextRegion;
 
 @end
 
@@ -32,7 +28,8 @@
 
 @synthesize delegate = delegate_;
 @synthesize caretVisible = caretVisible_;
-@synthesize selectionBandVisible = selectionBandVisible_;
+@synthesize selectedTextRegionVisible = selectedTextRegionVisible_;
+@synthesize markedTextRegionVisible = markedTextRegionVisible_;
 
 #pragma mark Initializing
 
@@ -41,7 +38,8 @@
     if ((self = [super init]))
     {
         caretVisible_ = YES;
-        selectionBandVisible_ = YES;
+        selectedTextRegionVisible_ = YES;
+        markedTextRegionVisible_ = YES;
     }
     
     return self;
@@ -50,9 +48,8 @@
 - (void)dealloc
 {
     [caret_ release];
-    [selectionBandTop_ release];
-    [selectionBandMiddle_ release];
-    [selectionBandBottom_ release];
+    [selectedTextRegion_ release];
+    [markedTextRegion_ release];
     [super dealloc];
 }
 
@@ -63,7 +60,9 @@
 - (void)setDelegate:(id <NKTSelectionDisplayControllerDelegate>)delegate
 {
     delegate_ = delegate;
-    [self updateDisplayedElements];
+    [self updateCaret];
+    [self updateSelectedTextRegion];
+    [self updateMarkedTextRegion];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -76,137 +75,82 @@
     {
         caret_ = [[NKTCaret alloc] init];
         caret_.hidden = !caretVisible_;
-        [delegate_.selectionElementsView addSubview:caret_];
+        [delegate_ addOverlayView:caret_];
     }
     
     return caret_;
 }
 
-- (UIView *)createSelectionBandRegion
+- (NKTHighlightRegion *)selectedTextRegion
 {
-    UIView *selectionBandRegion = [[[UIView alloc] init] autorelease];
-    selectionBandRegion.backgroundColor = [UIColor colorWithRed:0.25 green:0.45 blue:0.9 alpha:0.3];
-    selectionBandRegion.userInteractionEnabled = NO;
-    selectionBandRegion.hidden = !selectionBandVisible_;
-    [delegate_.selectionElementsView addSubview:selectionBandRegion];
-    return selectionBandRegion;
-}
-
-- (UIView *)selectionBandTop
-{
-    if (selectionBandTop_ == nil)
+    if (selectedTextRegion_ == nil)
     {
-        selectionBandTop_ = [[self createSelectionBandRegion] retain];
+        selectedTextRegion_ = [[NKTHighlightRegion alloc] init];
+        selectedTextRegion_.coalescesRects = YES;
+        selectedTextRegion_.strokesRects = NO;
+        selectedTextRegion_.fillColor = [UIColor colorWithRed:0.25 green:0.45 blue:0.9 alpha:0.3];
+        selectedTextRegion_.hidden = !selectedTextRegionVisible_;
+        [delegate_ addOverlayView:selectedTextRegion_];
     }
     
-    return selectionBandTop_;
+    return selectedTextRegion_;
 }
 
-- (UIView *)selectionBandMiddle
+- (NKTHighlightRegion *)markedTextRegion
 {
-    if (selectionBandMiddle_ == nil)
+    if (markedTextRegion_ == nil)
     {
-        selectionBandMiddle_ = [[self createSelectionBandRegion] retain];
+        markedTextRegion_ = [[NKTHighlightRegion alloc] init];
+        markedTextRegion_.hidden = !markedTextRegionVisible_;
+        [delegate_ addUnderlayView:markedTextRegion_];
     }
     
-    return selectionBandMiddle_;
+    return markedTextRegion_;
 }
 
-- (UIView *)selectionBandBottom
-{
-    if (selectionBandBottom_ == nil)
-    {
-        selectionBandBottom_ = [[self createSelectionBandRegion] retain];
-    }
-    
-    return selectionBandBottom_;
-}
-
-- (void)showSelectionCaret
-{
-    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
-    self.caret.frame = [self caretRectForPosition:selectedTextRange.start];
-    self.caret.hidden = NO;
-    [self.caret restartBlinking];
-}
-
-- (void)hideSelectionCaret
-{
-    self.caret.hidden = YES;
-}
-
-- (void)showSelectionBand
-{
-    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
-    NSArray *rects = [delegate_ rectsForTextRange:selectedTextRange];
-    
-    if ([rects count] == 0)
-    {
-        self.selectionBandTop.hidden = YES;
-        self.selectionBandMiddle.hidden = YES;
-        self.selectionBandBottom.hidden = YES;
-        return;
-    }
-    else if ([rects count] == 1)
-    {
-        self.selectionBandTop.frame = [[rects objectAtIndex:0] CGRectValue];
-        self.selectionBandTop.hidden = NO;
-        self.selectionBandMiddle.hidden = YES;
-        self.selectionBandBottom.hidden = YES;
-    }
-    else
-    {
-        CGRect topRect = [[rects objectAtIndex:0] CGRectValue];
-        self.selectionBandTop.frame = topRect;
-        self.selectionBandTop.hidden = NO;
-        
-        CGRect bottomRect = [[rects objectAtIndex:[rects count] - 1] CGRectValue];
-        self.selectionBandBottom.frame = bottomRect;
-        self.selectionBandBottom.hidden = NO;
-        
-        CGRect middleRect = CGRectMake(CGRectGetMinX(bottomRect),
-                                       CGRectGetMaxY(topRect),
-                                       CGRectGetMaxX(topRect) - CGRectGetMinX(bottomRect),
-                                       CGRectGetMinY(bottomRect) - CGRectGetMaxY(topRect));
-        
-        // First and last lines overlap, don't need to draw middle band
-        if (middleRect.size.height <= 0.0)
-        {
-            self.selectionBandMiddle.hidden = YES;
-        }
-        else
-        {
-            self.selectionBandMiddle.frame = middleRect;
-            self.selectionBandMiddle.hidden = NO;
-        }
-    }
-}
-
-- (void)hideSelectionBand
-{
-    self.selectionBandTop.hidden = YES;
-    self.selectionBandMiddle.hidden = YES;
-    self.selectionBandBottom.hidden = YES;
-}
-
-- (void)updateDisplayedElements
+- (void)updateCaret
 {
     UITextRange *selectedTextRange = [delegate_ selectedTextRange];
     
     if (selectedTextRange != nil && selectedTextRange.empty && caretVisible_)
     {
-        [self showSelectionCaret];
-        [self hideSelectionBand];
-    }
-    else if (selectedTextRange != nil && selectionBandVisible_)
-    {
-        [self hideSelectionCaret];
-        [self showSelectionBand];
+        self.caret.frame = [self caretRectForPosition:selectedTextRange.start];
+        self.caret.hidden = NO;
+        [self.caret restartBlinking];
     }
     else
     {
-        [self hideSelectionCaret];
-        [self hideSelectionBand];
+        self.caret.hidden = YES;
+    }
+}
+
+- (void)updateSelectedTextRegion
+{
+    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
+    
+    if (selectedTextRange != nil && !selectedTextRange.empty && selectedTextRegionVisible_)
+    {
+        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:selectedTextRange];
+        self.selectedTextRegion.hidden = NO;
+    }
+    else
+    {
+        self.selectedTextRegion.hidden = YES;
+    }
+}
+
+- (void)updateMarkedTextRegion
+{
+    UITextRange *markedTextRange = [delegate_ markedTextRange];
+    
+    if (markedTextRange != nil && !markedTextRange.empty)
+    {
+        self.markedTextRegion.rects = [delegate_ rectsForTextRange:markedTextRange];
+        self.markedTextRegion.hidden = NO;
+    }
+    else
+    {
+        self.markedTextRegion.hidden = YES;
     }
 }
 
@@ -217,7 +161,7 @@
 - (void)setCaretVisible:(BOOL)selectionElementsVisibleFlag
 {
     caretVisible_ = selectionElementsVisibleFlag;
-    [self updateDisplayedElements];
+    [self updateCaret];
 }
 
 - (BOOL)isCaretBlinkingEnabled
@@ -230,10 +174,16 @@
     caret_.blinkingEnabled = caretBlinkingEnabled;
 }
 
-- (void)setSelectionBandVisible:(BOOL)selectionBandVisible
+- (void)setSelectedTextRegionVisible:(BOOL)selectedTextRegionVisible
 {
-    selectionBandVisible_ = selectionBandVisible;
-    [self updateDisplayedElements];
+    selectedTextRegionVisible_ = selectedTextRegionVisible;
+    [self updateSelectedTextRegion];
+}
+
+- (void)setMarkedTextRegionVisible:(BOOL)markedTextRegionVisible
+{
+    markedTextRegionVisible_ = markedTextRegionVisible;
+    [self updateMarkedTextRegion];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -242,12 +192,18 @@
 
 - (void)selectedTextRangeDidChange
 {
-    [self updateDisplayedElements];
+    [self updateCaret];
+    [self updateSelectedTextRegion];
+}
+
+- (void)markedTextRangeDidChange
+{
+    [self updateMarkedTextRegion];
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Selection Element Geometry
+#pragma mark Getting Selection Geometry
 
 - (CGRect)caretRectForPosition:(UITextPosition *)textPosition
 {

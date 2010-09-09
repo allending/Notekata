@@ -36,6 +36,8 @@
     
     NSMutableSet *visibleSections;
     NSMutableSet *reusableSections;
+    NSMutableSet *underlayViews;
+    NSMutableSet *overlayViews;
     
     NKTTextRange *selectedTextRange;
     NKTTextRange *markedTextRange;

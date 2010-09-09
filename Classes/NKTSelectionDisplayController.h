@@ -5,6 +5,7 @@
 #import "KobaCore.h"
 
 @class NKTCaret;
+@class NKTHighlightRegion;
 
 @protocol NKTSelectionDisplayControllerDelegate;
 
@@ -18,13 +19,13 @@
 @private
     id <NKTSelectionDisplayControllerDelegate> delegate_;
 
-    NKTCaret *caret_;
     BOOL caretVisible_;
+    BOOL selectedTextRegionVisible_;
+    BOOL markedTextRegionVisible_;
     
-    UIView *selectionBandTop_;
-    UIView *selectionBandMiddle_;
-    UIView *selectionBandBottom_;
-    BOOL selectionBandVisible_;
+    NKTCaret *caret_;
+    NKTHighlightRegion *selectedTextRegion_;
+    NKTHighlightRegion *markedTextRegion_;
 }
 
 #pragma mark Setting the Delegate
@@ -33,16 +34,17 @@
 
 #pragma mark Controlling Selection Element Display
 
-@property (nonatomic, readwrite, getter = isCaretVisible) BOOL caretVisible;
-@property (nonatomic, readwrite, getter = isCaretBlinkingEnabled) BOOL caretBlinkingEnabled;
-
-@property (nonatomic, readwrite, getter = isSelectionBandVisible) BOOL selectionBandVisible;
+@property (nonatomic, getter = isCaretVisible) BOOL caretVisible;
+@property (nonatomic, getter = isCaretBlinkingEnabled) BOOL caretBlinkingEnabled;
+@property (nonatomic, getter = isSelectedTextRegionVisible) BOOL selectedTextRegionVisible;
+@property (nonatomic, getter = isMarkedTextRegionVisible) BOOL markedTextRegionVisible;
 
 #pragma mark Informing the Controller of Selection Changes
 
 - (void)selectedTextRangeDidChange;
+- (void)markedTextRangeDidChange;
 
-#pragma mark Getting Selection Element Geometry
+#pragma mark Getting Selection Geometry
 
 - (CGRect)caretRectForPosition:(UITextPosition *)textPosition;
 
@@ -51,10 +53,7 @@
 #pragma mark -
 
 //--------------------------------------------------------------------------------------------------
-// NKTSelectionDisplayControllerDelegate defines the protocol used by NKTSelectionDisplayController
-// to obtain information needed to correctly display selections in view with text. It shares
-// some methods with the UITextInput protocol but does not conform to it because the protocol does
-// not require clients to handle any sort of text input.
+// NKTSelectionDisplayControllerDelegate
 //--------------------------------------------------------------------------------------------------
 
 @protocol NKTSelectionDisplayControllerDelegate
@@ -62,6 +61,7 @@
 #pragma mark Working with Marked and Selected Text
 
 - (UITextRange *)selectedTextRange;
+- (UITextRange *)markedTextRange;
 
 #pragma mark Geometry and Hit-Testing Methods
 
@@ -72,8 +72,9 @@
 
 - (NSDictionary *)textStylingAtPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction;
 
-#pragma mark Returning the View For Selection Elements
+#pragma mark Managing Selection Views
 
-- (UIView *)selectionElementsView;
+- (void)addOverlayView:(UIView *)view;
+- (void)addUnderlayView:(UIView *)view;
 
 @end

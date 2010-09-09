@@ -12,21 +12,19 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-<<<<<<< HEAD
-Issue: UITextInput autocorrection dying, workaround -> provide a fake view?
-Issue: blank -> (zh)ni (db) (db) (english) you
-Issue: blank -> (zh)na (db) (db) (english) abcd
-Issue: unmarkText not being called correctly?
-Issue: ni hao ma (space) n (delete backwards) -> crash
-Issue: n (db) (db) (db) crash on empty page
-Issue: Select all text and delete
-
-=======
+Issue: Still having issues with drawing anti aliased lines in NKTHighlightRegion - try on same line as zh
+Issue: Loupe at bottom of device - background color
 Feature: Marked text visuals...
+Feature: Movement within marked text when marked text exists
+Feature: Tokenization and movement
+Feature: Cut copy paste
+Feature: Context menus w/ selection
+Issue: Rotation and selection elements!
+Issue: Fix rects returned
+Issue: UITextInput speed problems
 Issue: Make meaning of text position styling / fonts consistent (autocorrect, insertion text, etc)
 Issue: Empty doc, double tap select, long press select, visual behavior
 Issue: Keyboard input
->>>>>>> 92a3396ba6fe737c7af557b44e5fd0294f432d02
 Issue: Emulate api of UITextView more
 Feature: Scrolling behavior while editing
 Optimization: Typeset at line granularity lazily
