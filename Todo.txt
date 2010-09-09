@@ -12,9 +12,6 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-Issue: Still having issues with drawing anti aliased lines in NKTHighlightRegion - try on same line as zh
-Issue: Loupe at bottom of device - background color
-Feature: Marked text visuals...
 Feature: Movement within marked text when marked text exists
 Feature: Tokenization and movement
 Feature: Cut copy paste
@@ -40,6 +37,9 @@ Issue: Selection color off
 
 Done
 ----
+x Feature: Marked text visuals...
+x Issue: Loupe at bottom of device - background color
+x Issue: Still having issues with drawing anti aliased lines in NKTHighlightRegion - try on same line as zh
 x Issue: blank -> (zh)ni (db) (db) (english) you
 x Issue: blank -> (zh)na (db) (db) (english) abcd
 x Issue: unmarkText not being called correctly?

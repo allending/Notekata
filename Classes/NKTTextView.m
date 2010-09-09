@@ -1157,11 +1157,12 @@
     CGFloat height = MIN(line.ascent + line.descent, lineHeight);
     CGFloat width = self.bounds.size.width - margins.left - margins.right;
     CGPoint origin = [self lineOriginForLineAtIndex:line.index];
-    origin.y -= ascent;
-    return CGRectMake(origin.x, origin.y, width,height);
+    const CGFloat heightPadding = 1.0;
+    origin.y -= (ascent + heightPadding);
+    return CGRectMake(origin.x, origin.y, width, height + (heightPadding * 2.0));
 }
 
-// TODO: caret computed in this class and given to selection display controller .. makes more sense
+// TODO: caret computed in this class and given to selection display controller .. makes more sense?
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
 {
     NKTLine *firstLine = [self lineContainingTextPosition:textRange.start];

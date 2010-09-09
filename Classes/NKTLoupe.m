@@ -190,18 +190,18 @@
 
 - (void)drawRect:(CGRect)rect
 {
-    CGFloat zoomedWidth = overlay.size.width * inverseZoomScale;
-    CGFloat zoomedHeight = overlay.size.height * inverseZoomScale;
+    CGSize zoomedSize = CGSizeMake(overlay.size.width * inverseZoomScale, overlay.size.height * inverseZoomScale);
+    CGSize halfZoomedSize = CGSizeMake(zoomedSize.width * 0.5, zoomedSize.height * 0.5);
     
     // Render the relevant zoomed view region to an image context
-    UIGraphicsBeginImageContext(CGSizeMake(zoomedWidth, zoomedHeight));
+    UIGraphicsBeginImageContext(CGSizeMake(zoomedSize.width, zoomedSize.height));
 	CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, [UIColor yellowColor].CGColor);
-    CGContextFillRect(context, CGRectMake(0, 0, zoomedWidth, zoomedHeight));
-    // Apply inverse zoom center (in zoomed view local space) transform to center desired content
-    CGContextTranslateCTM(context,
-                          -zoomCenter.x + (zoomedWidth * 0.5),
-                          -zoomCenter.y + (zoomedHeight * 0.5));
+    // Compute clamped origin for zoomed region in zoomed view space
+    CGPoint zoomOrigin = CGPointMake(zoomCenter.x - halfZoomedSize.width, zoomCenter.y - halfZoomedSize.height);
+    zoomOrigin.x = KBCClamp(zoomOrigin.x, 0.0, zoomedView.bounds.size.width - zoomedSize.width);
+    zoomOrigin.y = KBCClamp(zoomOrigin.y, 0.0, zoomedView.bounds.size.height - zoomedSize.height);
+    // Apply inverse zoom origin so zoomed view can render directly into the context
+    CGContextTranslateCTM(context, -zoomOrigin.x, -zoomOrigin.y);
     [zoomedView.layer renderInContext:context];
     UIImage *zoomedRegion = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();

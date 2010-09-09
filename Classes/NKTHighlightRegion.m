@@ -148,7 +148,8 @@
     
     CGContextRef context = UIGraphicsGetCurrentContext();
     // Move back into superview space because rects were specified in superview space
-    CGContextTranslateCTM(context, -self.frame.origin.x + 0.5, -self.frame.origin.y + 0.5);
+    const CGFloat quantizationFudge = 1.0;
+    CGContextTranslateCTM(context, -self.frame.origin.x, -self.frame.origin.y + quantizationFudge);
     CGContextSetShouldAntialias(context, NO);
     CGContextSetLineWidth(context, 1.0);
     CGContextSetStrokeColorWithColor(context, strokeColor_.CGColor);
