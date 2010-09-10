@@ -3,6 +3,8 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextViewGestureRecognizerDelegate.h"
+#import "NKTDragGestureRecognizer.h"
+#import "NKTTextRange.h"
 #import "NKTTextView.h"
 
 @implementation NKTTextViewGestureRecognizerDelegate
@@ -29,19 +31,24 @@
     UIView *hitView = [textView hitTest:touchLocation withEvent:nil];
     
     // The text view's gesture recognizers are only allowed to recognize the gesture if the text 
-    // view is the hit view (not its subviews e.g. the UITextInput autocorrection prompt).
+    // view is the hit view (not its subviews e.g. the UITextInput autocorrection prompt)
     if (hitView != textView)
     {
         return NO;
     }
-    
-    if (gestureRecognizer == textView.tapGestureRecognizer)
+    else if (gestureRecognizer == textView.tapGestureRecognizer)
     {
         return [textView isFirstResponder];
     }
     else if (gestureRecognizer == textView.nonEditTapGestureRecognizer)
     {
         return ![textView isFirstResponder];
+    }
+    // Double tap and drag gesture only allowed when there is no marked text
+    else if (gestureRecognizer == textView.doubleTapAndDragGestureRecognizer)
+    {
+        NKTTextRange *markedTextRange = (NKTTextRange *)textView.markedTextRange;
+        return (markedTextRange == nil || markedTextRange.isEmpty);
     }
     else
     {

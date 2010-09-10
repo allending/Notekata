@@ -53,6 +53,8 @@
 // to insert text on the same line before the line break.
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
+- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange;
+
 #pragma mark Drawing
 
 - (void)drawInContext:(CGContextRef)context;

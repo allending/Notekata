@@ -63,7 +63,7 @@
 //    CTParagraphStyleRef ps = CTParagraphStyleCreate(pss, 1);
 //    NSDictionary *dict = [NSDictionary dictionaryWithObject:(id)ps forKey:(id)kCTParagraphStyleAttributeName];
     
-//    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:@"Hello World\nFoobar"];
+//    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:@"xyz\n\nabc"];
 //    self.textView.text = string;
 //    [string release];
     self.textView.text = NKTTestText();

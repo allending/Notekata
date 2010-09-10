@@ -43,11 +43,6 @@
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer;
 
-#pragma mark Getting and Converting Coordinates
-
-- (CGPoint)lineOriginForLineAtIndex:(NSUInteger)index;
-- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line;
-
 #pragma mark Getting Lines
 
 - (NSInteger)virtualIndexForLineContainingPoint:(CGPoint)point;
@@ -56,24 +51,25 @@
 
 #pragma mark Getting Fonts at Text Positions
 
-- (UIFont *)insertionFontForTextPosition:(NKTTextPosition *)textPosition;
+- (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition;
 
-#pragma mark Managing Selection Views
+#pragma mark Managing Loupes
 
-- (UIView *)zoomedView;
+@property (nonatomic, readonly) UIView *zoomedView;
+@property (nonatomic, readonly) NKTLoupe *bandLoupe;
+@property (nonatomic, readonly) NKTLoupe *roundLoupe;
 
-- (void)showSelectionCaretLoupeAtTouchLocation:(CGPoint)touchLocation;
-- (void)hideSelectionCaretLoupe;
-
-- (void)showSelectionBandLoupeAtTouchLocation:(CGPoint)touchLocation;
-- (void)hideSelectionBandLoupe;
+- (void)showLoupe:(NKTLoupe *)loupe atPoint:(CGPoint)point anchorToLine:(BOOL)anchorToLine;
+- (void)showLoupe:(NKTLoupe *)loupe atTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Working with Marked and Selected Text
 
 - (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
-#pragma mark Geometry and Hit-Testing Methods
+#pragma mark Geometry and Hit-Testing
 
+- (CGPoint)originForLineAtIndex:(NSUInteger)index;
+- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line;
 - (CGRect)rectForLine:(NKTLine *)line;
 
 @end
@@ -100,6 +96,7 @@
 
 @synthesize nonEditTapGestureRecognizer;
 @synthesize tapGestureRecognizer;
+@synthesize longPressGestureRecognizer;
 @synthesize doubleTapAndDragGestureRecognizer;
 
 //--------------------------------------------------------------------------------------------------
@@ -197,8 +194,8 @@
     [tokenizer release];
     
     [selectionDisplayController_ release];
-    [selectionCaretLoupe release];
-    [selectionBandLoupe release];
+    [bandLoupe_ release];
+    [roundLoupe_ release];
     
     [gestureRecognizerDelegate release];
     [nonEditTapGestureRecognizer release];
@@ -250,7 +247,6 @@
 
 #pragma mark Accessing the Text
 
-// TODO: follow UITextView conventions on ownership
 - (void)setText:(NSMutableAttributedString *)newText
 {
     [newText retain];
@@ -266,7 +262,7 @@
 - (void)setLineHeight:(CGFloat)newLineHeight 
 {
     lineHeight = newLineHeight;
-    // Don't need to typeset because the line width is not changing
+    // Don't need to typeset lines because the line width is not changing
     [self untileVisibleSections];
     [self tileSections];
     [self updateContentSize];
@@ -282,8 +278,6 @@
 
 #pragma mark Generating the View Contents
 
-// TODO: use a dirty marker instead and call this as needed
-// e.g.: [self setLineWidthDirty];
 - (void)regenerateContents
 {
     [self typesetLines];
@@ -296,7 +290,6 @@
 
 #pragma mark Typesetting
 
-// TODO: delegate this work to someone else?
 - (void)typesetLines
 {
     [typesettedLines release];
@@ -317,7 +310,6 @@
     while (charIndex < length)
     {
         CFIndex charCount = CTTypesetterSuggestLineBreak(typesetter, charIndex, lineWidth);
-        // TODO: white space fucks this up
         CFRange range = CFRangeMake(charIndex, charCount);
         CTLineRef ctLine = CTTypesetterCreateLine(typesetter, range);
         NKTLine *line = [[NKTLine alloc] initWithIndex:lineIndex text:text CTLine:ctLine];
@@ -414,22 +406,16 @@
 - (void)configureSection:(NKTTextSection *)section atIndex:(NSInteger)index
 {
     section.frame = [self frameForSectionAtIndex:index];
-    
     section.index = index;
-
     section.typesettedLines = typesettedLines;
-    
     section.margins = margins;
     section.lineHeight = lineHeight;
-    
     section.horizontalRulesEnabled = horizontalRulesEnabled;
     section.horizontalRuleColor = horizontalRuleColor;
     section.horizontalRuleOffset = horizontalRuleOffset;
-    
     section.verticalMarginEnabled = verticalMarginEnabled;
     section.verticalMarginColor = verticalMarginColor;
     section.verticalMarginInset = verticalMarginInset;
-    
     [section setNeedsDisplay];
 }
 
@@ -469,6 +455,7 @@
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
 {
+    // Make sure the view is the first responder
     if (![self isFirstResponder])
     {
         if (![self becomeFirstResponder])
@@ -477,35 +464,52 @@
         }
     }
     
-    selectionDisplayController_.caretVisible = YES;
-    [inputDelegate selectionWillChange:self];
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
     NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:touchLocation];
+    [inputDelegate selectionWillChange:self];
     [self setSelectedTextRange:[textPosition textRange]];
-    [self setMarkedTextRange:nil];
     [inputDelegate selectionDidChange:self];
+    
+    // Clear the marked text range when tapping outside it
+    if (![markedTextRange containsTextPosition:textPosition])
+    {
+        [self setMarkedTextRange:nil];
+    }
+    
+    selectionDisplayController_.caretVisible = YES;
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
-{
-    CGPoint touchLocation = [gestureRecognizer locationInView:self];
-    NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:touchLocation];
-    
+{    
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        selectionDisplayController_.caretVisible = YES;
-        selectionDisplayController_.caretBlinkingEnabled = NO;
+        CGPoint touchLocation = [gestureRecognizer locationInView:self];
+        NKTTextPosition *textPosition = nil;
+        
+        // Computed text position depends on whether there is marked text or not
+        if (markedTextRange != nil && !markedTextRange.empty)
+        {
+            textPosition = (NKTTextPosition *)[self closestPositionToPoint:touchLocation withinRange:markedTextRange];
+            [self showLoupe:self.bandLoupe atTextPosition:textPosition];
+        }
+        else
+        {
+            textPosition = (NKTTextPosition *)[self closestPositionToPoint:touchLocation];
+            [self showLoupe:self.roundLoupe atPoint:touchLocation anchorToLine:NO];
+        }
         
         [inputDelegate selectionWillChange:self];
         [self setSelectedTextRange:[textPosition textRange]];
-        [self showSelectionCaretLoupeAtTouchLocation:touchLocation];
         [inputDelegate selectionDidChange:self];
+        selectionDisplayController_.caretVisible = YES;
+        selectionDisplayController_.caretBlinkingEnabled = NO;
     }
     else
     {
+        [self.bandLoupe setHidden:YES animated:YES];
+        [self.roundLoupe setHidden:YES animated:YES];
         selectionDisplayController_.caretVisible = [self isFirstResponder];
         selectionDisplayController_.caretBlinkingEnabled = YES;
-        [self hideSelectionCaretLoupe];
     }
 }
 
@@ -517,40 +521,21 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         doubleTapStartTextPosition = [textPosition retain];
-        [self showSelectionBandLoupeAtTouchLocation:touchLocation];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        NKTTextRange *textRange = [doubleTapStartTextPosition textRangeWithTextPosition:textPosition];
-        // TODO: make sure selection isn't allowed to be empty
+        [self showLoupe:self.bandLoupe atPoint:touchLocation anchorToLine:YES];
+        NKTTextRange *textRange = [doubleTapStartTextPosition textRangeUntilTextPosition:textPosition];
         [inputDelegate selectionWillChange:self];
         [self setSelectedTextRange:textRange];
-        [self showSelectionBandLoupeAtTouchLocation:touchLocation];
         [inputDelegate selectionDidChange:self];
     }
     else
     {
-        [self hideSelectionBandLoupe];
+        [self.bandLoupe setHidden:YES animated:YES];
         [doubleTapStartTextPosition release];
         doubleTapStartTextPosition = nil;
     }
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Getting and Converting Coordinates
-
-- (CGPoint)lineOriginForLineAtIndex:(NSUInteger)index
-{
-    CGFloat y = margins.top + lineHeight + ((CGFloat)index * lineHeight);
-    CGPoint lineOrigin = CGPointMake(margins.left, y);
-    return lineOrigin;
-}
-
-- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line
-{
-    CGPoint lineOrigin = [self lineOriginForLineAtIndex:line.index];
-    return CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -595,7 +580,7 @@
 #pragma mark Getting Fonts at Text Positions
 
 // Returns font at the text position if available, otherwise returns the default system font.
-- (UIFont *)insertionFontForTextPosition:(NKTTextPosition *)textPosition
+- (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition
 {
     UIFont *font = nil;
     
@@ -628,7 +613,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Managing Selection Views
+#pragma mark Managing Loupes
 
 - (UIView *)zoomedView
 {
@@ -642,110 +627,74 @@
     }
 }
 
-- (void)showSelectionCaretLoupeAtTouchLocation:(CGPoint)touchLocation
+- (NKTLoupe *)bandLoupe
 {
     UIView *keyWindow = [[UIApplication sharedApplication] keyWindow];
     
-    if (selectionCaretLoupe == nil)
+    if (bandLoupe_ == nil)
     {
-        selectionCaretLoupe = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
-        selectionCaretLoupe.hidden = YES;
-        [keyWindow addSubview:selectionCaretLoupe];
+        bandLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
+        bandLoupe_.hidden = YES;
+        bandLoupe_.zoomedView = [self zoomedView];
+        [keyWindow addSubview:bandLoupe_];
     }
     
-    UIView *zoomedView = [self zoomedView];
-    selectionCaretLoupe.zoomedView = zoomedView;
-    
-    CGPoint zoomCenter = [self convertPoint:touchLocation toView:zoomedView];
-    selectionCaretLoupe.zoomCenter = zoomCenter;
-    
-    CGPoint anchor = touchLocation;
-    anchor = KBCClampPointToRect(anchor, self.bounds);
-    selectionCaretLoupe.anchor = [self convertPoint:anchor toView:keyWindow];
-    
-    [selectionCaretLoupe setHidden:NO animated:YES];
+    return bandLoupe_;
 }
 
-- (void)hideSelectionCaretLoupe
-{
-    [selectionCaretLoupe setHidden:YES animated:YES];
-}
-
-// TODO: Change name to present/update?
-- (void)showSelectionBandLoupeAtTouchLocation:(CGPoint)touchLocation
+- (NKTLoupe *)roundLoupe
 {
     UIView *keyWindow = [[UIApplication sharedApplication] keyWindow];
     
-    if (selectionBandLoupe == nil)
+    if (roundLoupe_ == nil)
     {
-        selectionBandLoupe = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
-        selectionBandLoupe.hidden = YES;
-        [keyWindow addSubview:selectionBandLoupe];
+        roundLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
+        roundLoupe_.hidden = YES;
+        roundLoupe_.zoomedView = [self zoomedView];
+        [keyWindow addSubview:roundLoupe_];
     }
     
-    UIView *zoomedView = [self zoomedView];
-    selectionBandLoupe.zoomedView = zoomedView;
-    
-    NKTLine *line = [self closestLineContainingPoint:touchLocation];
-    CGPoint lineOrigin = [self lineOriginForLineAtIndex:line.index];
-    
-    CGPoint zoomCenter = CGPointMake(touchLocation.x, lineOrigin.y);
-    zoomCenter = [self convertPoint:zoomCenter toView:zoomedView];
-    selectionBandLoupe.zoomCenter = zoomCenter;
-    
-    CGPoint anchor = CGPointMake(touchLocation.x, lineOrigin.y - lineHeight);
-    anchor = KBCClampPointToRect(anchor, self.bounds);
-    selectionBandLoupe.anchor = [self convertPoint:anchor toView:keyWindow];
-    
-    [selectionBandLoupe setHidden:NO animated:YES];
+    return roundLoupe_;
 }
 
-- (void)hideSelectionBandLoupe
+- (void)showLoupe:(NKTLoupe *)loupe atPoint:(CGPoint)point anchorToLine:(BOOL)anchorToLine
 {
-    [selectionBandLoupe setHidden:YES animated:YES];
-}
-
-- (CGRect)caretRectForPosition:(UITextPosition *)textPosition
-{
-    // Ask the controller since it is the one doing the actual caret display
-    return [selectionDisplayController_ caretRectForPosition:textPosition];
-}
-
-- (CGPoint)characterOriginForPosition:(NKTTextPosition *)textPosition
-{
-    NSUInteger textLength = [text length];
-    NSUInteger lineCount = [typesettedLines count];
-    
-    CGPoint lineOrigin = CGPointZero;
-    CGFloat charOffset = 0.0;
-    
-    if (lineCount == 0 || textPosition.index == 0)
+    if (anchorToLine)
     {
-        lineOrigin = [self lineOriginForLineAtIndex:0];
-    }
-    else if (textPosition.index >= textLength)
-    {
-        // Last character is a line break, caret is on the line following the last typesetted one
-        if ([[text string] characterAtIndex:(textLength - 1)] == '\n')
-        {
-            lineOrigin = [self lineOriginForLineAtIndex:lineCount];
-        }
-        // Last character is not a line break, caret is on the last typesetted line
-        else
-        {
-            NKTLine *lastLine = [typesettedLines objectAtIndex:(lineCount - 1)];
-            lineOrigin = [self lineOriginForLineAtIndex:lastLine.index];
-            charOffset = [lastLine offsetForCharAtTextPosition:textPosition];
-        }
+        NKTLine *line = [self closestLineContainingPoint:point];
+        CGPoint lineOrigin = [self originForLineAtIndex:line.index];
+        CGPoint zoomCenter = CGPointMake(point.x, lineOrigin.y);
+        loupe.zoomCenter = [self convertPoint:zoomCenter toView:loupe.zoomedView];
+        
+        CGPoint anchor = CGPointMake(point.x, lineOrigin.y - (lineHeight * 0.8));
+        anchor = KBCClampPointToRect(anchor, self.bounds);
+        loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
     else
     {
-        NKTLine *line = [self lineContainingTextPosition:textPosition];
-        lineOrigin = [self lineOriginForLineAtIndex:line.index];
-        charOffset = [line offsetForCharAtTextPosition:textPosition];
+        loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];;
+        
+        CGPoint anchor = KBCClampPointToRect(point, self.bounds);
+        loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
     
-    return CGPointMake(lineOrigin.x + charOffset, lineOrigin.y);
+    [loupe setHidden:NO animated:YES];
+}
+
+- (void)showLoupe:(NKTLoupe *)loupe atTextPosition:(NKTTextPosition *)textPosition
+{    
+    NKTLine *line = [self lineContainingTextPosition:textPosition];
+    CGPoint lineOrigin = [self originForLineAtIndex:line.index];
+    CGFloat charOffset = [line offsetForCharAtTextPosition:textPosition];
+    
+    CGPoint zoomCenter = CGPointMake(margins.left + charOffset, lineOrigin.y);
+    loupe.zoomCenter = [self convertPoint:zoomCenter toView:loupe.zoomedView];
+    
+    CGPoint anchor = CGPointMake(margins.left + charOffset, lineOrigin.y - (lineHeight * 0.8));
+    anchor = KBCClampPointToRect(anchor, self.bounds);
+    loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
+
+    [loupe setHidden:NO animated:YES];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -866,15 +815,11 @@
 
 - (NSDictionary *)markedTextStyle
 {
-    KBCLogTrace();
-    
     return markedTextStyle;
 }
 
 - (void)setMarkedTextStyle:(NSDictionary *)newMarkedTextStyle
 {
-    KBCLogTrace();
-    
     if (markedTextStyle == newMarkedTextStyle)
     {
         return;
@@ -936,7 +881,7 @@
 
 - (UITextRange *)textRangeFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
 {    
-    return [fromPosition textRangeWithTextPosition:toPosition];
+    return [fromPosition textRangeUntilTextPosition:toPosition];
 }
 
 - (UITextPosition *)positionFromPosition:(NKTTextPosition *)textPosition offset:(NSInteger)offset
@@ -1027,30 +972,6 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Geometry and Hit-Testing
-
-- (UITextPosition *)closestPositionToPoint:(CGPoint)point
-{
-    NSInteger virtualLineIndex = [self virtualIndexForLineContainingPoint:point];
-    
-    if (virtualLineIndex < 0 || [typesettedLines count] == 0)
-    {
-        return [NKTTextPosition textPositionWithIndex:0];
-    }
-    else if ((NSUInteger)virtualLineIndex >= [typesettedLines count])
-    {
-        return [NKTTextPosition textPositionWithIndex:[text length]];
-    }
-    else
-    {
-        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)virtualLineIndex];
-        CGPoint localPoint = [self convertPoint:point toLine:line];
-        return [line closestTextPositionToPoint:localPoint];
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark Determining Layout and Writing Direction
 
 - (UITextPosition *)positionWithinRange:(NKTTextRange *)textRange farthestInDirection:(UITextLayoutDirection)direction
@@ -1093,23 +1014,23 @@
         case UITextLayoutDirectionRight:
         {
             NKTLine *line = [self lineContainingTextPosition:textPosition];
-            textRange = [textPosition textRangeWithTextPosition:line.textRange.end];
+            textRange = [textPosition textRangeUntilTextPosition:line.textRange.end];
             break;
         }
         case UITextLayoutDirectionLeft:
         {
             NKTLine *line = [self lineContainingTextPosition:textPosition];
-            textRange = [textPosition textRangeWithTextPosition:line.textRange.start];
+            textRange = [textPosition textRangeUntilTextPosition:line.textRange.start];
             break;
         }
         case UITextLayoutDirectionUp:
         {
-            textRange = [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self beginningOfDocument]];
+            textRange = [textPosition textRangeUntilTextPosition:(NKTTextPosition *)[self beginningOfDocument]];
             break;
         }
         case UITextLayoutDirectionDown:
         {
-            textRange = [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self endOfDocument]];
+            textRange = [textPosition textRangeUntilTextPosition:(NKTTextPosition *)[self endOfDocument]];
             break;
         }
     }
@@ -1149,84 +1070,224 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Geometry and Hit-Testing Methods
+#pragma mark Geometry and Hit-Testing
+
+- (CGPoint)originForLineAtIndex:(NSUInteger)index
+{
+    CGFloat y = margins.top + lineHeight + ((CGFloat)index * lineHeight);
+    CGPoint lineOrigin = CGPointMake(margins.left, y);
+    return lineOrigin;
+}
+
+- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line
+{
+    CGPoint lineOrigin = [self originForLineAtIndex:line.index];
+    return CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
+}
 
 - (CGRect)rectForLine:(NKTLine *)line
 {
     CGFloat ascent = MIN(line.ascent, lineHeight);
     CGFloat height = MIN(line.ascent + line.descent, lineHeight);
     CGFloat width = self.bounds.size.width - margins.left - margins.right;
-    CGPoint origin = [self lineOriginForLineAtIndex:line.index];
+    CGPoint origin = [self originForLineAtIndex:line.index];
     const CGFloat heightPadding = 1.0;
     origin.y -= (ascent + heightPadding);
     return CGRectMake(origin.x, origin.y, width, height + (heightPadding * 2.0));
 }
 
-// TODO: caret computed in this class and given to selection display controller .. makes more sense?
+- (CGPoint)originForTextPosition:(NKTTextPosition *)textPosition
+{
+    NKTLine *line = [self lineContainingTextPosition:textPosition];
+    CGPoint lineOrigin = [self originForLineAtIndex:line.index];
+    CGFloat offset = [line offsetForCharAtTextPosition:textPosition];
+    return CGPointMake(margins.left + offset, lineOrigin.y);
+}
+
+- (CGPoint)characterOriginForPosition:(NKTTextPosition *)textPosition
+{
+    CGPoint lineOrigin = CGPointZero;
+    CGFloat charOffset = 0.0;
+    
+    // Use fake first line if no typesetted lines exist
+    if ([typesettedLines count] == 0 || textPosition.index == 0)
+    {
+        lineOrigin = [self originForLineAtIndex:0];
+    }
+    // Text position beyond the end of the document, special handling required
+    else if (textPosition.index >= [text length])
+    {
+        // Line break at end, so use origin of the line beyond the last typesetted one
+        if ([[text string] hasSuffix:@"\n"])
+        {
+            lineOrigin = [self originForLineAtIndex:[typesettedLines count]];
+        }
+        // Last character is not a line break, use the last typesetted line
+        else
+        {
+            NKTLine *lastLine = [typesettedLines objectAtIndex:[typesettedLines count] - 1];
+            lineOrigin = [self originForLineAtIndex:lastLine.index];
+            charOffset = [lastLine offsetForCharAtTextPosition:textPosition];
+        }
+    }
+    // Text position within the bounds of the text
+    else
+    {
+        NKTLine *line = [self lineContainingTextPosition:textPosition];
+        lineOrigin = [self originForLineAtIndex:line.index];
+        charOffset = [line offsetForCharAtTextPosition:textPosition];
+    }
+    
+    return CGPointMake(lineOrigin.x + charOffset, lineOrigin.y);
+}
+
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
 {
     NKTLine *firstLine = [self lineContainingTextPosition:textRange.start];
+ 
+    // First line does not exist, so no rects exist
+    if (firstLine == nil)
+    {
+        return nil;
+    }
+    
     NKTLine *lastLine = [self lineContainingTextPosition:textRange.end];
     
+    // Use the last typesetted line if no line contains the end of the text range
+    if (lastLine == nil)
+    {
+        lastLine = [typesettedLines objectAtIndex:[typesettedLines count] - 1];
+    }
+    
+    // Dealing with a single rect
     if (firstLine == lastLine)
     {
-        CGFloat startOffset = [firstLine offsetForCharAtTextPosition:textRange.start];
-        CGFloat endOffset = [firstLine offsetForCharAtTextPosition:textRange.end];
         CGRect rect = [self rectForLine:firstLine];
-        rect.origin.x += startOffset;
-        rect.size.width = endOffset - startOffset;
-        return [NSArray arrayWithObject:[NSValue valueWithCGRect:rect]];
-    }
-    else
-    {
-        NSMutableArray *rects = [[[NSMutableArray alloc] init] autorelease];
+        CGFloat charOffset = [firstLine offsetForCharAtTextPosition:textRange.start];
+        rect.origin.x += charOffset;
         
-        // Rect for first line
-        CGRect firstRect = [self rectForLine:firstLine];
-        CGFloat firstRectOffset = [firstLine offsetForCharAtTextPosition:textRange.start];
-        firstRect.origin.x += firstRectOffset;
-        firstRect.size.width -= firstRectOffset;
-        [rects addObject:[NSValue valueWithCGRect:firstRect]];
-        
-        // Rects for lines in between
-        for (NSUInteger lineIndex = firstLine.index + 1; lineIndex < lastLine.index; ++lineIndex)
+        // Use entire line if end of the text range is a line break at the end of document
+        if (textRange.end.index == [text length] && [[text string] hasSuffix:@"\n"])
         {
-            NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
-            CGRect rect = [self rectForLine:line];
-            [rects addObject:[NSValue valueWithCGRect:rect]];
+            rect.size.width -= charOffset;
+        }
+        else
+        {
+            CGFloat endOffset = [firstLine offsetForCharAtTextPosition:textRange.end];
+            rect.size.width = endOffset - charOffset;
         }
         
-        // Rect for last line
-        CGRect lastRect = [self rectForLine:lastLine];
-        CGFloat lastRectOffset = [lastLine offsetForCharAtTextPosition:textRange.end];
-        lastRect.size.width = lastRectOffset;
-        [rects addObject:[NSValue valueWithCGRect:lastRect]];
-        
-        return rects;
+        return [NSArray arrayWithObject:[NSValue valueWithCGRect:rect]];
     }
+    
+    // Multiple rects for text range
+    NSMutableArray *rects = [[[NSMutableArray alloc] init] autorelease];
+    
+    // Rect for first line
+    CGRect firstRect = [self rectForLine:firstLine];
+    CGFloat firstCharOffset = [firstLine offsetForCharAtTextPosition:textRange.start];
+    firstRect.origin.x += firstCharOffset;
+    firstRect.size.width -= firstCharOffset;
+    [rects addObject:[NSValue valueWithCGRect:firstRect]];
+    
+    // Rects for lines in between
+    for (NSUInteger lineIndex = firstLine.index + 1; lineIndex < lastLine.index; ++lineIndex)
+    {
+        NKTLine *line = [typesettedLines objectAtIndex:lineIndex];
+        CGRect rect = [self rectForLine:line];
+        [rects addObject:[NSValue valueWithCGRect:rect]];
+    }
+    
+    // Rect for last line
+    CGRect lastRect = [self rectForLine:lastLine];
+    
+    // Use entire line if end of the text range is a line break at the end of document
+    if (textRange.end.index != [text length] || ![[text string] hasSuffix:@"\n"])
+    {
+        CGFloat lastCharOffset = [lastLine offsetForCharAtTextPosition:textRange.end];
+        lastRect.size.width = lastCharOffset;
+    }
+    
+    [rects addObject:[NSValue valueWithCGRect:lastRect]];
+    
+    return rects;
 }
 
 - (CGRect)firstRectForRange:(NKTTextRange *)textRange
 {
     NSArray *rects = [self rectsForTextRange:textRange];
-    return [[rects objectAtIndex:0] CGRectValue];
+    
+    if (rects != nil)
+    {
+        return [[rects objectAtIndex:0] CGRectValue];
+    }
+    else
+    {
+        return CGRectZero;
+    }
+}
+
+- (CGRect)caretRectForPosition:(UITextPosition *)textPosition
+{
+    // Ask the controller since it is the one doing the actual caret display
+    return [selectionDisplayController_ caretRectForPosition:textPosition];
+}
+
+- (UITextPosition *)closestPositionToPoint:(CGPoint)point
+{
+    NSInteger virtualLineIndex = [self virtualIndexForLineContainingPoint:point];
+    
+    if (virtualLineIndex < 0 || [typesettedLines count] == 0)
+    {
+        return [NKTTextPosition textPositionWithIndex:0];
+    }
+    else if ((NSUInteger)virtualLineIndex >= [typesettedLines count])
+    {
+        return [NKTTextPosition textPositionWithIndex:[text length]];
+    }
+    else
+    {
+        NKTLine *line = [typesettedLines objectAtIndex:(NSUInteger)virtualLineIndex];
+        CGPoint localPoint = [self convertPoint:point toLine:line];
+        return [line closestTextPositionToPoint:localPoint];
+    }
 }
 
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
 {
     NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:point];
-
-    if (textPosition.index < textRange.start.index)
+    
+    if ([textRange containsTextPosition:textPosition])
+    {
+        return textPosition;
+    }
+    
+    // The closest text position lies on either the line containing the start of the text range or
+    // the line containing the end of the text range
+    NKTLine *firstLine = [self lineContainingTextPosition:textRange.start];
+    
+    if (firstLine == nil)
     {
         return textRange.start;
     }
-    else if (textPosition.index > textRange.end.index)
+    
+    CGPoint firstLineOrigin = [self originForLineAtIndex:firstLine.index];
+    CGPoint localPoint = CGPointMake(point.x - margins.left, 0.0);
+    
+    if (point.y <= firstLineOrigin.y)
     {
-        return textRange.end;
+        return [firstLine closestTextPositionToPoint:localPoint withinRange:textRange];
     }
     else
     {
-        return textPosition;
+        NKTLine *lastLine = [self lineContainingTextPosition:textRange.end];
+        
+        if (lastLine == nil)
+        {
+            lastLine = [typesettedLines objectAtIndex:[typesettedLines count] - 1];
+        }
+        
+        return [lastLine closestTextPositionToPoint:localPoint withinRange:textRange];    
     }
 }
 
@@ -1256,7 +1317,7 @@
 
 - (NSDictionary *)textStylingAtPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction
 {
-    UIFont *textFont = [self insertionFontForTextPosition:textPosition];
+    UIFont *textFont = [self fontAtTextPosition:textPosition];
     UIColor *textColor = [UIColor blackColor];
     UIColor *textBackgroundColor = self.backgroundColor;
     return [NSDictionary dictionaryWithObjectsAndKeys:textBackgroundColor, UITextInputTextBackgroundColorKey,

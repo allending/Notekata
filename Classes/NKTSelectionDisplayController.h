@@ -63,10 +63,10 @@
 - (UITextRange *)selectedTextRange;
 - (UITextRange *)markedTextRange;
 
-#pragma mark Geometry and Hit-Testing Methods
+#pragma mark Geometry and Hit-Testing
 
-- (NSArray *)rectsForTextRange:(UITextRange *)textRange;
 - (CGPoint)characterOriginForPosition:(UITextPosition *)textPosition;
+- (NSArray *)rectsForTextRange:(UITextRange *)textRange;
 
 #pragma mark Returning Text Styling Information
 

@@ -48,8 +48,8 @@
     UITextInputStringTokenizer *tokenizer;
     
     NKTSelectionDisplayController *selectionDisplayController_;
-    NKTLoupe *selectionCaretLoupe;
-    NKTLoupe *selectionBandLoupe;
+    NKTLoupe *bandLoupe_;
+    NKTLoupe *roundLoupe_;
     
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
     UITapGestureRecognizer *nonEditTapGestureRecognizer;
@@ -79,6 +79,7 @@
 
 @property (nonatomic, readonly) UITapGestureRecognizer *nonEditTapGestureRecognizer;
 @property (nonatomic, readonly) UITapGestureRecognizer *tapGestureRecognizer;
+@property (nonatomic, readonly) UILongPressGestureRecognizer *longPressGestureRecognizer;
 @property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
 
 @end

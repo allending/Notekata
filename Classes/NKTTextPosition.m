@@ -75,7 +75,7 @@
     return [NKTTextRange textRangeWithTextPosition:self length:0];
 }
 
-- (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition
+- (NKTTextRange *)textRangeUntilTextPosition:(NKTTextPosition *)textPosition
 {
     if (index < textPosition.index)
     {

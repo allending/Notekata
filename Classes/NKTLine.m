@@ -100,20 +100,36 @@
     }
     
     NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine, point);
-    NSUInteger textLength = [text length];
     
     // Adjust the character index if it is beyond the text range of the line
     if (charIndex == textRange.end.index)
     {
-        // Decrement unless the character index one past the last in the text and the last
-        // character is line break
-        if (charIndex != textLength || [[text string] characterAtIndex:(textLength - 1)] == '\n')
+        // Decrement unless the index is the last character and is not a line break
+        if (charIndex != [text length] || [[text string] hasSuffix:@"\n"])
         {
             --charIndex;
         }
     }
     
     return [NKTTextPosition textPositionWithIndex:charIndex];
+}
+
+- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
+{
+    NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
+    
+    if (textPosition.index < textRange.start.index)
+    {
+        return textRange.start;
+    }
+    else if (textPosition.index > textRange.end.index)
+    {
+        return textRange.end;
+    }
+    else
+    {
+        return textPosition;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
