@@ -18,31 +18,37 @@ typedef enum
 @interface NKTLoupe : UIView
 {
 @private
-    UIImage *maskData;
-    UIImage *overlay;
-    CGImageRef mask;
+    UIImage *maskData_;
+    UIImage *overlay_;
+    CGImageRef mask_;
     
-    CGPoint anchor;
-    CGPoint anchorOffset;
+    CGPoint anchor_;
+    CGPoint anchorOffset_;
     
-    UIView *zoomedView;
-    CGPoint zoomCenter;
-    CGFloat inverseZoomScale;
+    UIView *zoomedView_;
+    CGPoint zoomCenter_;
+    CGFloat inverseZoomScale_;
+    
+    UIColor *fillColor_;
 }
 
 #pragma mark Initializing
 
 - (id)initWithStyle:(NKTLoupeStyle)style;
 
-#pragma mark Managing the Loupe Anchor
+#pragma mark Anchoring
 
-@property (nonatomic, readwrite) CGPoint anchor;
+@property (nonatomic) CGPoint anchor;
 
 #pragma mark Zooming
 
-@property (nonatomic, readwrite, assign) UIView *zoomedView;
-@property (nonatomic, readwrite) CGPoint zoomCenter;
-@property (nonatomic, readwrite) CGFloat zoomScale;
+@property (nonatomic, assign) UIView *zoomedView;
+@property (nonatomic) CGPoint zoomCenter;
+@property (nonatomic) CGFloat zoomScale;
+
+#pragma mark Setting the Fill Color
+
+@property (nonatomic, retain) UIColor *fillColor;
 
 #pragma mark Displaying
 

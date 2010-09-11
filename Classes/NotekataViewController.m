@@ -45,6 +45,11 @@
 
 #pragma mark Managing Views
 
+- (UIColor *)loupeFillColor
+{
+    return self.view.backgroundColor;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];

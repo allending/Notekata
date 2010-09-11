@@ -39,6 +39,8 @@
 
 #pragma mark Responding to Gestures
 
+@property (nonatomic, retain) NKTTextPosition *doubleTapStartTextPosition;
+
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer;
@@ -55,7 +57,6 @@
 
 #pragma mark Managing Loupes
 
-@property (nonatomic, readonly) UIView *zoomedView;
 @property (nonatomic, readonly) NKTLoupe *bandLoupe;
 @property (nonatomic, readonly) NKTLoupe *roundLoupe;
 
@@ -64,6 +65,8 @@
 
 #pragma mark Working with Marked and Selected Text
 
+- (void)setProvisionalTextRange:(NKTTextRange *)provisionalTextRange;
+- (void)confirmProvisionalTextRange;
 - (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
 #pragma mark Geometry and Hit-Testing
@@ -98,6 +101,7 @@
 @synthesize tapGestureRecognizer;
 @synthesize longPressGestureRecognizer;
 @synthesize doubleTapAndDragGestureRecognizer;
+@synthesize doubleTapStartTextPosition = doubleTapStartTextPosition_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -190,6 +194,7 @@
     [markedTextRange release];
     [markedTextStyle release];
     [markedText release];
+    [provisionalTextRange_ release];
     
     [tokenizer release];
     
@@ -202,7 +207,7 @@
     [tapGestureRecognizer release];
     [longPressGestureRecognizer release];
     [doubleTapAndDragGestureRecognizer release];
-    [doubleTapStartTextPosition release];
+    [doubleTapStartTextPosition_ release];
     
     [super dealloc];
 }
@@ -482,7 +487,7 @@
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
 {    
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged)
-    {
+    {    
         CGPoint touchLocation = [gestureRecognizer locationInView:self];
         NKTTextPosition *textPosition = nil;
         
@@ -498,18 +503,14 @@
             [self showLoupe:self.roundLoupe atPoint:touchLocation anchorToLine:NO];
         }
         
-        [inputDelegate selectionWillChange:self];
-        [self setSelectedTextRange:[textPosition textRange]];
-        [inputDelegate selectionDidChange:self];
-        selectionDisplayController_.caretVisible = YES;
-        selectionDisplayController_.caretBlinkingEnabled = NO;
+        [self setProvisionalTextRange:[textPosition textRange]];
     }
     else
     {
+        [self confirmProvisionalTextRange];
         [self.bandLoupe setHidden:YES animated:YES];
         [self.roundLoupe setHidden:YES animated:YES];
         selectionDisplayController_.caretVisible = [self isFirstResponder];
-        selectionDisplayController_.caretBlinkingEnabled = YES;
     }
 }
 
@@ -520,21 +521,19 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
-        doubleTapStartTextPosition = [textPosition retain];
+        self.doubleTapStartTextPosition = textPosition;
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
         [self showLoupe:self.bandLoupe atPoint:touchLocation anchorToLine:YES];
-        NKTTextRange *textRange = [doubleTapStartTextPosition textRangeUntilTextPosition:textPosition];
-        [inputDelegate selectionWillChange:self];
-        [self setSelectedTextRange:textRange];
-        [inputDelegate selectionDidChange:self];
+        NKTTextRange *textRange = [self.doubleTapStartTextPosition textRangeUntilTextPosition:textPosition];
+        [self setProvisionalTextRange:textRange];
     }
     else
     {
+        [self confirmProvisionalTextRange];
         [self.bandLoupe setHidden:YES animated:YES];
-        [doubleTapStartTextPosition release];
-        doubleTapStartTextPosition = nil;
+        self.doubleTapStartTextPosition = nil;
     }
 }
 
@@ -615,28 +614,27 @@
 
 #pragma mark Managing Loupes
 
-- (UIView *)zoomedView
-{
-    if ([self.delegate respondsToSelector:@selector(textViewViewForZooming:)])
-    {
-        return [self.delegate textViewViewForZooming:self];
-    }
-    else
-    {
-        return self.superview;
-    }
-}
-
 - (NKTLoupe *)bandLoupe
-{
-    UIView *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    
+{    
     if (bandLoupe_ == nil)
     {
         bandLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
         bandLoupe_.hidden = YES;
-        bandLoupe_.zoomedView = [self zoomedView];
-        [keyWindow addSubview:bandLoupe_];
+        bandLoupe_.zoomedView = self;
+        
+        if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
+        {
+            bandLoupe_.fillColor = [self.delegate loupeFillColor];
+        }
+        
+        if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
+        {
+            [self.delegate addLoupe:bandLoupe_];
+        }
+        else
+        {
+            [self.superview addSubview:bandLoupe_];
+        }
     }
     
     return bandLoupe_;
@@ -644,14 +642,25 @@
 
 - (NKTLoupe *)roundLoupe
 {
-    UIView *keyWindow = [[UIApplication sharedApplication] keyWindow];
-    
     if (roundLoupe_ == nil)
     {
         roundLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
         roundLoupe_.hidden = YES;
-        roundLoupe_.zoomedView = [self zoomedView];
-        [keyWindow addSubview:roundLoupe_];
+        roundLoupe_.zoomedView = self;
+
+        if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
+        {
+            roundLoupe_.fillColor = [self.delegate loupeFillColor];
+        }
+        
+        if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
+        {
+            [self.delegate addLoupe:roundLoupe_];
+        }
+        else
+        {
+            [self.superview addSubview:roundLoupe_];
+        }
     }
     
     return roundLoupe_;
@@ -806,6 +815,35 @@
     [selectedTextRange autorelease];
     selectedTextRange = [newSelectedTextRange copy];
     [selectionDisplayController_ selectedTextRangeDidChange];
+}
+
+- (UITextRange *)provisionalTextRange
+{
+    return provisionalTextRange_;
+}
+
+- (void)setProvisionalTextRange:(NKTTextRange *)provisionalTextRange
+{
+    if ([provisionalTextRange_ isEqualToTextRange:provisionalTextRange])
+    {
+        return;
+    }
+    
+    [provisionalTextRange retain];
+    [provisionalTextRange_ release];
+    provisionalTextRange_ = provisionalTextRange;
+    [selectionDisplayController_ provisionalTextRangeDidChange];
+}
+
+- (void)confirmProvisionalTextRange
+{
+    NKTTextRange *provisionalTextRange = (NKTTextRange *)self.provisionalTextRange;
+    [provisionalTextRange retain];
+    self.provisionalTextRange = nil;
+    [inputDelegate selectionWillChange:self];
+    self.selectedTextRange = provisionalTextRange;
+    [inputDelegate selectionDidChange:self];
+    [provisionalTextRange release];
 }
 
 - (UITextRange *)markedTextRange

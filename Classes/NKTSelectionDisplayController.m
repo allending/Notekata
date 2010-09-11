@@ -110,12 +110,20 @@
 
 - (void)updateCaret
 {
-    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
+    UITextRange *textRange = [delegate_ provisionalTextRange];
+    BOOL provisional = YES;
     
-    if (selectedTextRange != nil && selectedTextRange.empty && caretVisible_)
+    if (textRange == nil)
     {
-        self.caret.frame = [self caretRectForPosition:selectedTextRange.start];
+        provisional = NO;
+        textRange = [delegate_ selectedTextRange];
+    }
+    
+    if (textRange != nil && textRange.empty && caretVisible_)
+    {
+        self.caret.frame = [self caretRectForPosition:textRange.start];
         self.caret.hidden = NO;
+        self.caret.blinkingEnabled = !provisional;
         [self.caret restartBlinking];
     }
     else
@@ -126,11 +134,16 @@
 
 - (void)updateSelectedTextRegion
 {
-    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
+    UITextRange *textRange = [delegate_ provisionalTextRange];
     
-    if (selectedTextRange != nil && !selectedTextRange.empty && selectedTextRegionVisible_)
+    if (textRange == nil)
     {
-        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:selectedTextRange];
+        textRange = [delegate_ selectedTextRange];
+    }
+    
+    if (textRange != nil && !textRange.empty && selectedTextRegionVisible_)
+    {
+        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:textRange];
         self.selectedTextRegion.hidden = NO;
     }
     else
@@ -158,9 +171,14 @@
 
 #pragma mark Controlling Selection Element Display
 
-- (void)setCaretVisible:(BOOL)selectionElementsVisibleFlag
+- (void)setCaretVisible:(BOOL)caretVisible
 {
-    caretVisible_ = selectionElementsVisibleFlag;
+    if (caretVisible_ == caretVisible)
+    {
+        return;
+    }
+    
+    caretVisible_ = caretVisible;
     [self updateCaret];
 }
 
@@ -199,6 +217,12 @@
 - (void)markedTextRangeDidChange
 {
     [self updateMarkedTextRegion];
+}
+
+- (void)provisionalTextRangeDidChange
+{
+    [self updateCaret];
+    [self updateSelectedTextRegion];
 }
 
 //--------------------------------------------------------------------------------------------------

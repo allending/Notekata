@@ -117,4 +117,23 @@
     return [[self class] textRangeWithIndex:theIndex length:length];
 }
 
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Comparing Text Ranges
+
+- (BOOL)isEqual:(id)object
+{
+    if ([object isKindOfClass:[NKTTextRange class]])
+    {
+        return [self isEqualToTextRange:object];
+    }
+    
+    return [super isEqual:object];
+}
+
+- (BOOL)isEqualToTextRange:(NKTTextRange *)textRange
+{
+    return start.index == textRange.start.index && length == textRange.length;
+}
+
 @end

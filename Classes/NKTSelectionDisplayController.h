@@ -43,6 +43,7 @@
 
 - (void)selectedTextRangeDidChange;
 - (void)markedTextRangeDidChange;
+- (void)provisionalTextRangeDidChange;
 
 #pragma mark Getting Selection Geometry
 
@@ -62,6 +63,7 @@
 
 - (UITextRange *)selectedTextRange;
 - (UITextRange *)markedTextRange;
+- (UITextRange *)provisionalTextRange;
 
 #pragma mark Geometry and Hit-Testing
 

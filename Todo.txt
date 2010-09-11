@@ -12,12 +12,11 @@ Design: Controller responsible for setting up styles of text view
 
 Text View
 ---------
-Issue: Rotation and selection elements!
-Issue: UITextInput speed problems
 Issue: Make meaning of text position styling / fonts consistent (autocorrect, insertion text, etc)
 Issue: Keyboard input
 
 Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
+Feature: Selection handles
 Feature: Scrolling behavior while editing
 Feature: Cut copy paste
 Feature: Context menus w/ selection
@@ -39,6 +38,8 @@ Issue: Typesetting lines with trailing white space causes some weird issues
 
 Done
 ----
+x Issue: UITextInput speed problems
+x Issue: Rotation and selection elements!
 x Issue: Empty doc, double tap select, long press select, visual behavior
 x Issue: Fix rects returned
 x Issue: marked text range selection at end

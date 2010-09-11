@@ -45,6 +45,10 @@
 - (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)length;
 - (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)index;
 
+#pragma mark Comparing Text Ranges
+
+- (BOOL)isEqualToTextRange:(NKTTextRange *)textRange;
+
 @end
 
 #pragma mark -
