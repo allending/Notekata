@@ -20,43 +20,43 @@
 @interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
 {
 @private
-    NSMutableAttributedString *text;
+    NSMutableAttributedString *text_;
     
-    UIEdgeInsets margins;
-    CGFloat lineHeight;
+    UIEdgeInsets margins_;
+    CGFloat lineHeight_;
     
-    BOOL horizontalRulesEnabled;
-    UIColor *horizontalRuleColor;
-    CGFloat horizontalRuleOffset;
-    BOOL verticalMarginEnabled;
-    UIColor *verticalMarginColor;
-    CGFloat verticalMarginInset;
+    BOOL horizontalRulesEnabled_;
+    UIColor *horizontalRuleColor_;
+    CGFloat horizontalRuleOffset_;
+    BOOL verticalMarginEnabled_;
+    UIColor *verticalMarginColor_;
+    CGFloat verticalMarginInset_;
     
-    NSMutableArray *typesettedLines;
+    NSMutableArray *typesettedLines_;
     
-    NSMutableSet *visibleSections;
-    NSMutableSet *reusableSections;
-    NSMutableSet *underlayViews;
+    NSMutableSet *visibleSections_;
+    NSMutableSet *reusableSections_;
+    NSMutableSet *underlayViews_;
     NSMutableSet *overlayViews;
     
-    NKTTextRange *selectedTextRange;
-    NKTTextRange *markedTextRange;
-    NSDictionary *markedTextStyle;
-    NSString *markedText;
+    NKTTextRange *selectedTextRange_;
+    NKTTextRange *markedTextRange_;
+    NSDictionary *markedTextStyle_;
+    NSString *markedText_;
     NKTTextRange *provisionalTextRange_;
     
-    id <UITextInputDelegate> inputDelegate;
-    UITextInputStringTokenizer *tokenizer;
+    id <UITextInputDelegate> inputDelegate_;
+    UITextInputStringTokenizer *tokenizer_;
     
     NKTSelectionDisplayController *selectionDisplayController_;
     NKTLoupe *bandLoupe_;
     NKTLoupe *roundLoupe_;
     
-    NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate;
-    UITapGestureRecognizer *nonEditTapGestureRecognizer;
-    UITapGestureRecognizer *tapGestureRecognizer;
-    UILongPressGestureRecognizer *longPressGestureRecognizer;
-    NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
+    NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate_;
+    UITapGestureRecognizer *nonEditTapGestureRecognizer_;
+    UITapGestureRecognizer *tapGestureRecognizer_;
+    UILongPressGestureRecognizer *longPressGestureRecognizer_;
+    NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer_;
     NKTTextPosition *doubleTapStartTextPosition_;
 }
 
@@ -69,10 +69,10 @@
 @property (nonatomic, readwrite) UIEdgeInsets margins;
 @property (nonatomic, readwrite) CGFloat lineHeight;
 
-@property (nonatomic) BOOL horizontalRulesEnabled;
+@property (nonatomic, getter = areHorizontalRulesEnabled) BOOL horizontalRulesEnabled;
 @property (nonatomic, retain) UIColor *horizontalRuleColor;
 @property (nonatomic) CGFloat horizontalRuleOffset;
-@property (nonatomic) BOOL verticalMarginEnabled;
+@property (nonatomic, getter = isVerticalMarginEnabled) BOOL verticalMarginEnabled;
 @property (nonatomic, retain) UIColor *verticalMarginColor;
 @property (nonatomic) CGFloat verticalMarginInset;
 

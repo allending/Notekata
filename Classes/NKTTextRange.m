@@ -7,26 +7,26 @@
 
 @implementation NKTTextRange
 
-@synthesize length;
+@synthesize length = length_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)theLength
+- (id)initWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length
 {
     if ((self = [super init]))
     {
-        start = [textPosition retain];
-        length = theLength;
+        start_ = [textPosition retain];
+        length_ = length;
     }
     
     return self;
 }
 
-- (id)initWithIndex:(NSUInteger)index length:(NSUInteger)theLength
+- (id)initWithIndex:(NSUInteger)index length:(NSUInteger)length
 {
-    return [self initWithTextPosition:[NKTTextPosition textPositionWithIndex:index] length:theLength];
+    return [self initWithTextPosition:[NKTTextPosition textPositionWithIndex:index] length:length];
 }
 
 + (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length
@@ -41,7 +41,7 @@
 
 - (void)dealloc
 {
-    [start release];
+    [start_ release];
     [super dealloc];
 }
 
@@ -60,17 +60,17 @@
 
 - (NKTTextPosition *)start
 {
-    return start;
+    return start_;
 }
 
 - (NKTTextPosition *)end
 {
-    return [NKTTextPosition textPositionWithIndex:start.index + length];
+    return [NKTTextPosition textPositionWithIndex:start_.index + length_];
 }
 
 - (BOOL)isEmpty
 {
-    return length == 0;
+    return length_ == 0;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@
 
 - (NSRange)nsRange
 {
-    return NSMakeRange(start.index, length);
+    return NSMakeRange(start_.index, length_);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -88,7 +88,7 @@
 
 - (BOOL)containsTextPosition:(NKTTextPosition *)textPosition
 {
-    return textPosition.index >= start.index && textPosition.index < start.index + length;
+    return textPosition.index >= start_.index && textPosition.index < (start_.index + length_);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -97,9 +97,9 @@
 
 - (NKTTextRange *)textRangeByGrowingLeft
 {
-    if (start.index > 0)
+    if (start_.index > 0)
     {
-        return [[self class] textRangeWithIndex:(start.index - 1) length:length + 1];
+        return [[self class] textRangeWithIndex:(start_.index - 1) length:length_ + 1];
     }
     else
     {
@@ -107,14 +107,14 @@
     }
 }
 
-- (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)theLength
+- (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)length
 {
-    return [[self class] textRangeWithIndex:start.index length:theLength];
+    return [[self class] textRangeWithIndex:start_.index length:length];
 }
 
-- (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)theIndex
+- (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)index
 {
-    return [[self class] textRangeWithIndex:theIndex length:length];
+    return [[self class] textRangeWithIndex:index length:length_];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -133,7 +133,7 @@
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange
 {
-    return start.index == textRange.start.index && length == textRange.length;
+    return start_.index == textRange.start.index && length_ == textRange.length;
 }
 
 @end

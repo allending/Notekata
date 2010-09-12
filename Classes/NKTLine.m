@@ -8,26 +8,26 @@
 
 @implementation NKTLine
 
-@synthesize index;
+@synthesize index = index_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)theIndex text:(NSAttributedString *)theText CTLine:(CTLineRef)theCTLine
+- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text CTLine:(CTLineRef)ctLine
 {
     if ((self = [super init]))
     {
-        if (theText == nil || theCTLine == NULL)
+        if (text == nil || ctLine == NULL)
         {
             NSLog(@"%s: invalid initialization arguments", __PRETTY_FUNCTION__);
             [self release];
             return nil;
         }
         
-        index = theIndex;
-        text = [theText retain];
-        ctLine = CFRetain(theCTLine);
+        index_ = index;
+        text_ = [text retain];
+        ctLine_ = CFRetain(ctLine);
     }
     
     return self;
@@ -35,8 +35,8 @@
 
 - (void)dealloc
 {
-    [text release];
-    CFRelease(ctLine);
+    [text_ release];
+    CFRelease(ctLine_);
     [super dealloc];
 }
 
@@ -46,7 +46,7 @@
 
 - (NKTTextRange *)textRange
 {
-    CFRange range = CTLineGetStringRange(ctLine);
+    CFRange range = CTLineGetStringRange(ctLine_);
     return [NKTTextRange textRangeWithIndex:range.location length:range.length];
 }
 
@@ -57,21 +57,21 @@
 - (CGFloat)ascent
 {
     CGFloat ascent;
-    CTLineGetTypographicBounds(ctLine, &ascent, NULL, NULL);
+    CTLineGetTypographicBounds(ctLine_, &ascent, NULL, NULL);
     return ascent;
 }
 
 - (CGFloat)descent
 {
     CGFloat descent;
-    CTLineGetTypographicBounds(ctLine, NULL, &descent, NULL);
+    CTLineGetTypographicBounds(ctLine_, NULL, &descent, NULL);
     return descent;
 }
 
 - (CGFloat)leading
 {
     CGFloat leading;
-    CTLineGetTypographicBounds(ctLine, NULL, NULL, &leading);
+    CTLineGetTypographicBounds(ctLine_, NULL, NULL, &leading);
     return leading;
 }
 
@@ -81,7 +81,7 @@
 
 - (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
-    CGFloat offset = CTLineGetOffsetForStringIndex(ctLine, (CFIndex)textPosition.index, NULL);
+    CGFloat offset = CTLineGetOffsetForStringIndex(ctLine_, (CFIndex)textPosition.index, NULL);
     return offset;
 }
 
@@ -99,13 +99,13 @@
         return textRange.start;
     }
     
-    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine, point);
+    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine_, point);
     
     // Adjust the character index if it is beyond the text range of the line
     if (charIndex == textRange.end.index)
     {
         // Decrement unless the index is the last character and is not a line break
-        if (charIndex != [text length] || [[text string] hasSuffix:@"\n"])
+        if (charIndex != [text_ length] || [[text_ string] hasSuffix:@"\n"])
         {
             --charIndex;
         }
@@ -138,7 +138,7 @@
 
 - (void)drawInContext:(CGContextRef)context
 {
-    CTLineDraw(ctLine, context);
+    CTLineDraw(ctLine_, context);
 }
 
 @end

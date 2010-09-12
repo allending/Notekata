@@ -14,7 +14,7 @@
 @interface NKTTextPosition : UITextPosition
 {
 @private
-    NSUInteger index;
+    NSUInteger index_;
 }
 
 #pragma mark Initializing

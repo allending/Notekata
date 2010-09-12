@@ -4,16 +4,16 @@
 
 #import "KobaCore.h"
 
-//--------------------------------------------------------------------------------------------------
-// NKTLoupe implements a view with 'magnifying glass' behavior. It is useful for presenting regions
-// of views that may be hidden under the user's touch location.
-//--------------------------------------------------------------------------------------------------
-
 typedef enum
 {
     NKTLoupeStyleBand,
     NKTLoupeStyleRound
 } NKTLoupeStyle;     
+
+//--------------------------------------------------------------------------------------------------
+// NKTLoupe implements a view with 'magnifying glass' behavior. It is useful for presenting regions
+// of views that may be hidden under the user's touch location.
+//--------------------------------------------------------------------------------------------------
 
 @interface NKTLoupe : UIView
 {

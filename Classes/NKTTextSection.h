@@ -11,39 +11,37 @@
 @interface NKTTextSection : UIView
 {
 @private
-    NSInteger index;
+    NSInteger index_;
     
-    NSArray *typesettedLines;
+    NSArray *typesettedLines_;
     
-    UIEdgeInsets margins;
-    CGFloat lineHeight;
-    NSUInteger numberOfSkirtLines;
-
-    BOOL horizontalRulesEnabled;
-    UIColor *horizontalRuleColor;
-    CGFloat horizontalRuleOffset;
+    UIEdgeInsets margins_;
+    CGFloat lineHeight_;
+    NSUInteger numberOfSkirtLines_;
     
-    BOOL verticalMarginEnabled;
-    UIColor *verticalMarginColor;
-    CGFloat verticalMarginInset;
+    BOOL horizontalRulesEnabled_;
+    UIColor *horizontalRuleColor_;
+    CGFloat horizontalRuleOffset_;
+    BOOL verticalMarginEnabled_;
+    UIColor *verticalMarginColor_;
+    CGFloat verticalMarginInset_;
 }
 
 #pragma mark Configuring the Text Section
 
-@property (nonatomic, readwrite) NSInteger index;
+@property (nonatomic) NSInteger index;
 
-@property (nonatomic, readwrite, retain) NSArray *typesettedLines;
+@property (nonatomic, retain) NSArray *typesettedLines;
 
-@property (nonatomic, readwrite) UIEdgeInsets margins;
-@property (nonatomic, readwrite) CGFloat lineHeight;
-@property (nonatomic, readwrite) NSUInteger numberOfSkirtLines;
+@property (nonatomic) UIEdgeInsets margins;
+@property (nonatomic) CGFloat lineHeight;
+@property (nonatomic) NSUInteger numberOfSkirtLines;
 
-@property (nonatomic, readwrite) BOOL horizontalRulesEnabled;
-@property (nonatomic, readwrite, retain) UIColor *horizontalRuleColor;
-@property (nonatomic, readwrite) CGFloat horizontalRuleOffset;
-
-@property (nonatomic, readwrite) BOOL verticalMarginEnabled;
-@property (nonatomic, readwrite, retain) UIColor *verticalMarginColor;
-@property (nonatomic, readwrite) CGFloat verticalMarginInset;
+@property (nonatomic, getter = areHorizontalRulesEnabled) BOOL horizontalRulesEnabled;
+@property (nonatomic, retain) UIColor *horizontalRuleColor;
+@property (nonatomic) CGFloat horizontalRuleOffset;
+@property (nonatomic, getter = isVerticalMarginEnabled) BOOL verticalMarginEnabled;
+@property (nonatomic, retain) UIColor *verticalMarginColor;
+@property (nonatomic) CGFloat verticalMarginInset;
 
 @end

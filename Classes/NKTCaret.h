@@ -5,20 +5,18 @@
 #import "KobaCore.h"
 
 //--------------------------------------------------------------------------------------------------
-// NKTCaret visually marks a location in text.
+// NKTCaret marks a text position in a text view.
 //--------------------------------------------------------------------------------------------------
 
 @interface NKTCaret : UIView
 {
 @private
-    BOOL blinkingEnabled;
+    BOOL blinkingEnabled_;
 }
-
-//--------------------------------------------------------------------------------------------------
 
 #pragma mark Controlling Blinking
 
-@property (nonatomic, readwrite, getter = isBlinkingEnabled) BOOL blinkingEnabled;
+@property (nonatomic, getter = isBlinkingEnabled) BOOL blinkingEnabled;
 
 - (void)restartBlinking;
 

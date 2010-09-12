@@ -182,16 +182,6 @@
     [self updateCaret];
 }
 
-- (BOOL)isCaretBlinkingEnabled
-{
-    return self.caret.isBlinkingEnabled;
-}
-
-- (void)setCaretBlinkingEnabled:(BOOL)caretBlinkingEnabled
-{
-    caret_.blinkingEnabled = caretBlinkingEnabled;
-}
-
 - (void)setSelectedTextRegionVisible:(BOOL)selectedTextRegionVisible
 {
     selectedTextRegionVisible_ = selectedTextRegionVisible;

@@ -14,8 +14,8 @@
 @interface NKTTextRange : UITextRange
 {
 @private
-    NKTTextPosition *start;
-    NSUInteger length;
+    NKTTextPosition *start_;
+    NSUInteger length_;
 }
 
 #pragma mark Initializing

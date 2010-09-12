@@ -3,8 +3,6 @@ TODO
 
 General
 -------
-OCD: Make property access consistent
-OCD: Use internal ivar names
 
 Controller
 ----------
@@ -38,6 +36,8 @@ Issue: Typesetting lines with trailing white space causes some weird issues
 
 Done
 ----
+x OCD: Make property access consistent
+x OCD: Use internal ivar names
 x Issue: UITextInput speed problems
 x Issue: Rotation and selection elements!
 x Issue: Empty doc, double tap select, long press select, visual behavior

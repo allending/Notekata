@@ -6,7 +6,7 @@
 
 @implementation NKTCaret
 
-@synthesize blinkingEnabled;
+@synthesize blinkingEnabled = blinkingEnabled_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@
     {
         self.backgroundColor = [UIColor blueColor];
         self.userInteractionEnabled = NO;
-        blinkingEnabled = YES;
+        blinkingEnabled_ = YES;
         [self restartBlinking];
     }
     
@@ -29,38 +29,33 @@
 
 #pragma mark Controlling Blinking
 
-- (void)setBlinkingEnabled:(BOOL)blinkingEnabledFlag
+- (void)setBlinkingEnabled:(BOOL)blinkingEnabled
 {
-    if (blinkingEnabled == blinkingEnabledFlag)
+    if (!blinkingEnabled_ && blinkingEnabled)
     {
-        return;
-    }
-    
-    blinkingEnabled = blinkingEnabledFlag;
-    
-    // Not blinking => blinking
-    if (blinkingEnabled)
-    {
+        blinkingEnabled_ = YES;
         [self restartBlinking];
     }
-    // Blinking => not blinking
-    else
+    else if (blinkingEnabled_ && !blinkingEnabled)
     {
+        blinkingEnabled_ = NO;
         self.alpha = 1.0;
     }
 }
 
+static const CGFloat NKTCaretBlinkPeriodSeconds = 0.875;
+
 - (void)restartBlinking
 {
-    if (!self.isBlinkingEnabled)
+    if (!blinkingEnabled_)
     {
         return;
     }
     
     self.alpha = 1.0;
-    [UIView beginAnimations:@"NKTCaret" context:nil];
+    [UIView beginAnimations:nil context:nil];
     [UIView setAnimationRepeatCount:CGFLOAT_MAX];
-    [UIView setAnimationDuration:0.875];
+    [UIView setAnimationDuration:NKTCaretBlinkPeriodSeconds];
     self.alpha = 0.0;
     [UIView commitAnimations];
 }

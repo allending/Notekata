@@ -35,7 +35,6 @@
 #pragma mark Controlling Selection Element Display
 
 @property (nonatomic, getter = isCaretVisible) BOOL caretVisible;
-@property (nonatomic, getter = isCaretBlinkingEnabled) BOOL caretBlinkingEnabled;
 @property (nonatomic, getter = isSelectedTextRegionVisible) BOOL selectedTextRegionVisible;
 @property (nonatomic, getter = isMarkedTextRegionVisible) BOOL markedTextRegionVisible;
 

@@ -8,8 +8,8 @@
 
 #pragma mark Drawing
 
-- (void)addCoalescedRectsPathToContext:(CGContextRef)context;
-- (void)addDisjointedRectsPathToContext:(CGContextRef)context;
+- (void)addCoalescedRectsToContext:(CGContextRef)context;
+- (void)addDisjointedRectsToContext:(CGContextRef)context;
 
 @end
 
@@ -64,15 +64,15 @@
 #pragma mark Managing the Region's Rects
 
 // Region rects are specified in the superview's space
-- (void)setRects:(NSArray *)regionRects
+- (void)setRects:(NSArray *)rects
 {
-    if (rects_ == regionRects)
+    if (rects_ == rects)
     {
         return;
     }
     
     [rects_ release];
-    rects_ = [regionRects copy];
+    rects_ = [rects copy];
 
     // Figure out the frame required to fit the rects in
     
@@ -158,11 +158,11 @@
     // Add desired path to context
     if (coalescesRects_ && [rects_ count] > 1)
     {
-        [self addCoalescedRectsPathToContext:context];
+        [self addCoalescedRectsToContext:context];
     }
     else
     {
-        [self addDisjointedRectsPathToContext:context];
+        [self addDisjointedRectsToContext:context];
     }
     
     // Draw path with the desired mode
@@ -180,7 +180,7 @@
     }
 }
 
-- (void)addCoalescedRectsPathToContext:(CGContextRef)context
+- (void)addCoalescedRectsToContext:(CGContextRef)context
 {
     CGRect topRect = [[rects_ objectAtIndex:0] CGRectValue];
     CGRect bottomRect = [[rects_ objectAtIndex:[rects_ count] - 1] CGRectValue];
@@ -198,7 +198,7 @@
 
 }
 
-- (void)addDisjointedRectsPathToContext:(CGContextRef)context
+- (void)addDisjointedRectsToContext:(CGContextRef)context
 {
     CGContextBeginPath(context);
     

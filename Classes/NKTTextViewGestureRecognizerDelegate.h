@@ -15,7 +15,7 @@
 @interface NKTTextViewGestureRecognizerDelegate : NSObject <UIGestureRecognizerDelegate>
 {
 @private
-    NKTTextView *textView;
+    NKTTextView *textView_;
 }
 
 #pragma mark Initializing

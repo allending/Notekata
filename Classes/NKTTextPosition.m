@@ -7,24 +7,24 @@
 
 @implementation NKTTextPosition
 
-@synthesize index;
+@synthesize index = index_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)theIndex
+- (id)initWithIndex:(NSUInteger)index
 {
     if ((self = [super init]))
     {
-        if (theIndex == NSNotFound)
+        if (index == NSNotFound)
         {
             KBCLogWarning(@"index is NSNotFound, returning nil");
             [self release];
             return nil;
         }
         
-        index = theIndex;
+        index_ = index;
     }
     
     return self;
@@ -41,22 +41,22 @@
 
 - (NKTTextPosition *)previousTextPosition
 {
-    if (index == 0)
+    if (index_ == 0)
     {
         return nil;
     }
     
-    return [[self class] textPositionWithIndex:(index - 1)];
+    return [[self class] textPositionWithIndex:(index_ - 1)];
 }
 
 - (NKTTextPosition *)nextTextPosition
 {
-    return [[self class] textPositionWithIndex:(index + 1)];
+    return [[self class] textPositionWithIndex:(index_ + 1)];
 }
 
 - (NKTTextPosition *)textPositionByApplyingOffset:(NSInteger)offset
 {
-    NSInteger newIndex = (NSInteger)index + offset;
+    NSInteger newIndex = (NSInteger)index_ + offset;
     
     if (newIndex < 0)
     {
@@ -77,13 +77,13 @@
 
 - (NKTTextRange *)textRangeUntilTextPosition:(NKTTextPosition *)textPosition
 {
-    if (index < textPosition.index)
+    if (index_ < textPosition.index)
     {
-        return [NKTTextRange textRangeWithTextPosition:self length:(textPosition.index - index)];
+        return [NKTTextRange textRangeWithTextPosition:self length:(textPosition.index - index_)];
     }
     else
     {
-        return [NKTTextRange textRangeWithTextPosition:textPosition length:(index - textPosition.index)];
+        return [NKTTextRange textRangeWithTextPosition:textPosition length:(index_ - textPosition.index)];
     }
 }
 

@@ -11,12 +11,11 @@
 @interface NKTDragGestureRecognizer : UIGestureRecognizer
 {
 @private
-    NSUInteger numberOfTapsRequired;
+    NSUInteger numberOfTapsRequired_;
 }
 
 #pragma mark Configuring the Gesture
 
-// The default numberOfTapsRequired is 2.
-@property (nonatomic, readwrite) NSUInteger numberOfTapsRequired;
+@property (nonatomic) NSUInteger numberOfTapsRequired;
 
 @end

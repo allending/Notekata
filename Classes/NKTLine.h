@@ -15,16 +15,16 @@
 @interface NKTLine : NSObject
 {
 @private
-    NSUInteger index;
-    NSAttributedString *text;
-    CTLineRef ctLine;
+    NSUInteger index_;
+    NSAttributedString *text_;
+    CTLineRef ctLine_;
 }
 
 #pragma mark Initializing
 
 - (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text CTLine:(CTLineRef)ctLine;
 
-#pragma mark Accessing Line Information
+#pragma mark Accessing the Index
 
 @property (nonatomic, readonly) NSUInteger index;
 
