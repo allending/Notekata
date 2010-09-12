@@ -44,10 +44,6 @@
 - (void)markedTextRangeDidChange;
 - (void)provisionalTextRangeDidChange;
 
-#pragma mark Getting Selection Geometry
-
-- (CGRect)caretRectForPosition:(UITextPosition *)textPosition;
-
 @end
 
 #pragma mark -
@@ -66,12 +62,8 @@
 
 #pragma mark Geometry and Hit-Testing
 
-- (CGPoint)characterOriginForPosition:(UITextPosition *)textPosition;
 - (NSArray *)rectsForTextRange:(UITextRange *)textRange;
-
-#pragma mark Returning Text Styling Information
-
-- (NSDictionary *)textStylingAtPosition:(UITextPosition *)position inDirection:(UITextStorageDirection)direction;
+- (CGRect)caretRectForPosition:(UITextPosition *)position;
 
 #pragma mark Managing Selection Views
 

@@ -51,10 +51,6 @@
 - (NKTLine *)closestLineContainingPoint:(CGPoint)point;
 - (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition;
 
-#pragma mark Getting Fonts at Text Positions
-
-- (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition;
-
 #pragma mark Managing Loupes
 
 @property (nonatomic, readonly) NKTLoupe *bandLoupe;
@@ -74,6 +70,11 @@
 - (CGPoint)originForLineAtIndex:(NSUInteger)index;
 - (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line;
 - (CGRect)rectForLine:(NKTLine *)line;
+- (CGPoint)characterOriginForPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark Getting Fonts at Text Positions
+
+- (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction;
 
 @end
 
@@ -572,42 +573,6 @@
     }
     
     return nil;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Getting Fonts at Text Positions
-
-// Returns font at the text position if available, otherwise returns the default system font.
-- (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition
-{
-    UIFont *font = nil;
-    
-    if ([text_ length] > 0)
-    {
-        // Look for available font attribute at the previous text position
-        NSUInteger sourceIndex = (NSUInteger)MAX(0, (NSInteger)textPosition.index);
-        sourceIndex = (NSUInteger)MIN(sourceIndex, ((NSInteger)[text_ length] - 1));
-        NSDictionary *textAttributes = [text_ attributesAtIndex:sourceIndex effectiveRange:NULL];
-        CTFontRef ctFont = (CTFontRef)[textAttributes objectForKey:(id)kCTFontAttributeName];
-        
-        if (ctFont != NULL)
-        {
-            font = KBCUIFontForCTFont(ctFont);
-            
-            if (font == nil)
-            {
-                KBCLogWarning(@"could not create UIFont for CTFont");
-            }
-        }
-    }
-    
-    if (font == nil)
-    {
-        font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
-    }
-    
-    return font;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1130,13 +1095,11 @@
 
 - (CGRect)rectForLine:(NKTLine *)line
 {
-    CGFloat ascent = MIN(line.ascent, lineHeight_);
-    CGFloat height = MIN(line.ascent + line.descent, lineHeight_);
     CGFloat width = self.bounds.size.width - margins_.left - margins_.right;
     CGPoint origin = [self originForLineAtIndex:line.index];
     const CGFloat heightPadding = 1.0;
-    origin.y -= (ascent + heightPadding);
-    return CGRectMake(origin.x, origin.y, width, height + (heightPadding * 2.0));
+    origin.y -= (line.ascent + heightPadding);
+    return CGRectMake(origin.x, origin.y, width, line.ascent + line.descent + (heightPadding * 2.0));
 }
 
 - (CGPoint)originForTextPosition:(NKTTextPosition *)textPosition
@@ -1270,10 +1233,18 @@
     }
 }
 
-- (CGRect)caretRectForPosition:(UITextPosition *)textPosition
+- (CGRect)caretRectForPosition:(NKTTextPosition *)textPosition
 {
-    // Ask the controller since it is the one doing the actual caret display
-    return [selectionDisplayController_ caretRectForPosition:textPosition];
+    CGPoint charOrigin = [self characterOriginForPosition:textPosition];
+    UIFont *font = [self fontAtTextPosition:textPosition inDirection:UITextStorageDirectionForward];
+    CGRect caretFrame = CGRectZero;
+    const CGFloat caretWidth = 2.0;
+    const CGFloat caretVerticalPadding = 1.0;
+    caretFrame.origin.x = charOrigin.x;
+    caretFrame.origin.y = charOrigin.y - font.ascender - caretVerticalPadding;
+    caretFrame.size.width = caretWidth;
+    caretFrame.size.height = font.ascender - font.descender + (caretVerticalPadding * 2.0);
+    return caretFrame;
 }
 
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point
@@ -1360,12 +1331,62 @@
 
 - (NSDictionary *)textStylingAtPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction
 {
-    UIFont *textFont = [self fontAtTextPosition:textPosition];
-    UIColor *textColor = [UIColor blackColor];
-    UIColor *textBackgroundColor = self.backgroundColor;
-    return [NSDictionary dictionaryWithObjectsAndKeys:textBackgroundColor, UITextInputTextBackgroundColorKey,
-                                                      textColor, UITextInputTextColorKey,
-                                                      textFont, UITextInputTextFontKey, nil];
+    UIFont *font = [self fontAtTextPosition:textPosition inDirection:direction];
+    UIColor *color = [UIColor blackColor];
+    UIColor *backgroundColor = self.backgroundColor;
+    return [NSDictionary dictionaryWithObjectsAndKeys:backgroundColor, UITextInputTextBackgroundColorKey,
+                                                      color, UITextInputTextColorKey,
+                                                      font, UITextInputTextFontKey, nil];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Getting Fonts at Text Positions
+
+- (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction;
+{
+    // NOTE: Direction is ignored
+    
+    UIFont *font = nil;
+    
+    if (text_ == nil || [text_ length] == 0)
+    {
+        return [UIFont systemFontOfSize:[UIFont systemFontSize]];
+    }
+
+    // Read the style information at the character preceding the index because that is the style that
+    // would be used when text is inserted at that position
+    
+    NSUInteger sourceIndex = textPosition.index;
+    
+    if (sourceIndex > [text_ length])
+    {
+        sourceIndex = [text_ length] - 1;
+    }
+    else if (sourceIndex > 0)
+    {
+        --sourceIndex;
+    }
+    
+    NSDictionary *attributes = [text_ attributesAtIndex:sourceIndex effectiveRange:NULL];
+    CTFontRef ctFont = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+    
+    if (ctFont != NULL)
+    {
+        font = KBCUIFontForCTFont(ctFont);
+        
+        if (font == nil)
+        {
+            KBCLogWarning(@"could not create UIFont for CTFont");
+        }
+    }
+    
+    if (font == nil)
+    {
+        font = [UIFont systemFontOfSize:[UIFont systemFontSize]];
+    }
+    
+    return font;
 }
 
 //--------------------------------------------------------------------------------------------------

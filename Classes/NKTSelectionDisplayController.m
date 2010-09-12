@@ -121,7 +121,7 @@
     
     if (textRange != nil && textRange.empty && caretVisible_)
     {
-        self.caret.frame = [self caretRectForPosition:textRange.start];
+        self.caret.frame = [delegate_ caretRectForPosition:textRange.start];
         self.caret.hidden = NO;
         self.caret.blinkingEnabled = !provisional;
         [self.caret restartBlinking];
@@ -215,25 +215,5 @@
     [self updateSelectedTextRegion];
 }
 
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Getting Selection Geometry
-
-- (CGRect)caretRectForPosition:(UITextPosition *)textPosition
-{
-    CGPoint charOrigin = [delegate_ characterOriginForPosition:textPosition];
-    NSDictionary *textStyling = [delegate_ textStylingAtPosition:textPosition inDirection:UITextStorageDirectionForward];
-    UIFont *charFont = [textStyling objectForKey:UITextInputTextFontKey];
-    
-    const CGFloat caretWidth = 2.0;
-    const CGFloat caretVerticalPadding = 1.0;
-    
-    CGRect caretFrame = CGRectZero;
-    caretFrame.origin.x = charOrigin.x;
-    caretFrame.origin.y = charOrigin.y - charFont.ascender - caretVerticalPadding;
-    caretFrame.size.width = caretWidth;
-    caretFrame.size.height = charFont.ascender + (-charFont.descender) + (caretVerticalPadding * 2.0);
-    return caretFrame;
-}
 
 @end
