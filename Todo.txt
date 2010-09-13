@@ -35,6 +35,7 @@ Issue: Typesetting lines with trailing white space causes some weird issues
 
 Done
 ----
+x Issue: Double tap on single location - strange selection behavior
 x Issue: Make meaning of text position styling / fonts consistent (autocorrect, insertion text, etc)
 x OCD: Make property access consistent
 x OCD: Use internal ivar names

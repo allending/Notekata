@@ -488,7 +488,7 @@
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
 {    
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan || gestureRecognizer.state == UIGestureRecognizerStateChanged)
-    {    
+    {
         CGPoint touchLocation = [gestureRecognizer locationInView:self];
         NKTTextPosition *textPosition = nil;
         
@@ -505,6 +505,7 @@
         }
         
         self.provisionalTextRange = [textPosition textRange];
+        selectionDisplayController_.caretVisible = YES;
     }
     else
     {
@@ -523,6 +524,7 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         self.doubleTapStartTextPosition = textPosition;
+        self.provisionalTextRange = [textPosition textRange];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
@@ -1353,7 +1355,7 @@
     {
         return [UIFont systemFontOfSize:[UIFont systemFontSize]];
     }
-
+    
     // Read the style information at the character preceding the index because that is the style that
     // would be used when text is inserted at that position
     
