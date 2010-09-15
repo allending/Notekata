@@ -2,8 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KBTFontGenerator.h"
+#import "KobaCore.h"
+#import <CoreText/CoreText.h>
 
-@implementation KBTFontGenerator
-
-@end
+void KBTEnumerateAttributedStringAttributes(NSAttributedString *attributedString, NSArray **ranges, NSArray **attributes, BOOL coalesceRanges);

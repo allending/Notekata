@@ -4,7 +4,7 @@
 
 #import "NKTTextView.h"
 #import <CoreText/CoreText.h>
-#import "KBCFont.h"
+#import "KobaText.h"
 #import "NKTDragGestureRecognizer.h"
 #import "NKTLine.h"
 #import "NKTLoupe.h"
@@ -704,12 +704,18 @@
     {
         insertionTextRange = selectedTextRange_;
     }
-        
+    
+    // are the attributes at current position different from the active?
+    
+    // if so, it has to be set
+    
+    // if not, can just insert (?)
+    
     [text_ replaceCharactersInRange:insertionTextRange.nsRange withString:text];
     
-    if (activeTextAttributes_ != nil)
+    if (activeTextAttributes_ != nil && insertionTextRange.start.index== 10)
     {
-        [text_ setAttributes:activeTextAttributes_ range:NSMakeRange(insertionTextRange.start.index, [text length])];
+        [text_ addAttributes:activeTextAttributes_ range:NSMakeRange(insertionTextRange.start.index, [text length])];
     }
     
     [self regenerateContents];
@@ -1385,7 +1391,7 @@
     
     if (ctFont != NULL)
     {
-        font = KBCUIFontForCTFont(ctFont);
+        font = KBTUIFontForCTFont(ctFont);
         
         if (font == nil)
         {

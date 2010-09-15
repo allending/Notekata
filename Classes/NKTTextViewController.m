@@ -122,10 +122,15 @@
     UIBarButtonItem *boldToggleItem = [[UIBarButtonItem alloc] initWithCustomView:boldToggleButton_];
     UIBarButtonItem *italicToggleItem = [[UIBarButtonItem alloc] initWithCustomView:italicToggleButton_];
     UIBarButtonItem *underlineToggleItem = [[UIBarButtonItem alloc] initWithCustomView:underlineToggleButton_];
-    self.toolbar.items = [NSArray arrayWithObjects:boldToggleItem, italicToggleItem, underlineToggleItem, nil];
+    UIBarButtonItem *debugItem = [[UIBarButtonItem alloc] initWithTitle:@"Debug"
+                                                                  style:UIBarButtonItemStyleBordered
+                                                                 target:self
+                                                                 action:@selector(debugPressed:)];
+    self.toolbar.items = [NSArray arrayWithObjects:boldToggleItem, italicToggleItem, underlineToggleItem, debugItem, nil];
     [boldToggleItem release];
     [italicToggleItem release];
     [underlineToggleItem release];
+    [debugItem release];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -142,47 +147,22 @@
 
 - (NSDictionary *)activeTextAttributes
 {
-    KBTFontGenerator *fontGenerator = [KBTFontGenerator fontGenerator];
-    fontGenerator.fontFamily = @"Marker Felt";
-    fontGenerator.fontSize = 16.0;
+    KBTTextStyleGenerator *textStyleGenerator = [KBTTextStyleGenerator textStyleGenerator];
+    textStyleGenerator.fontFamily = @"Helvetica Neue";
+    textStyleGenerator.fontSize = 16.0;
     
     if (boldToggleButton_.isSelected)
     {
-        fontGenerator.boldTraitEnabled = YES;
+        textStyleGenerator.boldTraitEnabled = YES;
     }
     
     if (italicToggleButton_.isSelected)
     {
-        fontGenerator.italicTraitEnabled = YES;
+        textStyleGenerator.italicTraitEnabled = YES;
     }
     
-    KBTTextStyleGenerator *textStyleGenerator = [KBTTextStyleGenerator textStyleGenerator];
-    textStyleGenerator.font = [fontGenerator bestFont];
-    textStyleGenerator.underlined = underlineToggleButton_.isSelected;
-    return [textStyleGenerator textAttributes];
-
-/*
-    //CTFontRef baseFont = CTFontCreateWithName(CFSTR("Helvetica"), 14.0, nil);
-    NSDictionary *fontTraitAttributes = [NSDictionary dictionaryWithObject:[NSNumber numberWithInt:fontSymbolicTraits] forKey:(id)kCTFontSymbolicTrait];
-    NSDictionary *fontAttributes = [NSDictionary dictionaryWithObjectsAndKeys:fontTraitAttributes, (id)kCTFontTraitsAttribute,
-//                                                                              @"Marker Felt", (id)kCTFontFamilyNameAttribute,
-//                                                                              @"Marker Felt", (id)kCTFontNameAttribute,
-                                                                              nil];
-    CTFontDescriptorRef baseDescriptor = CTFontDescriptorCreateWithNameAndSize((CFStringRef)@"Marker Felt", 16.0);
-    CTFontDescriptorRef fontDescriptor = CTFontDescriptorCreateCopyWithAttributes(baseDescriptor, (CFDictionaryRef)fontAttributes);
-    
-    NSString *check = (id)CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute);
-    KBCLogDebug(@"backcheck: %@", check);
-    
-//    CTFontDescriptorRef fontDescriptor = CTFontDescriptorCreateWithAttributes((CFDictionaryRef)fontAttributes);
-    CTFontRef font = CTFontCreateWithFontDescriptor(fontDescriptor, 16.0, NULL);
-    CTUnderlineStyle underlineStyle = underlineToggleButton_.isSelected ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone;
-    NSDictionary *textAttributes = [NSDictionary dictionaryWithObjectsAndKeys:(id)font, (id)kCTFontAttributeName,
-                                                                              [NSNumber numberWithInt:underlineStyle], (id)kCTUnderlineStyleAttributeName, nil];
-    //CFRelease(baseFont);
-    CFRelease(font);
-    return textAttributes;
-*/
+    textStyleGenerator.textUnderlined = underlineToggleButton_.isSelected;
+    return [textStyleGenerator currentTextStyleAttributes];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -191,9 +171,6 @@
 
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton
 {
-    // change the attributes of currently selected text?
-    
-    // change the attributes of insertion text?
     textView_.activeTextAttributes = [self activeTextAttributes];
 }
 
@@ -205,6 +182,23 @@
 - (void)underlineToggleChanged:(KUIToggleButton *)toggleButton
 {
     textView_.activeTextAttributes = [self activeTextAttributes];
+}
+
+- (void)debugPressed:(UIBarButtonItem *)item
+{
+    NSArray *ranges, *attributeDictionaries;
+    KBTEnumerateAttributedStringAttributes(textView_.text, &ranges, &attributeDictionaries, NO);
+    NSString *text = [textView_.text string];
+    
+    NSLog(@"%d total uncoalesced ranges", [ranges count]);
+    NSLog(@"---------------------------");
+    
+    for (NSUInteger index = 0; index < [ranges count]; ++index)
+    {
+        NSRange range = [[ranges objectAtIndex:index] rangeValue];
+        NSLog(@"range %d [%d, %d]: %@", index, range.location, range.location + range.length, [text substringWithRange:range]);
+        // NSDictionary *dictionary = [attributeDictionaries objectAtIndex:index];
+    }
 }
 
 @end
