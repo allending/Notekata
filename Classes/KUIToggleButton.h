@@ -2,21 +2,27 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <UIKit/UIKit.h>
+#import "KobaCore.h"
 
-@class NKTTextViewController;
-
-//--------------------------------------------------------------------------------------------------
-// NotekataAppDelegate
-//--------------------------------------------------------------------------------------------------
-
-@interface NotekataAppDelegate : NSObject <UIApplicationDelegate>
+typedef enum
 {
-    UIWindow *window;
-    NKTTextViewController *viewController;
-}
+    KUIToggleButtonStyleTextDark
+} KUIToggleButtonStyle;
 
-@property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) IBOutlet NKTTextViewController *viewController;
+//--------------------------------------------------------------------------------------------------
+//
+//--------------------------------------------------------------------------------------------------
+
+@interface KUIToggleButton : UIButton
+
+#pragma mark Initializing
+
+- (id)initWithStyle:(KUIToggleButtonStyle)style;
+
+#pragma mark Configuring the Button Title
+
+@property (nonatomic, copy) NSString *title;
+
+#pragma mark Configuring the Button Image
 
 @end

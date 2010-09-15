@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KobaCore.h"
+#import "KobaUI.h"
 #import "NKTSelectionDisplayController.h"
 
 @class NKTDragGestureRecognizer;
@@ -31,6 +31,8 @@
     BOOL verticalMarginEnabled_;
     UIColor *verticalMarginColor_;
     CGFloat verticalMarginInset_;
+    
+    NSDictionary *activeTextAttributes_;
     
     NSMutableArray *typesettedLines_;
     
@@ -76,6 +78,10 @@
 @property (nonatomic, retain) UIColor *verticalMarginColor;
 @property (nonatomic) CGFloat verticalMarginInset;
 
+#pragma mark Managing Text Attributes
+
+@property (nonatomic, copy) NSDictionary *activeTextAttributes;
+
 #pragma mark Accessing Gesture Recognizers
 
 @property (nonatomic, readonly) UITapGestureRecognizer *nonEditTapGestureRecognizer;
@@ -84,8 +90,6 @@
 @property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
 
 @end
-
-#pragma mark -
 
 //--------------------------------------------------------------------------------------------------
 //

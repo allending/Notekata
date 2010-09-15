@@ -3,7 +3,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "NotekataAppDelegate.h"
-#import "NotekataViewController.h"
+#import "NKTTextViewController.h"
 
 @implementation NotekataAppDelegate
 

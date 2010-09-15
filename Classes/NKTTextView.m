@@ -96,6 +96,8 @@
 @synthesize verticalMarginColor = verticalMarginColor_;
 @synthesize verticalMarginInset = verticalMarginInset_;
 
+@synthesize activeTextAttributes = activeTextAttributes_;
+
 @synthesize inputDelegate = inputDelegate_;
 
 @synthesize nonEditTapGestureRecognizer = nonEditTapGestureRecognizer_;
@@ -190,6 +192,8 @@
     [reusableSections_ release];
     [underlayViews_ release];
     [overlayViews release];
+    
+    [activeTextAttributes_ release];
     
     [selectedTextRange_ release];
     [markedTextRange_ release];
@@ -700,8 +704,14 @@
     {
         insertionTextRange = selectedTextRange_;
     }
-    
+        
     [text_ replaceCharactersInRange:insertionTextRange.nsRange withString:text];
+    
+    if (activeTextAttributes_ != nil)
+    {
+        [text_ setAttributes:activeTextAttributes_ range:NSMakeRange(insertionTextRange.start.index, [text length])];
+    }
+    
     [self regenerateContents];
     
     NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];

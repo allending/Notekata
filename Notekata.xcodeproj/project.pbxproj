@@ -16,6 +16,8 @@
 		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */; };
+		9F5CA449124076A9009D1A47 /* KBTFontGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F5CA448124076A9009D1A47 /* KBTFontGenerator.m */; };
+		9F5CA462124077A6009D1A47 /* KBTTextStyleGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F5CA461124077A6009D1A47 /* KBTTextStyleGenerator.m */; };
 		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
 		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
 		9F90F199122FAF030053BE7A /* KBCFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F90F198122FAF030053BE7A /* KBCFont.m */; };
@@ -25,12 +27,13 @@
 		9FA54111122A59530005323E /* CaretHandle.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410C122A59530005323E /* CaretHandle.png */; };
 		9FA54112122A59530005323E /* CaretLoupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410D122A59530005323E /* CaretLoupe.png */; };
 		9FA54113122A59530005323E /* CaretLoupeMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410E122A59530005323E /* CaretLoupeMask.png */; };
+		9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB1465312402B26001EEB7B /* KUIToggleButton.m */; };
 		9FC2B787123776A8002FD8BA /* NKTHighlightRegion.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2B786123776A8002FD8BA /* NKTHighlightRegion.m */; };
 		9FC347681238EEEC001AFF98 /* KBCMath.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC347671238EEEC001AFF98 /* KBCMath.m */; };
 		9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */; };
 		9FDDDDC412291912009BFCED /* KBCGestures.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDDC312291912009BFCED /* KBCGestures.m */; };
 		9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* KBCLogging.m */; };
-		9FFAD4B31226A8AD00218B2A /* NotekataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */; };
+		9FFAD4B31226A8AD00218B2A /* NKTTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */; };
 		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
 		F520394E12097D3600675702 /* NKTTestText.m in Sources */ = {isa = PBXBuildFile; fileRef = F520394D12097D3600675702 /* NKTTestText.m */; };
 		F5267D9F121AD23D003CA42D /* NKTCaret.m in Sources */ = {isa = PBXBuildFile; fileRef = F5267D9E121AD23D003CA42D /* NKTCaret.m */; };
@@ -63,6 +66,11 @@
 		9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewGestureRecognizerDelegate.h; sourceTree = "<group>"; };
 		9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewGestureRecognizerDelegate.m; sourceTree = "<group>"; };
 		9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License_TropicalPixels.txt; sourceTree = "<group>"; };
+		9F5CA42D12406EF1009D1A47 /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
+		9F5CA447124076A9009D1A47 /* KBTFontGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFontGenerator.h; sourceTree = "<group>"; };
+		9F5CA448124076A9009D1A47 /* KBTFontGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFontGenerator.m; sourceTree = "<group>"; };
+		9F5CA460124077A6009D1A47 /* KBTTextStyleGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTTextStyleGenerator.h; sourceTree = "<group>"; };
+		9F5CA461124077A6009D1A47 /* KBTTextStyleGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTTextStyleGenerator.m; sourceTree = "<group>"; };
 		9F67110D122B901E00B0811B /* KobaCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaCore.h; sourceTree = "<group>"; };
 		9F6711CA122B9F4D00B0811B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTSelectionDisplayController.h; sourceTree = "<group>"; };
@@ -76,6 +84,9 @@
 		9FA5410C122A59530005323E /* CaretHandle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CaretHandle.png; sourceTree = "<group>"; };
 		9FA5410D122A59530005323E /* CaretLoupe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CaretLoupe.png; sourceTree = "<group>"; };
 		9FA5410E122A59530005323E /* CaretLoupeMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CaretLoupeMask.png; sourceTree = "<group>"; };
+		9FB1465212402B26001EEB7B /* KUIToggleButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KUIToggleButton.h; sourceTree = "<group>"; };
+		9FB1465312402B26001EEB7B /* KUIToggleButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KUIToggleButton.m; sourceTree = "<group>"; };
+		9FB1466012402C1D001EEB7B /* KobaUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaUI.h; sourceTree = "<group>"; };
 		9FC2B785123776A8002FD8BA /* NKTHighlightRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTHighlightRegion.h; sourceTree = "<group>"; };
 		9FC2B786123776A8002FD8BA /* NKTHighlightRegion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTHighlightRegion.m; sourceTree = "<group>"; };
 		9FC347661238EEEC001AFF98 /* KBCMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCMath.h; sourceTree = "<group>"; };
@@ -86,8 +97,8 @@
 		9FDDDDC312291912009BFCED /* KBCGestures.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCGestures.m; sourceTree = "<group>"; };
 		9FDDDF5C12295FAA009BFCED /* KBCLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCLogging.h; sourceTree = "<group>"; };
 		9FDDDF5D12295FAA009BFCED /* KBCLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCLogging.m; sourceTree = "<group>"; };
-		9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotekataViewController.m; sourceTree = "<group>"; };
-		F5030A7811D3555B002CD3BD /* NotekataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotekataViewController.h; sourceTree = "<group>"; };
+		9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewController.m; sourceTree = "<group>"; };
+		F5030A7811D3555B002CD3BD /* NKTTextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewController.h; sourceTree = "<group>"; };
 		F520393412097B1B00675702 /* NotekataViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotekataViewController.xib; sourceTree = "<group>"; };
 		F520394C12097D3600675702 /* NKTTestText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTestText.h; sourceTree = "<group>"; };
 		F520394D12097D3600675702 /* NKTTestText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTestText.m; sourceTree = "<group>"; };
@@ -134,6 +145,8 @@
 				F5632AAC11DD92DE00868F7B /* Views */,
 				F5632AAA11DD92CF00868F7B /* Controllers */,
 				9FDDDE2D12291C42009BFCED /* KobaCore */,
+				9F5CA42C12406ED1009D1A47 /* KobaText */,
+				9FB1465112402B07001EEB7B /* KobaUI */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -200,6 +213,29 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		9F5CA42C12406ED1009D1A47 /* KobaText */ = {
+			isa = PBXGroup;
+			children = (
+				9F5CA447124076A9009D1A47 /* KBTFontGenerator.h */,
+				9F5CA448124076A9009D1A47 /* KBTFontGenerator.m */,
+				9F5CA460124077A6009D1A47 /* KBTTextStyleGenerator.h */,
+				9F5CA461124077A6009D1A47 /* KBTTextStyleGenerator.m */,
+				9F5CA42D12406EF1009D1A47 /* KobaText.h */,
+			);
+			name = KobaText;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		9FB1465112402B07001EEB7B /* KobaUI */ = {
+			isa = PBXGroup;
+			children = (
+				9FB1466012402C1D001EEB7B /* KobaUI.h */,
+				9FB1465212402B26001EEB7B /* KUIToggleButton.h */,
+				9FB1465312402B26001EEB7B /* KUIToggleButton.m */,
+			);
+			name = KobaUI;
+			sourceTree = "<group>";
+		};
 		9FDDDE2D12291C42009BFCED /* KobaCore */ = {
 			isa = PBXGroup;
 			children = (
@@ -223,8 +259,8 @@
 			children = (
 				1D3623240D0F684500981E51 /* NotekataAppDelegate.h */,
 				1D3623250D0F684500981E51 /* NotekataAppDelegate.m */,
-				F5030A7811D3555B002CD3BD /* NotekataViewController.h */,
-				9FFAD4B21226A8AD00218B2A /* NotekataViewController.m */,
+				F5030A7811D3555B002CD3BD /* NKTTextViewController.h */,
+				9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -245,14 +281,14 @@
 				F5267D9E121AD23D003CA42D /* NKTCaret.m */,
 				9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */,
 				9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */,
+				9FC2B785123776A8002FD8BA /* NKTHighlightRegion.h */,
+				9FC2B786123776A8002FD8BA /* NKTHighlightRegion.m */,
 				F5D12A9E11F2ECA20049C2CE /* NKTLine.h */,
 				F5D12A9F11F2ECA20049C2CE /* NKTLine.m */,
 				9FA540FA122A56A30005323E /* NKTLoupe.h */,
 				9FA540FB122A56A30005323E /* NKTLoupe.m */,
 				9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */,
 				9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */,
-				9FC2B785123776A8002FD8BA /* NKTHighlightRegion.h */,
-				9FC2B786123776A8002FD8BA /* NKTHighlightRegion.m */,
 				F52EFA9D121B7492007A4951 /* NKTTextPosition.h */,
 				F52EFA9E121B7492007A4951 /* NKTTextPosition.m */,
 				F52EFAA2121B74B7007A4951 /* NKTTextRange.h */,
@@ -349,7 +385,7 @@
 				F5267D9F121AD23D003CA42D /* NKTCaret.m in Sources */,
 				F52EFA9F121B7492007A4951 /* NKTTextPosition.m in Sources */,
 				F52EFAA4121B74B7007A4951 /* NKTTextRange.m in Sources */,
-				9FFAD4B31226A8AD00218B2A /* NotekataViewController.m in Sources */,
+				9FFAD4B31226A8AD00218B2A /* NKTTextViewController.m in Sources */,
 				9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */,
 				9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */,
 				9FDDDDC412291912009BFCED /* KBCGestures.m in Sources */,
@@ -360,6 +396,9 @@
 				9F90F199122FAF030053BE7A /* KBCFont.m in Sources */,
 				9FC2B787123776A8002FD8BA /* NKTHighlightRegion.m in Sources */,
 				9FC347681238EEEC001AFF98 /* KBCMath.m in Sources */,
+				9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */,
+				9F5CA449124076A9009D1A47 /* KBTFontGenerator.m in Sources */,
+				9F5CA462124077A6009D1A47 /* KBTTextStyleGenerator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
