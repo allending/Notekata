@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KBTUtilities.h"
+#import "KBTDiagnostics.h"
 
 void KBTEnumerateAttributedStringAttributes(NSAttributedString *attributedString, NSArray **ranges, NSArray **attributeDictionaries, BOOL coalesceRanges)
 {
