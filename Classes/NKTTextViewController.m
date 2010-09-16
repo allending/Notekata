@@ -165,9 +165,19 @@
     return [textStyleGenerator currentTextStyleAttributes];
 }
 
+- (NSDictionary *)defaultTextAttributes
+{
+    return [self activeTextAttributes];
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Responding to Actions
+
+- (void)textViewDidChangeSelection:(NKTTextView *)textView
+{
+    //NSDictionary *textAttributes = [textView textAttributesAtTextPosition:textView.selectedTextRange.start];
+}
 
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton
 {

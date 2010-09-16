@@ -82,6 +82,8 @@
 
 @property (nonatomic, copy) NSDictionary *activeTextAttributes;
 
+- (NSDictionary *)textAttributesAtTextPosition:(UITextPosition *)textPosition;
+
 #pragma mark Accessing Gesture Recognizers
 
 @property (nonatomic, readonly) UITapGestureRecognizer *nonEditTapGestureRecognizer;
@@ -99,6 +101,16 @@
 
 @optional
 
+#pragma mark Getting Text Attributes
+
+- (NSDictionary *)defaultTextAttributes;
+
+#pragma mark Managing the Selection
+
+- (void)textViewDidChangeSelection:(NKTTextView *)textView;
+
+#pragma mark Managing Loupes
+
 - (UIColor *)loupeFillColor;
 - (UIView *)addLoupe:(UIView *)view;
 
@@ -110,6 +122,6 @@
 
 @interface NKTTextView(PropertyRedeclarations)
 
-@property (nonatomic, readwrite, assign) id <NKTTextViewDelegate> delegate;
+@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
 
 @end

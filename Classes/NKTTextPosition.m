@@ -87,4 +87,13 @@
     }
 }
 
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Comparing Text Posiitons
+
+- (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
+{
+    return index_ == textPosition.index;
+}
+
 @end

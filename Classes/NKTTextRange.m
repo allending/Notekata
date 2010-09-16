@@ -127,6 +127,10 @@
     {
         return [self isEqualToTextRange:object];
     }
+    else if ([object isKindOfClass:[NKTTextPosition class]])
+    {
+        return [self isEqualToTextPosition:object];
+    }
     
     return [super isEqual:object];
 }
@@ -134,6 +138,11 @@
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange
 {
     return start_.index == textRange.start.index && length_ == textRange.length;
+}
+
+- (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
+{
+    return [start_ isEqualToTextPosition:textPosition] && length_ == 0;
 }
 
 @end

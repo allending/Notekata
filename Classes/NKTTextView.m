@@ -63,6 +63,7 @@
 
 - (void)setProvisionalTextRange:(NKTTextRange *)provisionalTextRange;
 - (void)confirmProvisionalTextRange;
+- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange externalToTextInput:(BOOL)externalToTextInput;
 - (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
 #pragma mark Geometry and Hit-Testing
@@ -474,19 +475,25 @@
         }
     }
     
+    // When first responder status is accepted, the caret needs to be visible
+    selectionDisplayController_.caretVisible = YES;
+    
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
     NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:touchLocation];
-    [inputDelegate_ selectionWillChange:self];
-    self.selectedTextRange = [textPosition textRange];
-    [inputDelegate_ selectionDidChange:self];
     
-    // Clear the marked text range when tapping outside it
+    if ([selectedTextRange_ isEqualToTextPosition:textPosition])
+    {
+        return;
+    }
+    
+    [self setSelectedTextRange:[textPosition textRange] externalToTextInput:YES];
+    
+    // When the tapped text position is outside the marked text range, the marked text loses its
+    // provisional status
     if (![markedTextRange_ containsTextPosition:textPosition])
     {
         self.markedTextRange = nil;
     }
-    
-    selectionDisplayController_.caretVisible = YES;
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
@@ -705,17 +712,39 @@
         insertionTextRange = selectedTextRange_;
     }
     
-    // are the attributes at current position different from the active?
+    // Figure out what text attributes to apply to inserted text
+    NSDictionary *insertionTextAttributes = nil;
+    NSDictionary *existingTextAttributes = [self textAttributesAtTextPosition:insertionTextRange.start];
     
-    // if so, it has to be set
-    
-    // if not, can just insert (?)
-    
-    [text_ replaceCharactersInRange:insertionTextRange.nsRange withString:text];
-    
-    if (activeTextAttributes_ != nil && insertionTextRange.start.index== 10)
+    // Active text attributes take precedence
+    if (activeTextAttributes_ != nil)
     {
-        [text_ addAttributes:activeTextAttributes_ range:NSMakeRange(insertionTextRange.start.index, [text length])];
+        if (![activeTextAttributes_ isEqualToDictionary:existingTextAttributes])
+        {
+            insertionTextAttributes = activeTextAttributes_;
+        }
+    }
+    // Ask the delegate for default attributes if there are no active or existing text attributes
+    else if ([existingTextAttributes count] == 0)
+    {
+        if ([self.delegate respondsToSelector:@selector(defaultTextAttributes)])
+        {
+            insertionTextAttributes = [self.delegate defaultTextAttributes];
+        }
+    }
+    
+    // Insertion text has new attributes, use an attributed string to do the job
+    if ([insertionTextAttributes count] != 0)
+    {
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:activeTextAttributes_];
+        [text_ replaceCharactersInRange:insertionTextRange.nsRange withAttributedString:attributedString];
+        [attributedString release];
+    }
+    // No new attributes, replaceCharactersInRange: will make the inserted text pick up the correct
+    // attributes automatically
+    else
+    {
+        [text_ replaceCharactersInRange:insertionTextRange.nsRange withString:text];
     }
     
     [self regenerateContents];
@@ -723,6 +752,7 @@
     NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
     self.markedTextRange = nil;
     self.selectedTextRange = [textPosition textRange];
+    self.activeTextAttributes = nil;
 }
 
 - (void)deleteBackward
@@ -795,9 +825,38 @@
 
 - (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange
 {
-    [selectedTextRange_ autorelease];
+    [self setSelectedTextRange:selectedTextRange externalToTextInput:NO];
+}
+
+- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange externalToTextInput:(BOOL)externalToTextInput
+{
+    if ([selectedTextRange_ isEqualToTextRange:selectedTextRange])
+    {
+        return;
+    }
+    
+    // Notify input delegate of selection change if the selection is changing external from it
+    // (required by the UITextInput system)
+    
+    if (externalToTextInput)
+    {
+        [inputDelegate_ selectionWillChange:self];
+    }
+    
+    [selectedTextRange_ release];
     selectedTextRange_ = [selectedTextRange copy];
+    
+    if (externalToTextInput)
+    {
+        [inputDelegate_ selectionDidChange:self];
+    }
+    
     [selectionDisplayController_ selectedTextRangeDidChange];
+    
+    if ([self.delegate respondsToSelector:@selector(textViewDidChangeSelection:)])
+    {
+        [self.delegate textViewDidChangeSelection:self];
+    }
 }
 
 - (UITextRange *)provisionalTextRange
@@ -1360,6 +1419,27 @@
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Getting Fonts at Text Positions
+
+- (NSDictionary *)textAttributesAtTextPosition:(NKTTextPosition *)textPosition
+{
+    if ([text_ length] == 0)
+    {
+        return nil;
+    }
+    
+    NSUInteger sourceIndex = textPosition.index;
+    
+    if (sourceIndex > [text_ length])
+    {
+        sourceIndex = [text_ length] - 1;
+    }
+    else if (sourceIndex > 0)
+    {
+        --sourceIndex;
+    }
+    
+    return [text_ attributesAtIndex:sourceIndex effectiveRange:NULL];
+}
 
 - (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction;
 {

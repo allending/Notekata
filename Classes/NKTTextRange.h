@@ -48,6 +48,7 @@
 #pragma mark Comparing Text Ranges
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange;
+- (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition;
 
 @end
 
