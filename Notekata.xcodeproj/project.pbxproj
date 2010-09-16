@@ -13,11 +13,11 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
-		9F28635312409F99002E6B7E /* KBTUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F28635212409F99002E6B7E /* KBTUtilities.m */; };
+		9F0ACB8E1242273F0050CFAE /* KBTTextStyleGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB8A1242273F0050CFAE /* KBTTextStyleGenerator.m */; };
+		9F0ACB8F1242273F0050CFAE /* KBTUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB8C1242273F0050CFAE /* KBTUtilities.m */; };
 		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */; };
-		9F5CA449124076A9009D1A47 /* KBTTextStyleGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F5CA448124076A9009D1A47 /* KBTTextStyleGenerator.m */; };
 		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
 		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
 		9F90F199122FAF030053BE7A /* KBTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F90F198122FAF030053BE7A /* KBTFont.m */; };
@@ -61,16 +61,16 @@
 		28AD735F0D9D9599002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Notekata-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Notekata-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
-		9F28635112409F99002E6B7E /* KBTUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTUtilities.h; sourceTree = "<group>"; };
-		9F28635212409F99002E6B7E /* KBTUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTUtilities.m; sourceTree = "<group>"; };
+		9F0ACB891242273F0050CFAE /* KBTTextStyleGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTTextStyleGenerator.h; sourceTree = "<group>"; };
+		9F0ACB8A1242273F0050CFAE /* KBTTextStyleGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTTextStyleGenerator.m; sourceTree = "<group>"; };
+		9F0ACB8B1242273F0050CFAE /* KBTUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTUtilities.h; sourceTree = "<group>"; };
+		9F0ACB8C1242273F0050CFAE /* KBTUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTUtilities.m; sourceTree = "<group>"; };
+		9F0ACB8D1242273F0050CFAE /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
 		9F47A1B5122AC6C900285550 /* KBCGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCGeometry.h; sourceTree = "<group>"; };
 		9F47A1B6122AC6C900285550 /* KBCGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCGeometry.m; sourceTree = "<group>"; };
 		9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewGestureRecognizerDelegate.h; sourceTree = "<group>"; };
 		9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewGestureRecognizerDelegate.m; sourceTree = "<group>"; };
 		9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License_TropicalPixels.txt; sourceTree = "<group>"; };
-		9F5CA42D12406EF1009D1A47 /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
-		9F5CA447124076A9009D1A47 /* KBTTextStyleGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTTextStyleGenerator.h; sourceTree = "<group>"; };
-		9F5CA448124076A9009D1A47 /* KBTTextStyleGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTTextStyleGenerator.m; sourceTree = "<group>"; };
 		9F67110D122B901E00B0811B /* KobaCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaCore.h; sourceTree = "<group>"; };
 		9F6711CA122B9F4D00B0811B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTSelectionDisplayController.h; sourceTree = "<group>"; };
@@ -218,11 +218,11 @@
 			children = (
 				9F90F197122FAF030053BE7A /* KBTFont.h */,
 				9F90F198122FAF030053BE7A /* KBTFont.m */,
-				9F5CA447124076A9009D1A47 /* KBTTextStyleGenerator.h */,
-				9F5CA448124076A9009D1A47 /* KBTTextStyleGenerator.m */,
-				9F28635112409F99002E6B7E /* KBTUtilities.h */,
-				9F28635212409F99002E6B7E /* KBTUtilities.m */,
-				9F5CA42D12406EF1009D1A47 /* KobaText.h */,
+				9F0ACB891242273F0050CFAE /* KBTTextStyleGenerator.h */,
+				9F0ACB8A1242273F0050CFAE /* KBTTextStyleGenerator.m */,
+				9F0ACB8B1242273F0050CFAE /* KBTUtilities.h */,
+				9F0ACB8C1242273F0050CFAE /* KBTUtilities.m */,
+				9F0ACB8D1242273F0050CFAE /* KobaText.h */,
 			);
 			name = KobaText;
 			path = ..;
@@ -397,8 +397,8 @@
 				9FC2B787123776A8002FD8BA /* NKTHighlightRegion.m in Sources */,
 				9FC347681238EEEC001AFF98 /* KBCMath.m in Sources */,
 				9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */,
-				9F5CA449124076A9009D1A47 /* KBTTextStyleGenerator.m in Sources */,
-				9F28635312409F99002E6B7E /* KBTUtilities.m in Sources */,
+				9F0ACB8E1242273F0050CFAE /* KBTTextStyleGenerator.m in Sources */,
+				9F0ACB8F1242273F0050CFAE /* KBTUtilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
