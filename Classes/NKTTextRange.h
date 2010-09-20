@@ -32,7 +32,7 @@
 
 #pragma mark Getting NSRanges
 
-- (NSRange)nsRange;
+- (NSRange)NSRange;
 
 #pragma mark Checking Text Positions
 

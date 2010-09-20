@@ -4,4 +4,5 @@
 
 #import <UIKit/UIKit.h>
 
-CGFloat KBCClamp(CGFloat value, CGFloat min, CGFloat max);
+CGFloat KBCClampFloat(CGFloat value, CGFloat min, CGFloat max);
+NSUInteger KBCClampInteger(NSUInteger value, NSUInteger min, NSUInteger max);

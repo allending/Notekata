@@ -4,12 +4,11 @@
 
 #import "KobaUI.h"
 #import "NKTSelectionDisplayController.h"
+#import "NKTTextPosition.h"
+#import "NKTTextRange.h"
 
 @class NKTDragGestureRecognizer;
 @class NKTLoupe;
-@class NKTTextPosition;
-@class NKTTextRange;
-@class NKTTextView;
 @class NKTTextViewGestureRecognizerDelegate;
 
 //--------------------------------------------------------------------------------------------------
@@ -82,7 +81,9 @@
 
 @property (nonatomic, copy) NSDictionary *activeTextAttributes;
 
+- (NSDictionary *)typingAttributes;
 - (NSDictionary *)textAttributesAtTextPosition:(UITextPosition *)textPosition;
+- (void)setSelectedTextRangeTextAttributes:(NSDictionary *)textAttributes;
 
 #pragma mark Accessing Gesture Recognizers
 
@@ -105,7 +106,11 @@
 
 - (NSDictionary *)defaultTextAttributes;
 
-#pragma mark Managing the Selection
+#pragma mark Responding to Text Changes
+
+- (void)textViewDidChange:(NKTTextView *)textView;
+
+#pragma mark Responding to Selection Changes
 
 - (void)textViewDidChangeSelection:(NKTTextView *)textView;
 
@@ -123,5 +128,8 @@
 @interface NKTTextView(PropertyRedeclarations)
 
 @property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
+
+@property (nonatomic, readwrite, copy) NKTTextRange *selectedTextRange;
+@property (nonatomic, readonly, copy) NKTTextRange *markedTextRange;
 
 @end

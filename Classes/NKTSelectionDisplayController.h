@@ -38,11 +38,12 @@
 @property (nonatomic, getter = isSelectedTextRegionVisible) BOOL selectedTextRegionVisible;
 @property (nonatomic, getter = isMarkedTextRegionVisible) BOOL markedTextRegionVisible;
 
-#pragma mark Informing the Controller of Selection Changes
+#pragma mark Informing the Controller About Changes
 
 - (void)selectedTextRangeDidChange;
 - (void)markedTextRangeDidChange;
 - (void)provisionalTextRangeDidChange;
+- (void)textLayoutDidChange;
 
 @end
 

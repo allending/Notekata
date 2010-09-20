@@ -3,13 +3,14 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "KobaUI.h"
+#import "NKTFontViewController.h"
 #import "NKTTextView.h"
 
 //--------------------------------------------------------------------------------------------------
 // NotekataViewController
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTTextViewController : UIViewController <NKTTextViewDelegate>
+@interface NKTTextViewController : UIViewController <NKTTextViewDelegate, NKTFontViewControllerDelegate>
 {
 @private
     UIToolbar *toolbar_;
@@ -18,6 +19,9 @@
     KUIToggleButton *boldToggleButton_;
     KUIToggleButton *italicToggleButton_;
     KUIToggleButton *underlineToggleButton_;
+
+    NKTFontViewController *fontViewController_;
+    UIPopoverController *fontPopoverController_;
 }
 
 #pragma mark Managing Views

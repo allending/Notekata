@@ -21,6 +21,8 @@
                 [self setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateSelected];
                 [self setTitleColor:[UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0] forState:UIControlStateSelected];
                 [self setTitleColor:[UIColor lightTextColor] forState:UIControlStateNormal];
+                [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateDisabled|UIControlStateNormal];
+                [self setTitleColor:[UIColor darkGrayColor] forState:UIControlStateDisabled|UIControlStateSelected];
                 break;
             default:
                 break;

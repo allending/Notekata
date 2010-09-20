@@ -4,7 +4,22 @@
 
 #import "KBCMath.h"
 
-CGFloat KBCClamp(CGFloat value, CGFloat min, CGFloat max)
+CGFloat KBCClampFloat(CGFloat value, CGFloat min, CGFloat max)
+{
+    if (value < min)
+    {
+        value = min;
+    }
+    
+    if (value > max)
+    {
+        value = max;
+    }
+    
+    return value;
+}
+
+NSUInteger KBCClampInteger(NSUInteger value, NSUInteger min, NSUInteger max)
 {
     if (value < min)
     {

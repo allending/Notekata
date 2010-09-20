@@ -212,7 +212,7 @@
     firstLineIndex -= numberOfSkirtLines_;
     firstLineIndex = MAX(firstLineIndex, 0);
     
-    if (firstLineIndex > [typesettedLines_ count] - 1)
+    if (firstLineIndex > (NSInteger)([typesettedLines_ count] - 1))
     {
         return NSMakeRange(NSNotFound, 0);
     }

@@ -215,5 +215,11 @@
     [self updateSelectedTextRegion];
 }
 
+- (void)textLayoutDidChange
+{
+    [self updateCaret];
+    [self updateSelectedTextRegion];
+    [self updateMarkedTextRegion];
+}
 
 @end

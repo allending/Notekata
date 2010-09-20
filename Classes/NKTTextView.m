@@ -63,7 +63,7 @@
 
 - (void)setProvisionalTextRange:(NKTTextRange *)provisionalTextRange;
 - (void)confirmProvisionalTextRange;
-- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange externalToTextInput:(BOOL)externalToTextInput;
+- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange notifyInputDelegate:(BOOL)notifyInputDelegate;
 - (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
 #pragma mark Geometry and Hit-Testing
@@ -140,7 +140,8 @@
     //lineHeight = 30.0;
     
     horizontalRulesEnabled_ = YES;
-    horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
+    //horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
+    horizontalRuleColor_ = [[UIColor colorWithRed:0.78 green:0.78 blue:0.65 alpha:1.0] retain];
     horizontalRuleOffset_ = 3.0;
     verticalMarginEnabled_ = YES;
     verticalMarginColor_ = [[UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0] retain];
@@ -456,7 +457,8 @@
         return NO;
     }
     
-    self.selectedTextRange = nil;
+    [self setSelectedTextRange:nil notifyInputDelegate:NO];
+    selectionDisplayController_.caretVisible = NO;
     return YES;
 }
 
@@ -486,7 +488,7 @@
         return;
     }
     
-    [self setSelectedTextRange:[textPosition textRange] externalToTextInput:YES];
+    [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:YES];
     
     // When the tapped text position is outside the marked text range, the marked text loses its
     // provisional status
@@ -697,62 +699,60 @@
 {
     if (markedTextRange_ == nil && selectedTextRange_ == nil)
     {
-        KBCLogWarning(@"marked text range and selected text range are nil, ignoring");
+        KBCLogWarning(@"marked text range and selected text range are both nil, ignoring");
         return;
     }
     
-    NKTTextRange *insertionTextRange = nil;
+    // Figure out the attributes that inserted text needs to have
     
-    if (markedTextRange_ != nil)
+    NSDictionary *insertionAttributes = [self typingAttributes];
+    NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
+    NSDictionary *inheritedAttributes = nil;
+    
+    // Get the inherited attributes
+    if ([self hasText])
     {
-        insertionTextRange = markedTextRange_;
+        NSUInteger inheritedAttributesIndex = replacementTextRange.start.index;
+        
+        // If the replacement range is empty, inserted characters inherit the attributes of the
+        // character preceding the range, if any.
+        if (replacementTextRange.isEmpty && inheritedAttributesIndex > 0)
+        {
+            inheritedAttributesIndex = inheritedAttributesIndex - 1;
+        }
+        else if (inheritedAttributesIndex > [text_ length])
+        {
+            inheritedAttributesIndex = [text_ length] - 1;
+        }
+        
+        inheritedAttributes = [text_ attributesAtIndex:inheritedAttributesIndex effectiveRange:NULL];
+    }
+    
+    // We can avoid creating a new range of attributed text if the attributes that would be
+    // inherited after insertion match the insertion attributes
+    if ([inheritedAttributes isEqualToDictionary:insertionAttributes])
+    {
+        [text_ replaceCharactersInRange:replacementTextRange.NSRange withString:text];
     }
     else
     {
-        insertionTextRange = selectedTextRange_;
-    }
-    
-    // Figure out what text attributes to apply to inserted text
-    NSDictionary *insertionTextAttributes = nil;
-    NSDictionary *existingTextAttributes = [self textAttributesAtTextPosition:insertionTextRange.start];
-    
-    // Active text attributes take precedence
-    if (activeTextAttributes_ != nil)
-    {
-        if (![activeTextAttributes_ isEqualToDictionary:existingTextAttributes])
-        {
-            insertionTextAttributes = activeTextAttributes_;
-        }
-    }
-    // Ask the delegate for default attributes if there are no active or existing text attributes
-    else if ([existingTextAttributes count] == 0)
-    {
-        if ([self.delegate respondsToSelector:@selector(defaultTextAttributes)])
-        {
-            insertionTextAttributes = [self.delegate defaultTextAttributes];
-        }
-    }
-    
-    // Insertion text has new attributes, use an attributed string to do the job
-    if ([insertionTextAttributes count] != 0)
-    {
-        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:activeTextAttributes_];
-        [text_ replaceCharactersInRange:insertionTextRange.nsRange withAttributedString:attributedString];
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:insertionAttributes];
+        [text_ replaceCharactersInRange:replacementTextRange.NSRange withAttributedString:attributedString];
         [attributedString release];
-    }
-    // No new attributes, replaceCharactersInRange: will make the inserted text pick up the correct
-    // attributes automatically
-    else
-    {
-        [text_ replaceCharactersInRange:insertionTextRange.nsRange withString:text];
     }
     
     [self regenerateContents];
+
+    // Notify delegate
+    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
+    {
+        [self.delegate textViewDidChange:self];
+    }
     
-    NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
+    // Update selection
+    NKTTextPosition *textPosition = [replacementTextRange.start textPositionByApplyingOffset:[text length]];
     self.markedTextRange = nil;
-    self.selectedTextRange = [textPosition textRange];
-    self.activeTextAttributes = nil;
+    [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
 }
 
 - (void)deleteBackward
@@ -775,12 +775,18 @@
         deletionTextRange = [selectedTextRange_ textRangeByGrowingLeft];
     }
     
-    [text_ deleteCharactersInRange:deletionTextRange.nsRange];
+    [text_ deleteCharactersInRange:deletionTextRange.NSRange];
     [self regenerateContents];
+    
+    // Notify delegate
+    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
+    {
+        [self.delegate textViewDidChange:self];
+    }
     
     // The marked text range no longer exists
     self.markedTextRange = nil;
-    self.selectedTextRange = [deletionTextRange.start textRange];
+    [self setSelectedTextRange:[deletionTextRange.start textRange] notifyInputDelegate:NO];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -789,12 +795,12 @@
 
 - (NSString *)textInRange:(NKTTextRange *)textRange
 {
-    return [[text_ string] substringWithRange:textRange.nsRange];
+    return [[text_ string] substringWithRange:textRange.NSRange];
 }
 
 - (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText
 {
-    [text_ replaceCharactersInRange:textRange.nsRange withString:replacementText];
+    [text_ replaceCharactersInRange:textRange.NSRange withString:replacementText];
     [self regenerateContents];
     
     // The text range to be replaced lies fully before the selected text range
@@ -803,14 +809,14 @@
         NSInteger charChangeCount = [replacementText length] - textRange.length;
         NSUInteger newStartIndex = selectedTextRange_.start.index + charChangeCount;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByReplacingStartIndexWithIndex:newStartIndex];
-        self.selectedTextRange = newTextRange;
+        [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
     // The text range overlaps the selected text range
     else if (textRange.start.index >= selectedTextRange_.start.index && textRange.start.index < selectedTextRange_.end.index)
     {
         NSUInteger newLength = textRange.start.index - selectedTextRange_.start.index;
         NKTTextRange *newTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start length:newLength];
-        self.selectedTextRange = newTextRange;
+        [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
 }
 
@@ -818,17 +824,17 @@
 
 #pragma mark Working with Marked and Selected Text
 
-- (UITextRange *)selectedTextRange
+- (NKTTextRange *)selectedTextRange
 {
     return selectedTextRange_;
 }
 
 - (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange
 {
-    [self setSelectedTextRange:selectedTextRange externalToTextInput:NO];
+    [self setSelectedTextRange:selectedTextRange notifyInputDelegate:NO];
 }
 
-- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange externalToTextInput:(BOOL)externalToTextInput
+- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange notifyInputDelegate:(BOOL)notifyInputDelegate
 {
     if ([selectedTextRange_ isEqualToTextRange:selectedTextRange])
     {
@@ -838,7 +844,7 @@
     // Notify input delegate of selection change if the selection is changing external from it
     // (required by the UITextInput system)
     
-    if (externalToTextInput)
+    if (notifyInputDelegate)
     {
         [inputDelegate_ selectionWillChange:self];
     }
@@ -846,7 +852,10 @@
     [selectedTextRange_ release];
     selectedTextRange_ = [selectedTextRange copy];
     
-    if (externalToTextInput)
+    // The active text attributes are cleared whenever the selected text range changes
+    self.activeTextAttributes = nil;
+    
+    if (notifyInputDelegate)
     {
         [inputDelegate_ selectionDidChange:self];
     }
@@ -879,13 +888,8 @@
 
 - (void)confirmProvisionalTextRange
 {
-    NKTTextRange *provisionalTextRange = (NKTTextRange *)self.provisionalTextRange;
-    [provisionalTextRange retain];
+    [self setSelectedTextRange:provisionalTextRange_ notifyInputDelegate:YES];
     self.provisionalTextRange = nil;
-    [inputDelegate_ selectionWillChange:self];
-    self.selectedTextRange = provisionalTextRange;
-    [inputDelegate_ selectionDidChange:self];
-    [provisionalTextRange release];
 }
 
 - (UITextRange *)markedTextRange
@@ -895,11 +899,14 @@
 
 - (NSDictionary *)markedTextStyle
 {
+    KBCLogTrace();
     return markedTextStyle_;
 }
 
 - (void)setMarkedTextStyle:(NSDictionary *)markedTextStyle
 {
+    KBCLogTrace();
+    
     if (markedTextStyle_ == markedTextStyle)
     {
         return;
@@ -930,27 +937,27 @@
     {
         markedText_ = @"";
     }
-
-    // Replace the current marked text
-    if (markedTextRange_ != nil)
-    {
-        [text_ replaceCharactersInRange:markedTextRange_.nsRange withString:markedText_];
-        [self regenerateContents];
-        NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:markedTextRange_.start length:[markedText_ length]];
-        self.markedTextRange = textRange;
-    }
-    else
-    {
-        [text_ replaceCharactersInRange:selectedTextRange_.nsRange withString:markedText_];
-        [self regenerateContents];
-        NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start length:[markedText_ length]];
-        self.markedTextRange = textRange;
-    }
+    
+    // Figure out the attributes that inserted text needs to have
+    
+    NSDictionary *insertionAttributes = [self typingAttributes];
+    NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_ attributes:insertionAttributes];
+    [text_ replaceCharactersInRange:replacementTextRange.NSRange withAttributedString:attributedString];
+    [attributedString release];
+    
+    [self regenerateContents];
+    
+    NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:replacementTextRange.start length:[markedText_ length]];
+    self.markedTextRange = textRange;
     
     // Update the selected text range within the marked text
     NSUInteger newIndex = markedTextRange_.start.index + relativeSelectedRange.location;
     NKTTextRange *newTextRange = [NKTTextRange textRangeWithIndex:newIndex length:relativeSelectedRange.length];
-    self.selectedTextRange = newTextRange;
+    [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
+    
+    // TODO: reset as needed
+    self.activeTextAttributes = nil;
 }
 
 - (void)unmarkText
@@ -1150,7 +1157,7 @@
     NSDictionary *attributes = [NSDictionary dictionaryWithObject:(id)paragraphStyle forKey:(id)kCTParagraphStyleAttributeName];
     CFRelease(paragraphStyle);
     // TODO: This should really be an attribute merge right?
-    [text_ addAttributes:attributes range:textRange.nsRange];
+    [text_ addAttributes:attributes range:textRange.NSRange];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1315,7 +1322,7 @@
     CGPoint charOrigin = [self characterOriginForPosition:textPosition];
     UIFont *font = [self fontAtTextPosition:textPosition inDirection:UITextStorageDirectionForward];
     CGRect caretFrame = CGRectZero;
-    const CGFloat caretWidth = 2.0;
+    const CGFloat caretWidth = 3.0;
     const CGFloat caretVerticalPadding = 1.0;
     caretFrame.origin.x = charOrigin.x;
     caretFrame.origin.y = charOrigin.y - font.ascender - caretVerticalPadding;
@@ -1418,11 +1425,63 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Fonts at Text Positions
+#pragma mark Managing Text Attributes
+
+// Typing attributes refer to the text attributes that would be applied to inserted text. Typing
+// attributes are context dependent and are based on the text and selected text range.
+- (NSDictionary *)typingAttributes
+{
+    // Active text attributes always take precedence
+    if (activeTextAttributes_ != nil)
+    {
+        return activeTextAttributes_;
+    }
+    
+    // Use default text attributes if there is no text or selected text range
+    if (![self hasText] || self.selectedTextRange == nil)
+    {
+        if ([self.delegate respondsToSelector:@selector(defaultTextAttributes)])
+        {
+            return [self.delegate defaultTextAttributes];
+        }
+    }
+    
+    // Otherwise, get the typing attributes by looking at the text and selected text range
+    NKTTextPosition *textPosition = self.selectedTextRange.start;
+    
+    // The typing attributes for a non-empty text range are the attributes for the first character
+    // of the selection
+    if (!self.selectedTextRange.isEmpty)
+    {
+        return [self.text attributesAtIndex:textPosition.index effectiveRange:NULL];
+    }
+    // The typing attributes at the beginning of a paragraph are the attributes for the first
+    // character of the paragraph
+    else if ((textPosition.index < [self.text length]) &&
+             [self.tokenizer isPosition:textPosition
+                             atBoundary:UITextGranularityParagraph
+                            inDirection:UITextStorageDirectionForward])
+    {
+        return [self.text attributesAtIndex:textPosition.index effectiveRange:NULL];
+    }
+    // Selected text range is empty, use the typing attributes for the character preceding the
+    // insertion point if possible
+    else
+    {
+        NSUInteger index = textPosition.index;
+        
+        if (index > 0)
+        {
+            --index;
+        }
+        
+        return [self.text attributesAtIndex:index effectiveRange:NULL];
+    }
+}
 
 - (NSDictionary *)textAttributesAtTextPosition:(NKTTextPosition *)textPosition
 {
-    if ([text_ length] == 0)
+    if ([self.text length] == 0)
     {
         return nil;
     }
@@ -1439,6 +1498,20 @@
     }
     
     return [text_ attributesAtIndex:sourceIndex effectiveRange:NULL];
+}
+
+- (void)setSelectedTextRangeTextAttributes:(NSDictionary *)textAttributes
+{
+    if (selectedTextRange_ == nil || selectedTextRange_.isEmpty)
+    {
+        return;
+    }
+    
+    // TODO: Don't need to set anything if the existing attributes at position match and the
+    // effective range contains the selected range
+    [text_ setAttributes:textAttributes range:selectedTextRange_.NSRange];
+    [self regenerateContents];
+    [selectionDisplayController_ textLayoutDidChange];
 }
 
 - (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction;

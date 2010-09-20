@@ -10,7 +10,7 @@ typedef enum
 } KUIToggleButtonStyle;
 
 //--------------------------------------------------------------------------------------------------
-//
+// KUIToggleButton
 //--------------------------------------------------------------------------------------------------
 
 @interface KUIToggleButton : UIButton
@@ -22,7 +22,5 @@ typedef enum
 #pragma mark Configuring the Button Title
 
 @property (nonatomic, copy) NSString *title;
-
-#pragma mark Configuring the Button Image
 
 @end

@@ -77,7 +77,7 @@
 
 #pragma mark Getting NSRanges
 
-- (NSRange)nsRange
+- (NSRange)NSRange
 {
     return NSMakeRange(start_.index, length_);
 }

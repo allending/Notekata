@@ -15,7 +15,9 @@
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
 		9F0ACBA1124228750050CFAE /* KBTDiagnostics.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB99124228750050CFAE /* KBTDiagnostics.m */; };
 		9F0ACBA2124228750050CFAE /* KBTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB9B124228750050CFAE /* KBTFont.m */; };
-		9F0ACBA3124228750050CFAE /* KBTTextStyleGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB9D124228750050CFAE /* KBTTextStyleGenerator.m */; };
+		9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */; };
+		9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */; };
+		9F1029101247335000680CA8 /* NKTFontViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F10290F1247335000680CA8 /* NKTFontViewController.m */; };
 		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */; };
@@ -65,9 +67,13 @@
 		9F0ACB99124228750050CFAE /* KBTDiagnostics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTDiagnostics.m; sourceTree = "<group>"; };
 		9F0ACB9A124228750050CFAE /* KBTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFont.h; sourceTree = "<group>"; };
 		9F0ACB9B124228750050CFAE /* KBTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFont.m; sourceTree = "<group>"; };
-		9F0ACB9C124228750050CFAE /* KBTTextStyleGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTTextStyleGenerator.h; sourceTree = "<group>"; };
-		9F0ACB9D124228750050CFAE /* KBTTextStyleGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTTextStyleGenerator.m; sourceTree = "<group>"; };
 		9F0ACBA0124228750050CFAE /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
+		9F10262F1246F3A300680CA8 /* KBTStyleDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTStyleDescriptor.h; sourceTree = "<group>"; };
+		9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTStyleDescriptor.m; sourceTree = "<group>"; };
+		9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFontFamilyDescriptor.h; sourceTree = "<group>"; };
+		9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFontFamilyDescriptor.m; sourceTree = "<group>"; };
+		9F10290E1247335000680CA8 /* NKTFontViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFontViewController.h; sourceTree = "<group>"; };
+		9F10290F1247335000680CA8 /* NKTFontViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFontViewController.m; sourceTree = "<group>"; };
 		9F47A1B5122AC6C900285550 /* KBCGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCGeometry.h; sourceTree = "<group>"; };
 		9F47A1B6122AC6C900285550 /* KBCGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCGeometry.m; sourceTree = "<group>"; };
 		9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewGestureRecognizerDelegate.h; sourceTree = "<group>"; };
@@ -220,8 +226,10 @@
 				9F0ACB99124228750050CFAE /* KBTDiagnostics.m */,
 				9F0ACB9A124228750050CFAE /* KBTFont.h */,
 				9F0ACB9B124228750050CFAE /* KBTFont.m */,
-				9F0ACB9C124228750050CFAE /* KBTTextStyleGenerator.h */,
-				9F0ACB9D124228750050CFAE /* KBTTextStyleGenerator.m */,
+				9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */,
+				9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */,
+				9F10262F1246F3A300680CA8 /* KBTStyleDescriptor.h */,
+				9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */,
 				9F0ACBA0124228750050CFAE /* KobaText.h */,
 			);
 			name = KobaText;
@@ -256,10 +264,12 @@
 		F5632AAA11DD92CF00868F7B /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				1D3623240D0F684500981E51 /* NotekataAppDelegate.h */,
-				1D3623250D0F684500981E51 /* NotekataAppDelegate.m */,
+				9F10290E1247335000680CA8 /* NKTFontViewController.h */,
+				9F10290F1247335000680CA8 /* NKTFontViewController.m */,
 				F5030A7811D3555B002CD3BD /* NKTTextViewController.h */,
 				9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */,
+				1D3623240D0F684500981E51 /* NotekataAppDelegate.h */,
+				1D3623250D0F684500981E51 /* NotekataAppDelegate.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -397,7 +407,9 @@
 				9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */,
 				9F0ACBA1124228750050CFAE /* KBTDiagnostics.m in Sources */,
 				9F0ACBA2124228750050CFAE /* KBTFont.m in Sources */,
-				9F0ACBA3124228750050CFAE /* KBTTextStyleGenerator.m in Sources */,
+				9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */,
+				9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */,
+				9F1029101247335000680CA8 /* NKTFontViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,6 +421,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

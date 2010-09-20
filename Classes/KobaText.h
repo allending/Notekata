@@ -4,4 +4,5 @@
 
 #import "KBTDiagnostics.h"
 #import "KBTFont.h"
-#import "KBTTextStyleGenerator.h"
+#import "KBTFontFamilyDescriptor.h"
+#import "KBTStyleDescriptor.h"

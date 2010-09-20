@@ -27,7 +27,7 @@
         
         index_ = index;
         text_ = [text retain];
-        ctLine_ = CFRetain(ctLine);
+        ctLine_ = (CTLineRef)CFRetain(ctLine);
     }
     
     return self;

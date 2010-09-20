@@ -239,8 +239,8 @@
     CGContextFillRect(imageContext, CGRectMake(0.0, 0.0, zoomedSize.width, zoomedSize.height));
     // Compute clamped origin for zoomed region in zoomed view space
     CGPoint zoomOrigin = CGPointMake(zoomCenter_.x - halfZoomedSize.width, zoomCenter_.y - halfZoomedSize.height);
-    zoomOrigin.x = KBCClamp(zoomOrigin.x, 0.0, zoomedView_.bounds.size.width - zoomedSize.width);
-    zoomOrigin.y = KBCClamp(zoomOrigin.y, 0.0, zoomedView_.bounds.size.height - zoomedSize.height);
+    zoomOrigin.x = KBCClampFloat(zoomOrigin.x, 0.0, zoomedView_.bounds.size.width - zoomedSize.width);
+    zoomOrigin.y = KBCClampFloat(zoomOrigin.y, 0.0, zoomedView_.bounds.size.height - zoomedSize.height);
     // Apply inverse zoom origin so zoomed view can render directly into the context
     CGContextTranslateCTM(imageContext, -zoomOrigin.x, -zoomOrigin.y);
     [zoomedView_.layer renderInContext:imageContext];
