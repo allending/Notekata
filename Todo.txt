@@ -8,6 +8,8 @@ General
 
 Controller
 ----------
+[ ] Design: Figure out UI for fonts
+[ ] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
 [ ] Issue: Toggling traits should add/remove, not reset every trait and font
 [ ] Design: Text entry should dismiss popovers
 [ ] Feature: Store a single page and persist
@@ -17,6 +19,8 @@ Controller
 
 Text View
 ---------
+[ ] Issue: Copperplate italic?
+[ ] Issue: After typing attributes set, selection ui might be dirty
 [ ] Issue: Keyboard input
 [ ] Design: Cancel double tap and press if duration too long or distance too short?
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty

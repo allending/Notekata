@@ -3,7 +3,6 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextView.h"
-#import <CoreText/CoreText.h>
 #import "KobaText.h"
 #import "NKTDragGestureRecognizer.h"
 #import "NKTLine.h"
@@ -140,8 +139,8 @@
     //lineHeight = 30.0;
     
     horizontalRulesEnabled_ = YES;
-    //horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
-    horizontalRuleColor_ = [[UIColor colorWithRed:0.78 green:0.78 blue:0.65 alpha:1.0] retain];
+    horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
+    //horizontalRuleColor_ = [[UIColor colorWithRed:0.78 green:0.78 blue:0.65 alpha:1.0] retain];
     horizontalRuleOffset_ = 3.0;
     verticalMarginEnabled_ = YES;
     verticalMarginColor_ = [[UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0] retain];

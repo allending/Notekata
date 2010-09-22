@@ -4,7 +4,6 @@
 
 #import "NKTTextViewController.h"
 #import "KobaText.h"
-#import "NKTFontViewController.h"
 #import "NKTTestText.h"
 
 @interface NKTTextViewController()
@@ -55,7 +54,8 @@
     [boldToggleButton_ release];
     [italicToggleButton_ release];
     [underlineToggleButton_ release];
-    [fontViewController_ release];
+    [fontButton_ release];
+    [fontPickerViewController_ release];
     [fontPopoverController_ release];
     [super dealloc];
 }
@@ -98,13 +98,13 @@
     UIImage *backgroundPattern = [UIImage imageNamed:@"CreamPaperPattern.png"];
     self.view.backgroundColor = [UIColor colorWithPatternImage:backgroundPattern];
     
-    fontViewController_ = [[NKTFontViewController alloc] init];
-    fontViewController_.delegate = self;
-    fontViewController_.selectedFamilyName = @"Helvetica";
+    fontPickerViewController_ = [[NKTFontPickerViewController alloc] init];
+    fontPickerViewController_.delegate = self;
+    fontPickerViewController_.selectedFontFamilyName = @"Helvetica Neue";
     
-    fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontViewController_];
+    fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     CGSize popoverContentSize = fontPopoverController_.popoverContentSize;
-    popoverContentSize.height = 440.0;
+    popoverContentSize.height = 420.0;
     fontPopoverController_.popoverContentSize = popoverContentSize;
     
     [self createToolbarItems];
@@ -121,61 +121,111 @@
 
 - (void)createToolbarItems
 {
+    // Title item
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 44.0)];
+    titleLabel.backgroundColor = [UIColor clearColor];
+    titleLabel.text = @"The Expedition";
+    titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
+    titleLabel.textColor = [UIColor lightTextColor];
+    titleLabel.center = self.toolbar.center;
+    titleLabel.textAlignment = UITextAlignmentCenter;
+    [self.view addSubview:titleLabel];
+    [titleLabel release];
+    
+//    UIBarButtonItem *titleItem = [[UIBarButtonItem alloc] initWithCustomView:titleLabel];
+//    [titleLabel release];
+//    [toolbarItems addObject:titleItem];
+//    [titleItem release];
+    
+    NSMutableArray *toolbarItems = [NSMutableArray array];
+    
+    // Notebook item
+//    UIBarButtonItem *notebookItem = [[UIBarButtonItem alloc] initWithTitle:@"Notebook"
+//                                                                     style:UIBarButtonItemStyleBordered
+//                                                                    target:nil
+//                                                                    action:nil];
+//    [toolbarItems addObject:notebookItem];
+//    [notebookItem release];
+    
+    
+    // Notebook item
+    UIButton *notebookButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [notebookButton setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateNormal];
+    [notebookButton setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateSelected];
+    [notebookButton setTitleColor:[UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0] forState:UIControlStateSelected];
+    [notebookButton setTitleColor:[UIColor lightTextColor] forState:UIControlStateNormal];
+    [notebookButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateDisabled];
+    [notebookButton setTitle:@"My Documents" forState:UIControlStateNormal];
+    notebookButton.clipsToBounds = YES;
+    notebookButton.titleEdgeInsets = UIEdgeInsetsMake(6.0, 8.0, 6.0, 8.0);
+    notebookButton.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+    notebookButton.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
+    UIImage *backgroundImage = [[UIImage imageNamed:@"DarkButton.png"] stretchableImageWithLeftCapWidth:4.0 topCapHeight:5.0];
+    [notebookButton setBackgroundImage:backgroundImage forState:UIControlStateNormal];
+    notebookButton.frame = CGRectMake(0.0, 10.0, 120.0, 30.0);
+    UIBarButtonItem *notebookItem = [[UIBarButtonItem alloc] initWithCustomView:notebookButton];
+    [toolbarItems addObject:notebookItem];
+    [notebookItem release];
+    
+    // Left flexible space
+    UIBarButtonItem *leftSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                                                                               target:nil
+                                                                               action:nil];
+    [toolbarItems addObject:leftSpace];
+    [leftSpace release];
+    
+    // Font item
+    fontButton_ = [UIButton buttonWithType:UIButtonTypeCustom];
+    [fontButton_ setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateNormal];
+    [fontButton_ setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateSelected];
+    [fontButton_ setTitleColor:[UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0] forState:UIControlStateSelected];
+    [fontButton_ setTitleColor:[UIColor lightTextColor] forState:UIControlStateNormal];
+    [fontButton_ setTitleColor:[UIColor darkGrayColor] forState:UIControlStateDisabled];
+    [fontButton_ addTarget:self action:@selector(fontPressed:) forControlEvents:UIControlEventTouchUpInside];
+    [fontButton_ setTitle:@"Futura - 16" forState:UIControlStateNormal];
+    fontButton_.clipsToBounds = YES;
+    fontButton_.titleEdgeInsets = UIEdgeInsetsMake(6.0, 8.0, 6.0, 8.0);
+    fontButton_.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
+    fontButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
+    backgroundImage = [[UIImage imageNamed:@"DarkButton.png"] stretchableImageWithLeftCapWidth:4.0 topCapHeight:5.0];
+    [fontButton_ setBackgroundImage:backgroundImage forState:UIControlStateNormal];
+    fontButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
+    UIBarButtonItem *fontItem = [[UIBarButtonItem alloc] initWithCustomView:fontButton_];
+    [toolbarItems addObject:fontItem];
+    [fontItem release];
+    
+    // Bold item
     boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
     [boldToggleButton_ addTarget:self action:@selector(boldToggleChanged:) forControlEvents:UIControlEventValueChanged];
     [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
-    boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"Georgia-Bold" size:16.0];
-    boldToggleButton_.frame = CGRectMake(0.0, 0.0, 44.0, 44.0);
+    boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    boldToggleButton_.frame = CGRectMake(0.0, 0.0, 36.0, 36.0);
+    UIBarButtonItem *boldToggleItem = [[UIBarButtonItem alloc] initWithCustomView:boldToggleButton_];
+    [toolbarItems addObject:boldToggleItem];
+    [boldToggleItem release];
     
+    // Italic item
     italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
     [italicToggleButton_ addTarget:self action:@selector(italicToggleChanged:) forControlEvents:UIControlEventValueChanged];
     [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
-    italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"Georgia-Italic" size:16.0];
-    italicToggleButton_.frame = CGRectMake(0.0, 0.0, 44.0, 44.0);
+    italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0];
+    italicToggleButton_.frame = CGRectMake(0.0, 0.0, 36.0, 36.0);
+    UIBarButtonItem *italicToggleItem = [[UIBarButtonItem alloc] initWithCustomView:italicToggleButton_];
+    [toolbarItems addObject:italicToggleItem];
+    [italicToggleItem release];
     
+    // Underline item
     underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
     [underlineToggleButton_ addTarget:self action:@selector(underlineToggleChanged:) forControlEvents:UIControlEventValueChanged];
     [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
-    underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"Georgia-Bold" size:16.0];
-    underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 44.0, 44.0);
-    
-    UIBarButtonItem *boldToggleItem = [[UIBarButtonItem alloc] initWithCustomView:boldToggleButton_];
-    UIBarButtonItem *italicToggleItem = [[UIBarButtonItem alloc] initWithCustomView:italicToggleButton_];
+    underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
+    underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 36.0, 36.0);
     UIBarButtonItem *underlineToggleItem = [[UIBarButtonItem alloc] initWithCustomView:underlineToggleButton_];
-
-    UIButton *fontButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [fontButton setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateNormal];
-    [fontButton setTitleColor:[UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0] forState:UIControlStateHighlighted|UIControlStateSelected];
-    [fontButton setTitleColor:[UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0] forState:UIControlStateSelected];
-    [fontButton setTitleColor:[UIColor lightTextColor] forState:UIControlStateNormal];
-    [fontButton setTitleColor:[UIColor darkGrayColor] forState:UIControlStateDisabled];
-    [fontButton addTarget:self action:@selector(fontPressed:) forControlEvents:UIControlEventTouchUpInside];
-    [fontButton setTitle:@"Font" forState:UIControlStateNormal];
-    fontButton.titleLabel.font = [UIFont fontWithName:@"Georgia-Bold" size:16.0];
-    fontButton.frame = CGRectMake(0.0, 0.0, 100.0, 44.0);
-    UIBarButtonItem *fontItem = [[UIBarButtonItem alloc] initWithCustomView:fontButton];
-    
-    UIBarButtonItem *debugTextItem = [[UIBarButtonItem alloc] initWithTitle:@"Debug Text"
-                                                                  style:UIBarButtonItemStyleBordered
-                                                                 target:self
-                                                                 action:@selector(debugTextPressed:)];
-    UIBarButtonItem *debugItem = [[UIBarButtonItem alloc] initWithTitle:@"Debug"
-                                                                  style:UIBarButtonItemStyleBordered
-                                                                 target:self
-                                                                 action:@selector(debugPressed:)];
-    self.toolbar.items = [NSArray arrayWithObjects:boldToggleItem,
-                                                   italicToggleItem,
-                                                   underlineToggleItem,
-                                                   fontItem,
-                                                   debugTextItem,
-                                                   debugItem,
-                                                   nil];
-    [boldToggleItem release];
-    [italicToggleItem release];
+    [toolbarItems addObject:underlineToggleItem];
     [underlineToggleItem release];
-    [fontItem release];
-    [debugTextItem release];
-    [debugItem release];
+    
+    // Set the tool bar items
+    self.toolbar.items = toolbarItems;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -193,7 +243,7 @@
 
 - (NSDictionary *)activeTextAttributes
 {
-    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:fontViewController_.selectedFamilyName
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:fontPickerViewController_.selectedFontFamilyName
                                                                                            size:16.0
                                                                                            bold:boldToggleButton_.isSelected
                                                                                          italic:italicToggleButton_.isSelected
@@ -217,11 +267,14 @@
 
 #pragma mark Selecting Fonts
 
-- (void)fontViewController:(NKTFontViewController *)fontViewController didSelectFamilyName:(NSString *)familyName
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFamilyName:(NSString *)familyName
 {
     [self updateTextViewTextAttributes];
     // Sync UI
     [self textViewDidChangeSelection:nil];
+    
+    //fontButton_.titleLabel.font = [UIFont fontWithName:familyName size:18.0];
+    [fontButton_ setTitle:[NSString stringWithFormat:@"%@ 12", familyName] forState:UIControlStateNormal];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -240,6 +293,19 @@
 
 #pragma mark Responding to Selection Changes
 
+// TODO: make stub for updating font button
+
+// on initial creation
+// - update buttons to sync state with the typing attributes on the current text view
+// 
+// when change happens through ui toolbar
+// - update buttons (bold, italic, font, underline) to sync state with the individual change
+// - push the individual change to the text view
+//
+// when change happens through text view
+// - update buttons (bold, italic, font, underline) to sync state with the typing attributes
+// 
+
 - (void)textViewDidChangeSelection:(NKTTextView *)textView
 {
     // Update the UI state to reflect the typing text style
@@ -249,7 +315,7 @@
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:typingAttributes];
     KBTFontFamilyDescriptor *fontFamilyDescriptor = [styleDescriptor fontFamilyDescriptor];
     
-    fontViewController_.selectedFamilyName = fontFamilyDescriptor.familyName;
+    fontPickerViewController_.selectedFontFamilyName = fontFamilyDescriptor.familyName;
     
     if (fontFamilyDescriptor.supportsBoldTrait)
     {
@@ -280,7 +346,7 @@
 
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton
 {
-    NSString *familyName = fontViewController_.selectedFamilyName;
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
     KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
     
     if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
@@ -293,7 +359,7 @@
 
 - (void)italicToggleChanged:(KUIToggleButton *)toggleButton
 {
-    NSString *familyName = fontViewController_.selectedFamilyName;
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
     KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
     
     if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
