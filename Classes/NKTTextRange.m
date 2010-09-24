@@ -137,11 +137,21 @@
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange
 {
+    if (textRange == nil)
+    {
+        return NO;
+    }
+    
     return start_.index == textRange.start.index && length_ == textRange.length;
 }
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
 {
+    if (textPosition == nil)
+    {
+        return NO;
+    }
+    
     return [start_ isEqualToTextPosition:textPosition] && length_ == 0;
 }
 

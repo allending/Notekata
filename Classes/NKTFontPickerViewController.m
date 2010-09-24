@@ -17,11 +17,11 @@
 
 #pragma mark Managing the Font Size
 
-- (UISegmentedControl *)fontSizeSegmentedControl;
+- (KUISegmentedControl *)fontSizeSegmentedControl;
 
 #pragma mark Responding to Font Size Changes
 
-- (void)fontSizeSegmentedControlTouchDown:(UISegmentedControl *)segmentedControl;
+- (void)fontSizeSegmentedControlTouchDown:(KUISegmentedControl *)segmentedControl;
 
 @end
 
@@ -33,7 +33,6 @@
 
 @synthesize delegate = delegate_;
 @synthesize availableFontSizes = availableFontSizes_;
-@synthesize selectedFontSizeIndex = selectedFontSizeIndex_;
 
 static NSString * const CellIdentifier = @"CellIdentifier";
 
@@ -140,7 +139,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 
 #pragma mark Managing the Font Size
 
-- (UISegmentedControl *)fontSizeSegmentedControl
+- (KUISegmentedControl *)fontSizeSegmentedControl
 {
     // Create an array of titles with the new available font sizes
     NSMutableArray *fontSizeTitles = [NSMutableArray array];
@@ -148,15 +147,11 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     // The titles have the form "12 pt"
     for (NSNumber *fontSizeNumber in availableFontSizes_)
     {
-        NSString *fontSizeTitle = [NSString stringWithFormat:@"%d pt", [fontSizeNumber intValue]];
+        NSString *fontSizeTitle = [NSString stringWithFormat:@"%d pt", [fontSizeNumber unsignedIntegerValue]];
         [fontSizeTitles addObject:fontSizeTitle];
     }
     
-    UISegmentedControl *fontSizeSegmentedControl = [[[UISegmentedControl alloc] initWithItems:fontSizeTitles] autorelease];
-    fontSizeSegmentedControl.tintColor = [UIColor colorWithRed:0.7 green:0.0 blue:0.0 alpha:1];
-	fontSizeSegmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
-    // We use the UIControlEventTouchDown event instead of UIControlEventValueChanged so that it
-    // is possible to reselect an already selected segment
+    KUISegmentedControl *fontSizeSegmentedControl = [[[KUISegmentedControl alloc] initWithItems:fontSizeTitles] autorelease];
     [fontSizeSegmentedControl addTarget:self
                                  action:@selector(fontSizeSegmentedControlTouchDown:)
                        forControlEvents:UIControlEventAllEvents];
@@ -183,7 +178,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     }
 }
 
-- (CGFloat)selectedFontSize
+- (NSUInteger)selectedFontSize
 {
     if (selectedFontSizeIndex_ == NSNotFound)
     {
@@ -192,16 +187,41 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     }
     
     NSNumber *fontSizeNumber = [availableFontSizes_ objectAtIndex:selectedFontSizeIndex_];
-    return [fontSizeNumber floatValue];
+    return [fontSizeNumber unsignedIntegerValue];
+}
+
+- (void)setSelectedFontSize:(NSUInteger)selectedFontSize
+{
+    NSUInteger index = [availableFontSizes_ indexOfObject:[NSNumber numberWithUnsignedInt:selectedFontSize]];
+    
+    if (index == NSNotFound)
+    {
+        KBCLogWarning(@"%d is not an available font size, ignoring", selectedFontSize);
+        return;
+    }
+    
+    if (selectedFontSizeIndex_ == index)
+    {
+        return;
+    }
+    
+    selectedFontSizeIndex_ = index;
+    
+    // We are done if this is called when the view is not visible
+    if (![self isViewLoaded])
+    {
+        return;
+    }
+
+    self.fontPickerView.fontSizeSegmentedControl.selectedSegmentIndex = selectedFontSizeIndex_;
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Responding to Font Size Changes
 
-- (void)fontSizeSegmentedControlTouchDown:(UISegmentedControl *)segmentedControl
+- (void)fontSizeSegmentedControlTouchDown:(KUISegmentedControl *)segmentedControl
 {
-    KBCLogDebug(@"%f", self.selectedFontSize);
     selectedFontSizeIndex_ = segmentedControl.selectedSegmentIndex;
     
     if ([delegate_ respondsToSelector:@selector(fontPickerViewController:didSelectFontSize:)])
@@ -314,13 +334,6 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Ignore selection of same row
-    // (TODO: do we want to refire to force reapplication?)
-    if (selectedFontFamilyNameIndex_ == indexPath.row)
-    {
-        return;
-    }
-    
     // Uncheck previously selected cell
     if (selectedFontFamilyNameIndex_ != NSNotFound)
     {

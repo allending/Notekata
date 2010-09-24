@@ -16,11 +16,12 @@
     UIToolbar *toolbar_;
     UIView *edgeView_;
     NKTTextView *textView_;
+    
     KUIToggleButton *boldToggleButton_;
     KUIToggleButton *italicToggleButton_;
     KUIToggleButton *underlineToggleButton_;
     UIButton *fontButton_;
-
+    UIBarButtonItem *fontToolbarItem_;
     NKTFontPickerViewController *fontPickerViewController_;
     UIPopoverController *fontPopoverController_;
 }

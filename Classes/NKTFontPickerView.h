@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KobaCore.h"
+#import "KobaUI.h"
 
 //--------------------------------------------------------------------------------------------------
 // NKTFontPickerView
@@ -11,7 +11,7 @@
 @interface NKTFontPickerView : UIView
 {
 @private
-    UISegmentedControl *fontSizeSegmentedControl_;
+    KUISegmentedControl *fontSizeSegmentedControl_;
     UITableView *fontFamilyTableView_;
     UIImageView *tableViewTopCap_;
     UIImageView *tableViewBottomCap_;
@@ -22,7 +22,7 @@
 
 #pragma mark Accessing the Font Picker Subviews
 
-@property (nonatomic, retain) UISegmentedControl *fontSizeSegmentedControl;
+@property (nonatomic, retain) KUISegmentedControl *fontSizeSegmentedControl;
 @property (nonatomic, retain) UITableView *fontFamilyTableView;
 
 @end

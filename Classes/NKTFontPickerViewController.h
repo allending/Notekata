@@ -19,7 +19,7 @@
 - (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
                didSelectFontSize:(CGFloat)fontSize;
 - (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-         didSelectFontFamilyName:(NSString *)familyName;
+         didSelectFontFamilyName:(NSString *)fontFamilyName;
 
 @end
 
@@ -48,8 +48,7 @@
 #pragma mark Managing the Font Size
 
 @property (nonatomic, copy) NSArray *availableFontSizes;
-@property (nonatomic) NSUInteger selectedFontSizeIndex;
-@property (nonatomic, readonly) CGFloat selectedFontSize;
+@property (nonatomic) NSUInteger selectedFontSize;
 
 #pragma mark Setting the Selected Family Name
 

@@ -35,7 +35,7 @@ static const CGFloat SubviewInset = 20.0;
         
         // Create font size segmented control
         NSArray *items = [NSArray arrayWithObjects:@"12 pt", @"16 pt", @"24 pt", @"32 pt", nil];
-        fontSizeSegmentedControl_ = [[UISegmentedControl alloc] initWithItems:items];
+        fontSizeSegmentedControl_ = [[KUISegmentedControl alloc] initWithItems:items];
         [self addSubview:fontSizeSegmentedControl_];
         
         // Create font family table view
@@ -90,7 +90,7 @@ static const CGFloat SubviewInset = 20.0;
 
 #pragma mark Accessing the Font Picker Subviews
 
-- (void)setFontSizeSegmentedControl:(UISegmentedControl *)fontSizeSegmentedControl
+- (void)setFontSizeSegmentedControl:(KUISegmentedControl *)fontSizeSegmentedControl
 {
     if (fontSizeSegmentedControl_ == fontSizeSegmentedControl)
     {
@@ -109,7 +109,7 @@ static const CGFloat SubviewInset = 20.0;
 
 - (void)layoutSubviews
 {
-    // For some inexplicable reason, layoutSubviews is called on this object when the table view
+    // For an inexplicable reason, layoutSubviews is called on this object when the table view
     // scrolls, so we explicitly check to see if the frame has changed
     if (CGRectEqualToRect(self.frame, lastLayoutFrame_))
     {
@@ -124,6 +124,8 @@ static const CGFloat SubviewInset = 20.0;
                                                  SubviewInset,
                                                  subviewWidth,
                                                  FontSizeSegmentedControlHeight);
+    
+    [fontSizeSegmentedControl_ layoutSubviews];
     
     // Font family table view
     fontFamilyTableView_.frame = CGRectMake(SubviewInset,

@@ -458,6 +458,12 @@
     
     [self setSelectedTextRange:nil notifyInputDelegate:NO];
     selectionDisplayController_.caretVisible = NO;
+
+    if ([self.delegate respondsToSelector:@selector(textViewDidEndEditing:)])
+    {
+        [self.delegate textViewDidEndEditing:self];
+    }
+    
     return YES;
 }
 
@@ -467,10 +473,16 @@
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
 {
+    BOOL becameFirstResponder = NO;
+    
     // Make sure the view is the first responder
     if (![self isFirstResponder])
     {
-        if (![self becomeFirstResponder])
+        if ([self becomeFirstResponder])
+        {
+            becameFirstResponder = YES;
+        }
+        else
         {
             return;
         }
@@ -494,6 +506,12 @@
     if (![markedTextRange_ containsTextPosition:textPosition])
     {
         self.markedTextRange = nil;
+    }
+    
+    // Only inform the delegate that editing started after the selection has been set
+    if (becameFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
+    {
+        [self.delegate textViewDidBeginEditing:self];        
     }
 }
 

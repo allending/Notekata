@@ -2,6 +2,16 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KobaCore.h"
 #import "KUISegmentedControl.h"
-#import "KUIToggleButton.h"
+
+@implementation KUISegmentedControl
+
+#pragma mark Responding to Touch Events
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self sendActionsForControlEvents:UIControlEventTouchDown];
+    [super touchesBegan:touches withEvent:event];
+}
+
+@end

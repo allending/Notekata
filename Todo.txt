@@ -8,7 +8,15 @@ General
 
 Controller
 ----------
-[ ] Design: Figure out UI for fonts
+[ ] Issue: Stop editing - font popover needs to go as well
+[ ] Issue: autocorrection and changing styles concurrently ...
+[x] Issue: how much wood (hn) / would a chuck (futura) / could chuck wood (georgia) -> set position to end of line, fonts inconsistent, probably typing attributes wrong
+[x] Issue: Font UI should update when text position changes
+[ ] Design: Scroll selected font into view
+[ ] Design: Disable styling ui elements when not editing
+[ ] Issue: Initial font picker controller configuration
+[ ] Design: Better icons for B/I/U
+[x] Design: Figure out UI for fonts
 [ ] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
 [ ] Issue: Toggling traits should add/remove, not reset every trait and font
 [ ] Design: Text entry should dismiss popovers
@@ -19,8 +27,9 @@ Controller
 
 Text View
 ---------
+[ ] Issue: Not convinced typing attributes 100% correct yet...
 [ ] Issue: Copperplate italic?
-[ ] Issue: After typing attributes set, selection ui might be dirty
+[x] Issue: After typing attributes set, selection ui might be dirty
 [ ] Issue: Keyboard input
 [ ] Design: Cancel double tap and press if duration too long or distance too short?
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty

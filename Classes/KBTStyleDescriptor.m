@@ -157,6 +157,26 @@
     return nil;
 }
 
+- (CGFloat)fontSize
+{
+    if (attributes_ != nil)
+    {
+        CTFontRef font = (CTFontRef)[attributes_ objectForKey:(id)kCTFontAttributeName];
+        
+        if (font == NULL)
+        {
+            KBCLogWarning(@"could get font attribute from style attributes, returning 0.0");
+            return 0.0;
+        }
+        
+        return CTFontGetSize(font);
+    }
+    else
+    {
+        return size_;
+    }
+}
+
 - (NSDictionary *)attributes
 {
     if (attributes_ != nil)

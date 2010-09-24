@@ -35,6 +35,9 @@
 @property (nonatomic, readonly) BOOL underlineEnabled;
 
 - (KBTFontFamilyDescriptor *)fontFamilyDescriptor;
+
+- (CGFloat)fontSize;
+
 - (NSDictionary *)attributes;
 
 @end

@@ -2,20 +2,13 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import "KobaUI.h"
+#import "KobaCore.h"
 
 //--------------------------------------------------------------------------------------------------
-// NKTDragGestureRecognizer is a gesture recognizer subclass that detects tap to drag gestures.
+// KUISegmentedControl is a subclass of UISegmentedControl that adds support target-action methods
+// for the UIControlEventTouchDown control event.
 //--------------------------------------------------------------------------------------------------
 
-@interface NKTDragGestureRecognizer : UIGestureRecognizer
-{
-@private
-    NSUInteger numberOfTapsRequired_;
-}
-
-#pragma mark Configuring the Gesture
-
-@property (nonatomic) NSUInteger numberOfTapsRequired;
+@interface KUISegmentedControl : UISegmentedControl
 
 @end

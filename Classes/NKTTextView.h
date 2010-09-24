@@ -106,6 +106,11 @@
 
 - (NSDictionary *)defaultTextAttributes;
 
+#pragma mark Responding to Editing Notifications
+
+- (void)textViewDidBeginEditing:(NKTTextView *)textView;
+- (void)textViewDidEndEditing:(NKTTextView *)textView;
+
 #pragma mark Responding to Text Changes
 
 - (void)textViewDidChange:(NKTTextView *)textView;
