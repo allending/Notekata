@@ -8,15 +8,13 @@ General
 
 Controller
 ----------
-[ ] Issue: Stop editing - font popover needs to go as well
-[ ] Issue: autocorrection and changing styles concurrently ...
-[x] Issue: how much wood (hn) / would a chuck (futura) / could chuck wood (georgia) -> set position to end of line, fonts inconsistent, probably typing attributes wrong
-[x] Issue: Font UI should update when text position changes
-[ ] Design: Scroll selected font into view
-[ ] Design: Disable styling ui elements when not editing
-[ ] Issue: Initial font picker controller configuration
+[x] Issue: Stop editing - font popover needs to go as well
+[x] Issue: Initial font for font button needs to show up
+[x] Design: Scroll selected font into view
+[x] Design: Disable styling ui elements when not editing
+[x] Issue: Initial font picker controller configuration
+[ ] Issue: Caret size may need to be updated when active typing attributes change
 [ ] Design: Better icons for B/I/U
-[x] Design: Figure out UI for fonts
 [ ] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
 [ ] Issue: Toggling traits should add/remove, not reset every trait and font
 [ ] Design: Text entry should dismiss popovers
@@ -29,7 +27,6 @@ Text View
 ---------
 [ ] Issue: Not convinced typing attributes 100% correct yet...
 [ ] Issue: Copperplate italic?
-[x] Issue: After typing attributes set, selection ui might be dirty
 [ ] Issue: Keyboard input
 [ ] Design: Cancel double tap and press if duration too long or distance too short?
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
@@ -45,6 +42,7 @@ Text View
 
 Deferred
 --------
+[ ] Issue: autocorrection and changing styles concurrently ... Tough to divine what intention is when a mixed styled word is replaced with what could be totally different word
 [ ] Issue: Weird underline drawing behavior with and without line break / descender glyphs (g, p, etc)
 [ ] Issue: Insertion when position within marked text modified - UITextInput bug?
 [ ] Issue: Whitespace at end of line not being handled properly
@@ -53,6 +51,10 @@ Deferred
 
 Done
 ----
+[x] Issue: how much wood (hn) / would a chuck (futura) / could chuck wood (georgia) -> set position to end of line, fonts inconsistent, probably typing attributes wrong
+[x] Issue: Font UI should update when text position changes
+[x] Design: Figure out UI for fonts
+[x] Issue: After typing attributes set, selection ui might be dirty
 [x] Issue: Moving the selection should clear active attributes
 [x] Issue: Detecting bold and italic should go through same logic
 [x] Issue: Font logic detection failing for bold, italic, but no bold-italic (futura)

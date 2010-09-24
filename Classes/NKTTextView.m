@@ -310,7 +310,7 @@
     {
         return;
     }
-
+    
     typesettedLines_ = [[NSMutableArray alloc] init];
     CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedString((CFAttributedStringRef)text_);
     CFIndex length = (CFIndex)[text_ length];
@@ -823,8 +823,8 @@
     // The text range to be replaced lies fully before the selected text range
     if (textRange.end.index <= selectedTextRange_.start.index)
     {
-        NSInteger charChangeCount = [replacementText length] - textRange.length;
-        NSUInteger newStartIndex = selectedTextRange_.start.index + charChangeCount;
+        NSInteger changeInLength = [replacementText length] - textRange.length;
+        NSUInteger newStartIndex = selectedTextRange_.start.index + changeInLength;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByReplacingStartIndexWithIndex:newStartIndex];
         [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
@@ -869,7 +869,7 @@
     [selectedTextRange_ release];
     selectedTextRange_ = [selectedTextRange copy];
     
-    // The active text attributes are cleared whenever the selected text range changes
+    // The active text attributes are cleared each time the selected text range changes
     self.activeTextAttributes = nil;
     
     if (notifyInputDelegate)

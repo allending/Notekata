@@ -67,9 +67,6 @@ static const CGFloat SubviewInset = 20.0;
         // Create right edge
         tableViewRightBorder_ = [[UIImageView alloc] initWithImage:tableViewBorderImage];
         [self addSubview:tableViewRightBorder_];
-        
-        // Perform initial layout
-        [self setNeedsLayout];
     }
     
     return self;

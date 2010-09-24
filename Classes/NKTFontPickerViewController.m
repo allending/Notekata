@@ -95,17 +95,22 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     [fontPickerView release];    
 }
 
-/*- (void)viewDidAppear:(BOOL)animated
+- (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
-//    if (selectionIndex_ != NSNotFound)
-//    {
-//        // reload data?
-//        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:selectionIndex_ inSection:0];
-//        [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
-//    }
-}*/
+    if (selectedFontFamilyNameIndex_ != NSNotFound)
+    {
+        [self.fontPickerView.fontFamilyTableView reloadData];
+        // Force font picker view layout if needed because we are going to ask it to scroll
+        // before it has had a change to layout its subviews
+        [self.fontPickerView layoutIfNeeded];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:selectedFontFamilyNameIndex_ inSection:0];
+        [self.fontPickerView.fontFamilyTableView scrollToRowAtIndexPath:indexPath
+                                                       atScrollPosition:UITableViewScrollPositionMiddle
+                                                               animated:NO];
+    }
+}
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
@@ -315,7 +320,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     NSString *fontFamilyName = [self.fontFamilyNames objectAtIndex:indexPath.row];
     cell.textLabel.text = fontFamilyName;
     cell.textLabel.font = [UIFont fontWithName:fontFamilyName size:16.0];
-
+    
     if (indexPath.row == selectedFontFamilyNameIndex_)
     {
         cell.accessoryType = UITableViewCellAccessoryCheckmark;

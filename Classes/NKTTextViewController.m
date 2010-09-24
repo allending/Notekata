@@ -321,11 +321,6 @@
         fontPickerViewController_.selectedFontFamilyName = fontFamilyDescriptor.familyName;
         fontPickerViewController_.selectedFontSize = styleDescriptor.fontSize;
         
-        NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
-                                                               fontFamilyDescriptor.familyName,
-                                                               (NSUInteger)styleDescriptor.fontSize];
-        [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];     
-        
         if (fontFamilyDescriptor.supportsBoldTrait)
         {
             boldToggleButton_.enabled = YES;
@@ -359,6 +354,12 @@
         underlineToggleButton_.enabled = NO;
         underlineToggleButton_.selected = NO;
     }
+    
+    // Update the font button title regardless of editing state
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
+                                                           fontPickerViewController_.selectedFontFamilyName,
+                                                           fontPickerViewController_.selectedFontSize];
+    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
 }
 
 - (void)textViewDidBeginEditing:(NKTTextView *)textView
@@ -366,8 +367,14 @@
     [self updateToolbarStyleItems];
 }
 
+// When editing ends, we need to make sure to dismiss the font picker popover if it is visible
 - (void)textViewDidEndEditing:(NKTTextView *)textView
 {
+    if (fontPopoverController_.isPopoverVisible)
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
     [self updateToolbarStyleItems];
 }
 
