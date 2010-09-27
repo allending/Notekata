@@ -3,7 +3,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "KobaUI.h"
-#import <CoreText/CoreText.h>
+#import "KobaText.h"
 
 @class NKTTextRange;
 @class NKTTextPosition;
@@ -22,7 +22,7 @@
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text CTLine:(CTLineRef)ctLine;
+- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine;
 
 #pragma mark Accessing the Index
 
@@ -44,15 +44,10 @@
 
 #pragma mark Hit Testing
 
-// Returns a text position usable for the next character to be inserted on the line. Relative to
-// the line's text range, the index of the text position returned will be no less than the start
-// index and no more than the last string index plus 1.
-//
 // If the last character on the line is a line break, the text position returned will no more than
-// the last string index. This is so that insertions using the returned text position can be used
-// to insert text on the same line before the line break.
+// the last string index. Insertions can be made using the returned text position can be used to
+// insert text on the same line before the line break.
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
-
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange;
 
 #pragma mark Drawing

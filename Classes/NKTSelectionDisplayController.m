@@ -14,6 +14,8 @@
 @property (nonatomic, readonly) NKTHighlightRegion *selectedTextRegion;
 @property (nonatomic, readonly) NKTHighlightRegion *markedTextRegion;
 
+#pragma mark Updating Selection Elements
+
 - (void)updateCaret;
 - (void)updateSelectedTextRegion;
 - (void)updateMarkedTextRegion;
@@ -60,9 +62,7 @@
 - (void)setDelegate:(id <NKTSelectionDisplayControllerDelegate>)delegate
 {
     delegate_ = delegate;
-    [self updateCaret];
-    [self updateSelectedTextRegion];
-    [self updateMarkedTextRegion];
+    [self updateSelectionElements];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -108,42 +108,88 @@
     return markedTextRegion_;
 }
 
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Controlling Selection Element Display
+
+- (void)setCaretVisible:(BOOL)caretVisible
+{
+    if (caretVisible_ == caretVisible)
+    {
+        return;
+    }
+    
+    caretVisible_ = caretVisible;
+    [self updateCaret];
+}
+
+- (void)setSelectedTextRegionVisible:(BOOL)selectedTextRegionVisible
+{
+    if (selectedTextRegionVisible_ == selectedTextRegionVisible)
+    {
+        return;
+    }
+    
+    selectedTextRegionVisible_ = selectedTextRegionVisible;
+    [self updateSelectedTextRegion];
+}
+
+- (void)setMarkedTextRegionVisible:(BOOL)markedTextRegionVisible
+{    
+    if (markedTextRegionVisible_ == markedTextRegionVisible)
+    {
+        return;
+    }
+    
+    markedTextRegionVisible_ = markedTextRegionVisible;
+    [self updateMarkedTextRegion];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Updating Selection Elements
+
+// The caret is placed at the start of the provisional text range, or the start of the selected
+// text range. A provisional text range indicates the caret should not blink because the text
+// range is not ready for input.
 - (void)updateCaret
 {
-    UITextRange *textRange = [delegate_ provisionalTextRange];
-    BOOL provisional = YES;
+    UITextRange *provisionalTextRange = [delegate_ provisionalTextRange];
     
-    if (textRange == nil)
+    if (provisionalTextRange != nil && provisionalTextRange.empty && caretVisible_)
     {
-        provisional = NO;
-        textRange = [delegate_ selectedTextRange];
-    }
-    
-    if (textRange != nil && textRange.empty && caretVisible_)
-    {
-        self.caret.frame = [delegate_ caretRectForPosition:textRange.start];
+        self.caret.frame = [delegate_ caretRectForPosition:provisionalTextRange.start];
+        self.caret.blinkingEnabled = NO;
         self.caret.hidden = NO;
-        self.caret.blinkingEnabled = !provisional;
-        [self.caret restartBlinking];
+        return;
     }
-    else
+    
+    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
+    
+    if (selectedTextRange != nil && selectedTextRange.empty && caretVisible_)
     {
-        self.caret.hidden = YES;
+        self.caret.frame = [delegate_ inputCaretRect];
+        self.caret.blinkingEnabled = YES;
+        [self.caret restartBlinking];
+        self.caret.hidden = NO;
+        return;
     }
+    
+    self.caret.hidden = YES;
 }
 
 - (void)updateSelectedTextRegion
 {
-    UITextRange *textRange = [delegate_ provisionalTextRange];
+    UITextRange *activeTextRange = [delegate_ provisionalTextRange];
     
-    if (textRange == nil)
+    if (activeTextRange == nil)
     {
-        textRange = [delegate_ selectedTextRange];
+        activeTextRange = [delegate_ selectedTextRange];
     }
     
-    if (textRange != nil && !textRange.empty && selectedTextRegionVisible_)
+    if (activeTextRange != nil && !activeTextRange.empty && selectedTextRegionVisible_)
     {
-        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:textRange];
+        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:activeTextRange];
         self.selectedTextRegion.hidden = NO;
     }
     else
@@ -167,55 +213,7 @@
     }
 }
 
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Controlling Selection Element Display
-
-- (void)setCaretVisible:(BOOL)caretVisible
-{
-    if (caretVisible_ == caretVisible)
-    {
-        return;
-    }
-    
-    caretVisible_ = caretVisible;
-    [self updateCaret];
-}
-
-- (void)setSelectedTextRegionVisible:(BOOL)selectedTextRegionVisible
-{
-    selectedTextRegionVisible_ = selectedTextRegionVisible;
-    [self updateSelectedTextRegion];
-}
-
-- (void)setMarkedTextRegionVisible:(BOOL)markedTextRegionVisible
-{
-    markedTextRegionVisible_ = markedTextRegionVisible;
-    [self updateMarkedTextRegion];
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Informing the Controller of Selection Changes
-
-- (void)selectedTextRangeDidChange
-{
-    [self updateCaret];
-    [self updateSelectedTextRegion];
-}
-
-- (void)markedTextRangeDidChange
-{
-    [self updateMarkedTextRegion];
-}
-
-- (void)provisionalTextRangeDidChange
-{
-    [self updateCaret];
-    [self updateSelectedTextRegion];
-}
-
-- (void)textLayoutDidChange
+- (void)updateSelectionElements
 {
     [self updateCaret];
     [self updateSelectedTextRegion];

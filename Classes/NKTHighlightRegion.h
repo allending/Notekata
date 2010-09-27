@@ -12,7 +12,6 @@
 {
 @private
     NSArray *rects_;
-    
     BOOL coalescesRects_;
     BOOL fillsRects_;
     BOOL strokesRects_;

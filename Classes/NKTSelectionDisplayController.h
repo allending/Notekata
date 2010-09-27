@@ -10,8 +10,10 @@
 @protocol NKTSelectionDisplayControllerDelegate;
 
 //--------------------------------------------------------------------------------------------------
-// NKTSelectionDisplayController manages the display and update of textual selection elements such
-// as highlighted selection ranges in a view.
+// NKTSelectionDisplayController manages the display of text selection elements within a view. It
+// supports input carets, selected text ranges, marked text ranges, and provisional text ranges.
+// The receiver's delegate provides the controller information about text ranges and text range
+// geometry.
 //--------------------------------------------------------------------------------------------------
 
 @interface NKTSelectionDisplayController : NSObject
@@ -22,7 +24,6 @@
     BOOL caretVisible_;
     BOOL selectedTextRegionVisible_;
     BOOL markedTextRegionVisible_;
-    
     NKTCaret *caret_;
     NKTHighlightRegion *selectedTextRegion_;
     NKTHighlightRegion *markedTextRegion_;
@@ -32,18 +33,15 @@
 
 @property (nonatomic, readwrite, assign) id <NKTSelectionDisplayControllerDelegate> delegate;
 
-#pragma mark Controlling Selection Element Display
+#pragma mark Configuring Selection Elements
 
 @property (nonatomic, getter = isCaretVisible) BOOL caretVisible;
 @property (nonatomic, getter = isSelectedTextRegionVisible) BOOL selectedTextRegionVisible;
 @property (nonatomic, getter = isMarkedTextRegionVisible) BOOL markedTextRegionVisible;
 
-#pragma mark Informing the Controller About Changes
+#pragma mark Updating Selection Elements
 
-- (void)selectedTextRangeDidChange;
-- (void)markedTextRangeDidChange;
-- (void)provisionalTextRangeDidChange;
-- (void)textLayoutDidChange;
+- (void)updateSelectionElements;
 
 @end
 
@@ -63,8 +61,9 @@
 
 #pragma mark Geometry and Hit-Testing
 
+- (CGRect)inputCaretRect;
+- (CGRect)caretRectForPosition:(UITextPosition *)textPosition;
 - (NSArray *)rectsForTextRange:(UITextRange *)textRange;
-- (CGRect)caretRectForPosition:(UITextPosition *)position;
 
 #pragma mark Managing Selection Views
 

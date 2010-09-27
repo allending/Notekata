@@ -31,7 +31,7 @@
     UIColor *verticalMarginColor_;
     CGFloat verticalMarginInset_;
     
-    NSDictionary *activeTextAttributes_;
+    NSDictionary *inputTextAttributes_;
     
     NSMutableArray *typesettedLines_;
     
@@ -79,10 +79,8 @@
 
 #pragma mark Managing Text Attributes
 
-@property (nonatomic, copy) NSDictionary *activeTextAttributes;
+@property (nonatomic, copy) NSDictionary *inputTextAttributes;
 
-- (NSDictionary *)typingAttributes;
-- (NSDictionary *)textAttributesAtTextPosition:(UITextPosition *)textPosition;
 - (void)setSelectedTextRangeTextAttributes:(NSDictionary *)textAttributes;
 
 #pragma mark Accessing Gesture Recognizers
@@ -94,8 +92,10 @@
 
 @end
 
+#pragma mark -
+
 //--------------------------------------------------------------------------------------------------
-//
+// NKTTextViewDelegate
 //--------------------------------------------------------------------------------------------------
 
 @protocol NKTTextViewDelegate <UIScrollViewDelegate>
@@ -134,7 +134,7 @@
 
 @property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
 
-@property (nonatomic, readwrite, copy) NKTTextRange *selectedTextRange;
-@property (nonatomic, readonly, copy) NKTTextRange *markedTextRange;
+//@property (nonatomic, readwrite, copy) NKTTextRange *selectedTextRange;
+//@property (nonatomic, readonly, copy) NKTTextRange *markedTextRange;
 
 @end

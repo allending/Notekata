@@ -8,10 +8,8 @@
 @implementation NKTLoupe
 
 @synthesize anchor = anchor_;
-
 @synthesize zoomedView = zoomedView_;
 @synthesize zoomCenter = zoomCenter_;
-
 @synthesize fillColor = fillColor_;
 
 //--------------------------------------------------------------------------------------------------

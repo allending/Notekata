@@ -6,8 +6,6 @@
 
 @implementation KUIToggleButton
 
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark Initializing
 
 - (id)initWithStyle:(KUIToggleButtonStyle)style

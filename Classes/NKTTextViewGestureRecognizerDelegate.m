@@ -48,7 +48,7 @@
     else if (gestureRecognizer == textView_.doubleTapAndDragGestureRecognizer)
     {
         NKTTextRange *markedTextRange = (NKTTextRange *)textView_.markedTextRange;
-        return (markedTextRange == nil || markedTextRange.isEmpty);
+        return (markedTextRange == nil || markedTextRange.empty);
     }
     else
     {

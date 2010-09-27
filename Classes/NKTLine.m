@@ -14,13 +14,13 @@
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text CTLine:(CTLineRef)ctLine
+- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine
 {
     if ((self = [super init]))
     {
         if (text == nil || ctLine == NULL)
         {
-            NSLog(@"%s: invalid initialization arguments", __PRETTY_FUNCTION__);
+            KBCLogWarning(@"invalid initialization arguments, returning nil");
             [self release];
             return nil;
         }
@@ -89,7 +89,6 @@
 
 #pragma mark Hit Testing
 
-// TODO: document the specifics of what this does
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point
 {
     NKTTextRange *textRange = self.textRange;

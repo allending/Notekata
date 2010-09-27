@@ -8,6 +8,8 @@
 
 @synthesize blinkingEnabled = blinkingEnabled_;
 
+static const CGFloat NKTCaretBlinkPeriodSeconds = 0.9;
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
@@ -31,19 +33,19 @@
 
 - (void)setBlinkingEnabled:(BOOL)blinkingEnabled
 {
+    // Transitioning from not blinking to blinking
     if (!blinkingEnabled_ && blinkingEnabled)
     {
         blinkingEnabled_ = YES;
         [self restartBlinking];
     }
+    // Transitioning from blinking to not blinking
     else if (blinkingEnabled_ && !blinkingEnabled)
     {
         blinkingEnabled_ = NO;
         self.alpha = 1.0;
     }
 }
-
-static const CGFloat NKTCaretBlinkPeriodSeconds = 0.875;
 
 - (void)restartBlinking
 {

@@ -12,7 +12,6 @@
 static NSString * const TableViewTopCapFilename = @"NKTFontPickerViewTableViewTopCap.png";
 static NSString * const TableViewBottomCapFilename = @"NKTFontPickerViewTableViewBottomCap.png";
 static NSString * const TableViewBorderFilename = @"NKTFontPickerViewTableViewBorder.png";
-
 static const CGFloat FontSizeSegmentedControlHeight = 44.0;
 static const CGFloat TableViewCapWidth = 8.0;
 static const CGFloat TableViewCapHeight = 9.0;
@@ -25,9 +24,7 @@ static const CGFloat SubviewInset = 20.0;
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame]))
-    {
-        lastLayoutFrame_ = CGRectNull;
-        
+    {        
         // Off-gray background color - scheme tied to the table view cap images
         self.backgroundColor = [UIColor colorWithRed:0.82 green:0.83 blue:0.85 alpha:1.0];
         self.opaque = YES;
@@ -67,6 +64,8 @@ static const CGFloat SubviewInset = 20.0;
         // Create right edge
         tableViewRightBorder_ = [[UIImageView alloc] initWithImage:tableViewBorderImage];
         [self addSubview:tableViewRightBorder_];
+        
+        lastLayoutFrame_ = CGRectNull;
     }
     
     return self;
@@ -85,7 +84,7 @@ static const CGFloat SubviewInset = 20.0;
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Accessing the Font Picker Subviews
+#pragma mark Accessing Font Picker Subviews
 
 - (void)setFontSizeSegmentedControl:(KUISegmentedControl *)fontSizeSegmentedControl
 {
@@ -98,6 +97,19 @@ static const CGFloat SubviewInset = 20.0;
     [fontSizeSegmentedControl_ release];
     fontSizeSegmentedControl_ = [fontSizeSegmentedControl retain];
     [self addSubview:fontSizeSegmentedControl_];
+}
+
+- (void)setFontFamilyTableView:(UITableView *)fontFamilyTableView
+{
+    if (fontFamilyTableView_ == fontFamilyTableView)
+    {
+        return;
+    }
+    
+    [fontFamilyTableView_ removeFromSuperview];
+    [fontFamilyTableView_ release];
+    fontFamilyTableView_ = [fontFamilyTableView retain];
+    [self addSubview:fontFamilyTableView_];
 }
 
 //--------------------------------------------------------------------------------------------------

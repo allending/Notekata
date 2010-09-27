@@ -4,6 +4,10 @@
 
 #import "KobaCore.h"
 
+//--------------------------------------------------------------------------------------------------
+// KBTFontFamilyDescriptor
+//--------------------------------------------------------------------------------------------------
+
 @interface KBTFontFamilyDescriptor : NSObject
 {
 @private
@@ -20,7 +24,5 @@
 @property (nonatomic, readonly) BOOL supportsBoldTrait;
 @property (nonatomic, readonly) BOOL supportsItalicTrait;
 @property (nonatomic, readonly) BOOL supportsBoldItalicTrait;
-
-#pragma mark Creating Fonts
 
 @end

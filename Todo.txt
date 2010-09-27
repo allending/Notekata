@@ -3,24 +3,16 @@ TODO
 
 General
 -------
-[ ] Refactor the font implentation dump
-[ ] Refactor accessor use - use setters if they are there. access directly or use getters to read: anyway that is most convenient.
+
 
 Controller
 ----------
-[x] Issue: Stop editing - font popover needs to go as well
-[x] Issue: Initial font for font button needs to show up
-[x] Design: Scroll selected font into view
-[x] Design: Disable styling ui elements when not editing
-[x] Issue: Initial font picker controller configuration
-[ ] Issue: Caret size may need to be updated when active typing attributes change
-[ ] Design: Better icons for B/I/U
 [ ] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
+[ ] Issue: Marker felt
 [ ] Issue: Toggling traits should add/remove, not reset every trait and font
-[ ] Design: Text entry should dismiss popovers
+[ ] Design: Better icons for B/I/U
 [ ] Feature: Store a single page and persist
 [ ] Design: Controller responsible for setting up styles of text view
-[ ] Feature: Font management in text view
 [ ] Issue: Popover + scroll view weirdness if rotated when visible
 
 Text View
@@ -42,7 +34,7 @@ Text View
 
 Deferred
 --------
-[ ] Issue: autocorrection and changing styles concurrently ... Tough to divine what intention is when a mixed styled word is replaced with what could be totally different word
+[ ] Issue: autocorrection and changing styles concurrently ... Tough to infer what intention is when a mixed styled word is replaced with what could be totally different word
 [ ] Issue: Weird underline drawing behavior with and without line break / descender glyphs (g, p, etc)
 [ ] Issue: Insertion when position within marked text modified - UITextInput bug?
 [ ] Issue: Whitespace at end of line not being handled properly
@@ -51,60 +43,12 @@ Deferred
 
 Done
 ----
-[x] Issue: how much wood (hn) / would a chuck (futura) / could chuck wood (georgia) -> set position to end of line, fonts inconsistent, probably typing attributes wrong
-[x] Issue: Font UI should update when text position changes
-[x] Design: Figure out UI for fonts
-[x] Issue: After typing attributes set, selection ui might be dirty
-[x] Issue: Moving the selection should clear active attributes
-[x] Issue: Detecting bold and italic should go through same logic
-[x] Issue: Font logic detection failing for bold, italic, but no bold-italic (futura)
-[x] Issue: Selecting font should resync toggle buttons and style attributes
-[x] Design: Tune caret size
-[x] Issue: With debug text, ui state doesn't update
-[x] Issue: Zapfino (non-creatable) font issues
-[x] Issue: Applying styles to marked text
-[x] Issue: Problem with autocorrection on wrong ranges
-[x] Design: Default font when text is empty?
-[x] Design: Text position review and consistency
-[x] Design: Insertion does not use property of newline characters
-[x] Issue: Selected text range attribute updating not working quite right
-[x] Issue: Proper updating of visual elements (e.g. selection) when text changes
-[x] Feature: Toggling styles applies to selected text range
-[x] Debugging: Clear text, sample text
-[x] Design: Change default font
-[x] Issue: Double tap on single location - strange selection behavior
-[x] Issue: Make meaning of text position styling / fonts consistent (autocorrect, insertion text, etc)
-[x] OCD: Make property access consistent
-[x] OCD: Use internal ivar names
-[x] Issue: UITextInput speed problems
-[x] Issue: Rotation and selection elements!
-[x] Issue: Empty doc, double tap select, long press select, visual behavior
-[x] Issue: Fix rects returned
-[x] Issue: marked text range selection at end
-[x] Issue: dtnd loupe not working well on edge cases with abc test text
-[x] Feature: Movement within marked text when marked text exists
-[x] Feature: Marked text visuals...
-[x] Issue: Loupe at bottom of device - background color
-[x] Issue: Still having issues with drawing anti aliased lines in NKTHighlightRegion - try on same line as zh
-[x] Issue: blank -> (zh)ni (db) (db) (english) you
-[x] Issue: blank -> (zh)na (db) (db) (english) abcd
-[x] Issue: unmarkText not being called correctly?
-[x] Issue: ni hao ma (space) n (delete backwards) -> crash
-[x] Issue: n (db) (db) (db) crash on empty page
-[x] Issue: Select all text and delete
-[x] Issue: Drawing order of selection etc.
-[x] Design: Decouple some logic for selection, fonts, etc
-[x] Issue: Enter/exit responder multiple times not interacting well with selection
-[x] Refactor: Make caret creation and rect clearer
-[x] Issue: Text view layout wrong when no text on start
-[x] Issue: Tap beyong line should place caret at end of line.
-[x] Issue: Caret should be sized with ascent + descent
-[x] Issue: Make position computations clearer in text section
-[x] Issue: Default Line Height + Large Margins -> last horizontal rule missing
-[x] Issue: Text view doesn't rotate properly
-[x] Feature: Lines/Styles
-[x] Issue: Unlimited line drawing fails when using large margins
-[x] Issue: what if glyphs from non visible line enter visible line? solve by design? buffer 1 on top and bottom and limit point size
-[x] Issue: text clips if section frames are just right. can solve by adding some padding to frame?
-[x] Crash: Creating text sections that won't display any lines..
-[x] Issue: first line clipping glyphs?
+[x] Feature: Font management in text view
+[x] Design: Text entry should dismiss popovers
+[x] Refactor pass
+[x] Issue: Caret size may need to be updated when active typing attributes change
+[x] Issue: Stop editing - font popover needs to go as well
+[x] Issue: Initial font for font button needs to show up
+[x] Design: Scroll selected font into view
+[x] Design: Disable styling ui elements when not editing
+[x] Issue: Initial font picker controller configuration

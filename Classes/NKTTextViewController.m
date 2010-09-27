@@ -253,10 +253,10 @@
 - (NSDictionary *)activeTextAttributes
 {
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:fontPickerViewController_.selectedFontFamilyName
-                                                                                           size:fontPickerViewController_.selectedFontSize
-                                                                                           bold:boldToggleButton_.isSelected
-                                                                                         italic:italicToggleButton_.isSelected
-                                                                                     underlined:underlineToggleButton_.isSelected];
+                                                                                           fontSize:fontPickerViewController_.selectedFontSize
+                                                                                           bold:boldToggleButton_.selected
+                                                                                         italic:italicToggleButton_.selected
+                                                                                     underlined:underlineToggleButton_.selected];
     return [styleDescriptor attributes];
 }
 
@@ -264,7 +264,7 @@
 {
     NSDictionary *activeTextAttributes = [self activeTextAttributes];
     [textView_ setSelectedTextRangeTextAttributes:activeTextAttributes];
-    textView_.activeTextAttributes = activeTextAttributes;
+    textView_.inputTextAttributes = activeTextAttributes;
 }
 
 - (NSDictionary *)defaultTextAttributes
@@ -309,32 +309,31 @@
 #pragma mark Responding to Editing Notifications
 
 - (void)updateToolbarStyleItems
-{    
-    if (textView_.isFirstResponder)
+{
+    if ([textView_ isFirstResponder])
     {
         fontButton_.enabled = YES;
         
-        NSDictionary *typingAttributes = [self.textView typingAttributes];
-        KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:typingAttributes];
-        KBTFontFamilyDescriptor *fontFamilyDescriptor = [styleDescriptor fontFamilyDescriptor];
+        NSDictionary *inputTextAttributes = self.textView.inputTextAttributes;
+        KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:inputTextAttributes];
         
-        fontPickerViewController_.selectedFontFamilyName = fontFamilyDescriptor.familyName;
+        fontPickerViewController_.selectedFontFamilyName = styleDescriptor.fontFamilyName;
         fontPickerViewController_.selectedFontSize = styleDescriptor.fontSize;
         
-        if (fontFamilyDescriptor.supportsBoldTrait)
+        if (styleDescriptor.fontFamilySupportsBoldTrait)
         {
             boldToggleButton_.enabled = YES;
-            boldToggleButton_.selected = styleDescriptor.boldTraitEnabled;
+            boldToggleButton_.selected = styleDescriptor.fontIsBold;
         }
         else
         {
             boldToggleButton_.enabled = NO;
         }
         
-        if (fontFamilyDescriptor.supportsItalicTrait)
+        if (styleDescriptor.fontFamilySupportsItalicTrait)
         {
             italicToggleButton_.enabled = YES;
-            italicToggleButton_.selected = styleDescriptor.italicTraitEnabled;
+            italicToggleButton_.selected = styleDescriptor.fontIsItalic;
         }
         else
         {
@@ -342,7 +341,7 @@
         }
         
         underlineToggleButton_.enabled = YES;
-        underlineToggleButton_.selected = styleDescriptor.underlineEnabled;
+        underlineToggleButton_.selected = styleDescriptor.textIsUnderlined;
     }
     else
     {
@@ -370,7 +369,7 @@
 // When editing ends, we need to make sure to dismiss the font picker popover if it is visible
 - (void)textViewDidEndEditing:(NKTTextView *)textView
 {
-    if (fontPopoverController_.isPopoverVisible)
+    if (fontPopoverController_.popoverVisible)
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
@@ -384,7 +383,7 @@
 
 - (void)textViewDidChange:(NKTTextView *)textView
 {
-    if (fontPopoverController_.isPopoverVisible)
+    if (fontPopoverController_.popoverVisible)
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
@@ -436,7 +435,7 @@
 
 - (void)fontButtonPressed:(UIButton *)button
 {
-    if (fontPopoverController_.isPopoverVisible)
+    if (fontPopoverController_.popoverVisible)
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }

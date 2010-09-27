@@ -6,43 +6,9 @@
 #import "KBTFont.h"
 #import "KBTFontFamilyDescriptor.h"
 
-@interface KBTStyleDescriptor()
-
-#pragma mark Initializing
-
-- (id)initWithFontFamilyName:(NSString *)fontFamilyName size:(CGFloat)size bold:(BOOL)bold italic:(BOOL)italic underlined:(BOOL)underlined;
-- (id)initWithAttributes:(NSDictionary *)attributes;
-
-@end
-
-#pragma mark -
-
-//--------------------------------------------------------------------------------------------------
-
 @implementation KBTStyleDescriptor
 
 #pragma mark Initializing
-
-- (id)initWithFontFamilyName:(NSString *)fontFamilyName size:(CGFloat)size bold:(BOOL)bold italic:(BOOL)italic underlined:(BOOL)underlined
-{
-    if ((self = [super init]))
-    {
-        if (fontFamilyName == nil)
-        {
-            KBCLogWarning(@"font family name must not be nil, returning nil");
-            [self release];
-            return nil;
-        }
-        
-        fontFamilyName_ = [fontFamilyName copy];
-        size_ = size;
-        bold_ = bold;
-        italic_ = italic;
-        underlined_ = underlined;
-    }
-    
-    return self;
-}
 
 - (id)initWithAttributes:(NSDictionary *)attributes
 {
@@ -54,13 +20,42 @@
     return self;
 }
 
+- (id)initWithFontFamilyName:(NSString *)fontFamilyName
+                    fontSize:(CGFloat)fontSize
+                        bold:(BOOL)bold
+                      italic:(BOOL)italic
+                  underlined:(BOOL)underlined
+{
+    if ((self = [super init]))
+    {
+        if (fontFamilyName == nil)
+        {
+            KBCLogWarning(@"font family name must not be nil, returning nil");
+            [self release];
+            return nil;
+        }
+        
+        fontFamilyName_ = [fontFamilyName copy];
+        fontSize_ = fontSize;
+        bold_ = bold;
+        italic_ = italic;
+        underlined_ = underlined;
+    }
+    
+    return self;
+}
+
 + (id)styleDescriptorWithFontFamilyName:(NSString *)fontFamilyName
-                                   size:(CGFloat)size
+                                   fontSize:(CGFloat)fontSize
                                    bold:(BOOL)bold
                                  italic:(BOOL)italic
                              underlined:(BOOL)underlined
 {
-    return [[[self alloc] initWithFontFamilyName:fontFamilyName size:size bold:bold italic:italic underlined:underlined] autorelease];
+    return [[[self alloc] initWithFontFamilyName:fontFamilyName
+                                        fontSize:fontSize
+                                            bold:bold
+                                          italic:italic
+                                      underlined:underlined] autorelease];
 }
 
 + (id)styleDescriptorWithAttributes:(NSDictionary *)attributes
@@ -70,112 +65,14 @@
 
 - (void)dealloc
 {
-    [fontFamilyName_ release];
     [attributes_ release];
+    [fontFamilyName_ release];
     [super dealloc];
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Information About the Style Descriptor
-
-- (BOOL)boldTraitEnabled
-{
-    if (fontFamilyName_ != nil)
-    {
-        return bold_;
-    }
-    
-    if (attributes_ != nil)
-    {
-        CTFontRef font = (CTFontRef)[attributes_ objectForKey:(id)kCTFontAttributeName];
-        
-        if (font == NULL)
-        {
-            return NO;
-        }
-        
-        CTFontSymbolicTraits symbolicTraits = CTFontGetSymbolicTraits(font);
-        return (symbolicTraits & kCTFontBoldTrait) == kCTFontBoldTrait;
-    }
-    
-    return NO;
-}
-
-- (BOOL)italicTraitEnabled
-{
-    if (fontFamilyName_ != nil)
-    {
-        return italic_;
-    }
-    
-    if (attributes_ != nil)
-    {
-        CTFontRef font = (CTFontRef)[attributes_ objectForKey:(id)kCTFontAttributeName];
-        
-        if (font == NULL)
-        {
-            return NO;
-        }
-        
-        CTFontSymbolicTraits symbolicTraits = CTFontGetSymbolicTraits(font);
-        return (symbolicTraits & kCTFontItalicTrait) == kCTFontItalicTrait;
-    }
-    
-    return NO;
-}
-
-- (BOOL)underlineEnabled
-{
-    if (fontFamilyName_ != nil)
-    {
-        return underlined_;
-    }
-    
-    if (attributes_ != nil)
-    {
-        NSNumber *underlineStyle = [attributes_ objectForKey:(id)kCTUnderlineStyleAttributeName];
-        return [underlineStyle integerValue] != kCTUnderlineStyleNone;
-    }
-    
-    return NO;
-}
-
-- (KBTFontFamilyDescriptor *)fontFamilyDescriptor
-{
-    if (fontFamilyName_ != nil)
-    {
-        return [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:fontFamilyName_];
-    }
-    
-    if (attributes_ != nil)
-    {
-        NSString *fontFamilyName = KBTFontFamilyNameForTextAttributes(attributes_);
-        return [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:fontFamilyName];
-    }
-    
-    return nil;
-}
-
-- (CGFloat)fontSize
-{
-    if (attributes_ != nil)
-    {
-        CTFontRef font = (CTFontRef)[attributes_ objectForKey:(id)kCTFontAttributeName];
-        
-        if (font == NULL)
-        {
-            KBCLogWarning(@"could get font attribute from style attributes, returning 0.0");
-            return 0.0;
-        }
-        
-        return CTFontGetSize(font);
-    }
-    else
-    {
-        return size_;
-    }
-}
+#pragma mark Getting Text Style Attributes
 
 - (NSDictionary *)attributes
 {
@@ -206,13 +103,13 @@
     {
         KBCLogWarning(@"could not find matching name for family name: '%@' size: %f bold: %d italic: %d, using family name",
                       fontFamilyName_,
-                      size_,
+                      fontSize_,
                       bold_,
                       italic_);
         matchingFontName = fontFamilyName_;
     }
     
-    CTFontRef font = CTFontCreateWithName((CFStringRef)matchingFontName, size_, NULL);
+    CTFontRef font = CTFontCreateWithName((CFStringRef)matchingFontName, fontSize_, NULL);
     
     if (font == NULL)
     {
@@ -224,6 +121,120 @@
                                                                underlineStyle, (id)kCTUnderlineStyleAttributeName,
                                                                nil];
     return attributes_;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Getting Font Style Information
+
+- (NSString *)fontFamilyName
+{
+    NSDictionary *attributes = self.attributes;
+    CTFontRef font = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+    
+    if (font == NULL)
+    {
+        KBCLogWarning(@"could get font attribute from style attributes, returning nil");
+        return nil;
+    }
+    
+    NSString *fontName = (NSString *)CTFontCopyFamilyName(font);
+    return [fontName autorelease];
+}
+
+- (NSString *)fontName
+{
+    NSDictionary *attributes = self.attributes;
+    CTFontRef font = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+    
+    if (font == NULL)
+    {
+        KBCLogWarning(@"could get font attribute from style attributes, returning nil");
+        return nil;
+    }
+    
+    NSString *fontName = (NSString *)CTFontCopyPostScriptName(font);
+    return [fontName autorelease];
+}
+
+- (CGFloat)fontSize
+{
+    NSDictionary *attributes = self.attributes;
+    CTFontRef font = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+        
+    if (font == NULL)
+    {
+        KBCLogWarning(@"could get font attribute from style attributes, returning 0.0");
+        return 0.0;
+    }
+    
+    return CTFontGetSize(font);
+}
+
+- (BOOL)fontFamilySupportsBoldTrait
+{
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:self.fontFamilyName];
+    return fontFamilyDescriptor.supportsBoldTrait;
+}
+
+- (BOOL)fontFamilySupportsItalicTrait
+{
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:self.fontFamilyName];
+    return fontFamilyDescriptor.supportsItalicTrait;
+}
+
+- (BOOL)fontIsBold
+{
+    NSDictionary *attributes = self.attributes;
+    CTFontRef font = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+    
+    if (font == NULL)
+    {
+        return NO;
+    }
+    
+    CTFontSymbolicTraits symbolicTraits = CTFontGetSymbolicTraits(font);
+    return (symbolicTraits & kCTFontBoldTrait) == kCTFontBoldTrait;
+}
+
+- (BOOL)fontIsItalic
+{
+    NSDictionary *attributes = self.attributes;
+    CTFontRef font = (CTFontRef)[attributes objectForKey:(id)kCTFontAttributeName];
+    
+    if (font == NULL)
+    {
+        return NO;
+    }
+    
+    CTFontSymbolicTraits symbolicTraits = CTFontGetSymbolicTraits(font);
+    return (symbolicTraits & kCTFontItalicTrait) == kCTFontItalicTrait;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Creating UIFonts
+
+- (UIFont *)uiFontForFontStyle
+{
+    return [UIFont fontWithName:self.fontName size:self.fontSize];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Getting Text Style Information
+
+- (BOOL)textIsUnderlined
+{
+    NSDictionary *attributes = self.attributes;
+    
+    if (attributes != nil)
+    {
+        NSNumber *underlineStyle = [attributes objectForKey:(id)kCTUnderlineStyleAttributeName];
+        return [underlineStyle integerValue] != kCTUnderlineStyleNone;
+    }
+    
+    return NO;
 }
 
 @end

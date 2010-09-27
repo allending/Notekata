@@ -5,39 +5,58 @@
 #import "KobaCore.h"
 #import <CoreText/CoreText.h>
 
-@class KBTFontFamilyDescriptor;
+//--------------------------------------------------------------------------------------------------
+// KBTStyleDescriptor
+//--------------------------------------------------------------------------------------------------
 
 @interface KBTStyleDescriptor : NSObject
 {
 @private
+    NSDictionary *attributes_;
+    
     NSString *fontFamilyName_;
-    CGFloat size_;
+    CGFloat fontSize_;
     BOOL bold_;
     BOOL italic_;
     BOOL underlined_;
-    
-    NSDictionary *attributes_;
 }
 
 #pragma mark Initializing
 
+- (id)initWithAttributes:(NSDictionary *)attributes;
+- (id)initWithFontFamilyName:(NSString *)fontFamilyName
+                    fontSize:(CGFloat)fontSize
+                        bold:(BOOL)bold
+                      italic:(BOOL)italic
+                  underlined:(BOOL)underlined;
+
++ (id)styleDescriptorWithAttributes:(NSDictionary *)attributes;
 + (id)styleDescriptorWithFontFamilyName:(NSString *)fontFamilyName
-                                   size:(CGFloat)size
+                               fontSize:(CGFloat)fontSize
                                    bold:(BOOL)bold
                                  italic:(BOOL)italic
                              underlined:(BOOL)underlined;
-+ (id)styleDescriptorWithAttributes:(NSDictionary *)attributes;
 
-#pragma mark Getting Information About the Style Descriptor
-
-@property (nonatomic, readonly) BOOL boldTraitEnabled;
-@property (nonatomic, readonly) BOOL italicTraitEnabled;
-@property (nonatomic, readonly) BOOL underlineEnabled;
-
-- (KBTFontFamilyDescriptor *)fontFamilyDescriptor;
-
-- (CGFloat)fontSize;
+#pragma mark Getting Text Style Attributes
 
 - (NSDictionary *)attributes;
+
+#pragma mark Getting Font Style Information
+
+@property (nonatomic, readonly) NSString *fontFamilyName;
+@property (nonatomic, readonly) NSString *fontName;
+@property (nonatomic, readonly) CGFloat fontSize;
+@property (nonatomic, readonly) BOOL fontFamilySupportsBoldTrait;
+@property (nonatomic, readonly) BOOL fontFamilySupportsItalicTrait;
+@property (nonatomic, readonly) BOOL fontIsBold;
+@property (nonatomic, readonly) BOOL fontIsItalic;
+
+#pragma mark Creating UIFonts
+
+- (UIFont *)uiFontForFontStyle;
+
+#pragma mark Getting Text Style Information
+
+@property (nonatomic, readonly) BOOL textIsUnderlined;
 
 @end

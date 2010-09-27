@@ -15,7 +15,7 @@
 
 @property (nonatomic, readonly) NSArray *fontFamilyNames;
 
-#pragma mark Managing the Font Size
+#pragma mark Creating a Font Size Control
 
 - (KUISegmentedControl *)fontSizeSegmentedControl;
 
@@ -77,6 +77,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 
 - (void)loadView
 {
+    // Create the font picker view which contains a font size control and font family table
     NKTFontPickerView *fontPickerView = [[NKTFontPickerView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
     // Create and hook up to the font size control
@@ -84,7 +85,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     
     if (selectedFontSizeIndex_ != NSNotFound)
     {
-        fontPickerView.fontSizeSegmentedControl .selectedSegmentIndex = selectedFontSizeIndex_;
+        fontPickerView.fontSizeSegmentedControl.selectedSegmentIndex = selectedFontSizeIndex_;
     }
     
     // Hook up to the font family table view
@@ -123,7 +124,14 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 
 - (NKTFontPickerView *)fontPickerView
 {
-    return (NKTFontPickerView *)self.view;
+    if ([self isViewLoaded])
+    {
+        return (NKTFontPickerView *)self.view;
+    }
+    else
+    {
+        return nil;
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -142,7 +150,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Managing the Font Size
+#pragma mark Creating a Font Size Control
 
 - (KUISegmentedControl *)fontSizeSegmentedControl
 {
@@ -162,6 +170,10 @@ static NSString * const CellIdentifier = @"CellIdentifier";
                        forControlEvents:UIControlEventAllEvents];
     return fontSizeSegmentedControl;
 }
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Configuring the Font Size
 
 - (void)setAvailableFontSizes:(NSArray *)availableFontSizes
 {
@@ -237,7 +249,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Setting the Selected Family Name
+#pragma mark Configuring Font Family Names
 
 - (NSString *)selectedFontFamilyName
 {

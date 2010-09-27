@@ -4,26 +4,7 @@
 
 #import "KobaUI.h"
 
-@class NKTFontPickerViewController;
-
-//--------------------------------------------------------------------------------------------------
-// NKTFontPickerViewControllerDelegate
-//--------------------------------------------------------------------------------------------------
-
-@protocol NKTFontPickerViewControllerDelegate <NSObject>
-
-@optional
-
-#pragma mark Responding to Font Changes
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-               didSelectFontSize:(CGFloat)fontSize;
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-         didSelectFontFamilyName:(NSString *)fontFamilyName;
-
-@end
-
-#pragma mark -
+@protocol NKTFontPickerViewControllerDelegate;
 
 //--------------------------------------------------------------------------------------------------
 // NKTFontViewController
@@ -45,13 +26,32 @@
 
 @property (nonatomic, assign) id <NKTFontPickerViewControllerDelegate> delegate;
 
-#pragma mark Managing the Font Size
+#pragma mark Configuring the Font Size
 
 @property (nonatomic, copy) NSArray *availableFontSizes;
 @property (nonatomic) NSUInteger selectedFontSize;
 
-#pragma mark Setting the Selected Family Name
+#pragma mark Configuring Font Family Names
 
 @property (nonatomic, copy) NSString *selectedFontFamilyName;
+
+@end
+
+#pragma mark -
+
+//--------------------------------------------------------------------------------------------------
+// NKTFontPickerViewControllerDelegate
+//--------------------------------------------------------------------------------------------------
+
+@protocol NKTFontPickerViewControllerDelegate <NSObject>
+
+@optional
+
+#pragma mark Responding to Font Changes
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
+               didSelectFontSize:(CGFloat)fontSize;
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
+         didSelectFontFamilyName:(NSString *)fontFamilyName;
 
 @end
