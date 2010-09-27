@@ -4,19 +4,18 @@ TODO
 General
 -------
 
-
 Controller
 ----------
-[ ] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
-[ ] Issue: Marker felt
+[ ] Issue: Resizing -> Label placed wrong
+[ ] Design: Controller responsible for setting up styles of text view
 [ ] Issue: Toggling traits should add/remove, not reset every trait and font
 [ ] Design: Better icons for B/I/U
 [ ] Feature: Store a single page and persist
-[ ] Design: Controller responsible for setting up styles of text view
 [ ] Issue: Popover + scroll view weirdness if rotated when visible
 
 Text View
 ---------
+[ ] Issue: Caret artifact when selecting text range
 [ ] Issue: Not convinced typing attributes 100% correct yet...
 [ ] Issue: Copperplate italic?
 [ ] Issue: Keyboard input
@@ -31,9 +30,11 @@ Text View
 [ ] Optimization: Typeset at line granularity lazily
 [ ] Optimization: Don't need skirt lines - can use typographic bounds
 [ ] Optimization: Low memory - purge recycled sections
+[ ] Issue: Drawing underlines - not pixel perfect :(
 
 Deferred
 --------
+[ ] Issue: Bradley hand - no regular variant, only bold variant
 [ ] Issue: autocorrection and changing styles concurrently ... Tough to infer what intention is when a mixed styled word is replaced with what could be totally different word
 [ ] Issue: Weird underline drawing behavior with and without line break / descender glyphs (g, p, etc)
 [ ] Issue: Insertion when position within marked text modified - UITextInput bug?
@@ -43,12 +44,25 @@ Deferred
 
 Done
 ----
-[x] Feature: Font management in text view
-[x] Design: Text entry should dismiss popovers
-[x] Refactor pass
-[x] Issue: Caret size may need to be updated when active typing attributes change
-[x] Issue: Stop editing - font popover needs to go as well
-[x] Issue: Initial font for font button needs to show up
-[x] Design: Scroll selected font into view
-[x] Design: Disable styling ui elements when not editing
-[x] Issue: Initial font picker controller configuration
+[x] Issue: "A time of shattered" -> Font: 24, hoefler, B -> "\nShield and" -> end of line 0, enter character
+[x] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
+[x] Issue: Marker felt
+[x] Issue: Didot
+
+Notes
+-----
+Font traits are painful:
+    normal:                                  bold and italic disabled
+    normal + bold:                           bold enabled, italic disabled
+    normal + italic:                         italic enabled, bold disabled
+    normal + bold + italic:                  bold and italic enabled, exclusive bold/italic
+    normal + bold + italic + bold-italic:    bold and italic enabled
+    normal + bold-italic:                    bold-italic linked
+    normal + bold + bold-italic:             italic tied to bold
+    normal + italic + bold-italic:           bold tied to italic
+    bold:                                    bold disabled-selected, italic disabled
+    italic:                                  italic disabled-selected, bold disabled
+    bold + italic:                           bold and italic enabled, exclusive bold/italic, untoggleable
+    bold + bold-italic:                      bold disabled-selected, italic enabled
+    italic + bold-italic:                    italic disabled-selected, bold enabled
+    bold-italic:                             bold and italic disabled-selected

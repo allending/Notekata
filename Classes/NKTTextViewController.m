@@ -172,6 +172,17 @@
     [toolbarItems addObject:notebookItem];
     [notebookItem release];
     
+    // Page style item
+    UIButton *pageStyleButton = [self borderedButtonForToolbar];
+    [pageStyleButton setTitle:@"Page Style" forState:UIControlStateNormal];
+    [pageStyleButton addTarget:self
+                        action:@selector(pageStylePressed:)
+              forControlEvents:UIControlEventTouchUpInside];
+    pageStyleButton.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
+    UIBarButtonItem *pageStyleItem = [[UIBarButtonItem alloc] initWithCustomView:pageStyleButton];
+    [toolbarItems addObject:pageStyleItem];
+    [pageStyleItem release];
+    
     // Left flexible space
     UIBarButtonItem *leftSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                                                                                target:nil
@@ -253,7 +264,7 @@
 - (NSDictionary *)activeTextAttributes
 {
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:fontPickerViewController_.selectedFontFamilyName
-                                                                                           fontSize:fontPickerViewController_.selectedFontSize
+                                                                                       fontSize:fontPickerViewController_.selectedFontSize
                                                                                            bold:boldToggleButton_.selected
                                                                                          italic:italicToggleButton_.selected
                                                                                      underlined:underlineToggleButton_.selected];
@@ -281,8 +292,6 @@
 {
     // Push to text view
     [self updateTextViewTextAttributes];
-    // TODO: Don't need to change traits support
-    // [self textViewDidChangeSelection:nil];
     
     NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
                                                            fontPickerViewController.selectedFontFamilyName,
@@ -293,10 +302,8 @@
 - (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
          didSelectFontFamilyName:(NSString *)fontFamilyName
 {
-    // Push to text view
     [self updateTextViewTextAttributes];
-    // TODO: change bold, italic, etc to reflect support by font
-    [self textViewDidChangeSelection:nil];
+    [self updateToolbarStyleItems];
     
     NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
                                  fontPickerViewController.selectedFontFamilyName,
@@ -312,34 +319,15 @@
 {
     if ([textView_ isFirstResponder])
     {
-        fontButton_.enabled = YES;
-        
         NSDictionary *inputTextAttributes = self.textView.inputTextAttributes;
         KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:inputTextAttributes];
-        
+        fontButton_.enabled = YES;
         fontPickerViewController_.selectedFontFamilyName = styleDescriptor.fontFamilyName;
         fontPickerViewController_.selectedFontSize = styleDescriptor.fontSize;
-        
-        if (styleDescriptor.fontFamilySupportsBoldTrait)
-        {
-            boldToggleButton_.enabled = YES;
-            boldToggleButton_.selected = styleDescriptor.fontIsBold;
-        }
-        else
-        {
-            boldToggleButton_.enabled = NO;
-        }
-        
-        if (styleDescriptor.fontFamilySupportsItalicTrait)
-        {
-            italicToggleButton_.enabled = YES;
-            italicToggleButton_.selected = styleDescriptor.fontIsItalic;
-        }
-        else
-        {
-            italicToggleButton_.enabled = NO;
-        }
-        
+        boldToggleButton_.enabled = styleDescriptor.fontFamilySupportsBoldTrait;
+        boldToggleButton_.selected = boldToggleButton_.enabled && styleDescriptor.fontIsBold;
+        italicToggleButton_.enabled = styleDescriptor.fontFamilySupportsItalicTrait;
+        italicToggleButton_.selected = italicToggleButton_.enabled && styleDescriptor.fontIsItalic;
         underlineToggleButton_.enabled = YES;
         underlineToggleButton_.selected = styleDescriptor.textIsUnderlined;
     }
@@ -353,7 +341,7 @@
         underlineToggleButton_.enabled = NO;
         underlineToggleButton_.selected = NO;
     }
-    
+     
     // Update the font button title regardless of editing state
     NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
                                                            fontPickerViewController_.selectedFontFamilyName,
@@ -366,9 +354,9 @@
     [self updateToolbarStyleItems];
 }
 
-// When editing ends, we need to make sure to dismiss the font picker popover if it is visible
 - (void)textViewDidEndEditing:(NKTTextView *)textView
 {
+    // The popover might still be visible when editing ends
     if (fontPopoverController_.popoverVisible)
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
@@ -401,6 +389,67 @@
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Responding to Actions
+
+ - (void)usePlainStyle
+{
+    KBCLogTrace();
+    UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
+    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+    self.textView.horizontalRulesEnabled = NO;
+    self.textView.verticalMarginEnabled = NO;
+}
+
+//- (void)usePlainRuledStyle
+//{
+//    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
+//    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+//    self.textView.horizontalRulesEnabled = YES;
+//    self.textView.horizontalRuleColor = [UIColor colorWithRed:0.77 green:0.77 blue:0.72 alpha:1.0];
+//    self.textView.verticalMarginEnabled = NO;
+//    [self.textView setNeedsDisplay];
+//}
+
+- (void)useCreamRuledStyle
+{
+    KBCLogTrace();
+    UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
+    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+    self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 80.0, 60.0);
+    self.textView.horizontalRulesEnabled = YES;
+    self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+    self.textView.verticalMarginEnabled = YES;
+    self.textView.verticalMarginColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0];
+    self.textView.verticalMarginInset = 60.0;
+}
+
+//- (void)useCollegeRuledStyle
+//{
+//    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
+//    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+//    self.textView.horizontalRulesEnabled = YES;
+//    self.textView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.77 blue:0.9 alpha:1.0];
+//    self.textView.verticalMarginEnabled = YES;
+//    self.textView.verticalMarginColor = [UIColor colorWithRed:0.83 green:0.3 blue:0.29 alpha:1.0];
+//    self.textView.verticalMarginInset = 60.0;
+//    [self.textView setNeedsDisplay];
+//}
+
+- (void)pageStylePressed:(UIButton *)button
+{
+    pageStyle_ = (pageStyle_ + 1) % 2;
+    
+    switch (pageStyle_)
+    {
+        case 0:
+            [self usePlainStyle];
+            break;
+        case 1:
+            [self useCreamRuledStyle];
+            break;
+        default:
+            break;
+    }
+}
 
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton
 {
@@ -448,38 +497,3 @@
 }
 
 @end
-
-/*
- - (void)setPlainStyle {
-    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
-    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalRulesEnabled = NO;
-    self.paperView.verticalMarginEnabled = NO;
-}
-
-- (void)setPlainRuledStyle {
-    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
-    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalRulesEnabled = YES;
-    self.paperView.horizontalRuleColor = [UIColor colorWithRed:0.77 green:0.77 blue:0.72 alpha:1.0];
-    self.paperView.verticalMarginEnabled = NO;
-}
-
-- (void)setCreamRuledStyle {
-    UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
-    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalRulesEnabled = YES;
-    self.paperView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
-    self.paperView.verticalMarginEnabled = NO;
-}
-
-- (void)setCollegeRuledStyle {
-    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
-    self.paperView.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.paperView.horizontalRulesEnabled = YES;
-    self.paperView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.77 blue:0.9 alpha:1.0];
-    self.paperView.verticalMarginEnabled = YES;
-    self.paperView.verticalMarginColor = [UIColor colorWithRed:0.83 green:0.3 blue:0.29 alpha:1.0];
-    self.paperView.verticalMarginInset = 60.0;
-}
- */

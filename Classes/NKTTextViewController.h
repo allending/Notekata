@@ -24,6 +24,8 @@
     UIBarButtonItem *fontToolbarItem_;
     NKTFontPickerViewController *fontPickerViewController_;
     UIPopoverController *fontPopoverController_;
+    
+    NSUInteger pageStyle_;
 }
 
 #pragma mark Managing Views

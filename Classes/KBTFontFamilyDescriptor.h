@@ -16,6 +16,8 @@
 
 #pragma mark Initializing
 
+- (id)initWithFamilyName:(NSString *)familyName;
+
 + (id)fontFamilyDescriptorWithFamilyName:(NSString *)familyName;
 
 #pragma mark Getting Information About the Font Family
@@ -24,5 +26,9 @@
 @property (nonatomic, readonly) BOOL supportsBoldTrait;
 @property (nonatomic, readonly) BOOL supportsItalicTrait;
 @property (nonatomic, readonly) BOOL supportsBoldItalicTrait;
+
+#pragma mark Getting Font Names
+
+- (NSString *)bestFontNameWithBold:(BOOL)bold italic:(BOOL)italic;
 
 @end

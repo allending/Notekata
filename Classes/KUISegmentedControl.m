@@ -10,8 +10,8 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self sendActionsForControlEvents:UIControlEventTouchDown];
     [super touchesBegan:touches withEvent:event];
+    [self sendActionsForControlEvents:UIControlEventTouchDown];
 }
 
 @end

@@ -167,7 +167,7 @@ static NSString * const CellIdentifier = @"CellIdentifier";
     KUISegmentedControl *fontSizeSegmentedControl = [[[KUISegmentedControl alloc] initWithItems:fontSizeTitles] autorelease];
     [fontSizeSegmentedControl addTarget:self
                                  action:@selector(fontSizeSegmentedControlTouchDown:)
-                       forControlEvents:UIControlEventAllEvents];
+                       forControlEvents:UIControlEventTouchDown];
     return fontSizeSegmentedControl;
 }
 

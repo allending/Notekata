@@ -275,6 +275,12 @@
 
 #pragma mark Configuring Text Layout and Style
 
+- (void)setMargins:(UIEdgeInsets)newMargins
+{
+    margins_ = newMargins;
+    [self regenerateContents];
+}
+
 - (void)setLineHeight:(CGFloat)lineHeight 
 {
     lineHeight_ = lineHeight;
@@ -284,10 +290,28 @@
     [self updateContentSize];
 }
 
-- (void)setMargins:(UIEdgeInsets)newMargins
+- (void)setHorizontalRulesEnabled:(BOOL)horizontalRulesEnabled
 {
-    margins_ = newMargins;
-    [self regenerateContents];
+    if (horizontalRulesEnabled_ == horizontalRulesEnabled)
+    {
+        return;
+    }
+    
+    horizontalRulesEnabled_ = horizontalRulesEnabled;
+    [self untileVisibleSections];
+    [self tileSections];
+}
+
+- (void)setVerticalMarginEnabled:(BOOL)verticalMarginEnabled
+{
+    if (verticalMarginEnabled_ == verticalMarginEnabled)
+    {
+        return;
+    }
+    
+    verticalMarginEnabled_ = verticalMarginEnabled;
+    [self untileVisibleSections];
+    [self tileSections];
 }
 
 //--------------------------------------------------------------------------------------------------

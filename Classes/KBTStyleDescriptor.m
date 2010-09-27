@@ -81,39 +81,14 @@
         return attributes_;
     }
     
-    // Style descriptor was created explicitly, so generate and cache the attributes        
-    NSArray *fontNames = [UIFont fontNamesForFamilyName:fontFamilyName_];
-    NSString *matchingFontName = nil;
-    
-    // Iterate over the fonts in the family to find one matching traits
-    for (NSString *fontName in fontNames)
-    {
-        BOOL hasBoldKeyword = KBTFontNameHasBoldKeyword(fontName);
-        BOOL hasItalicKeyword = KBTFontNameHasItalicKeyword(fontName);
-        
-        if (hasBoldKeyword == bold_ && hasItalicKeyword == italic_)
-        {
-            matchingFontName = fontName;
-            break;
-        }
-    }
-    
-    // Use the family name directly as a last resort
-    if (matchingFontName == nil)
-    {
-        KBCLogWarning(@"could not find matching name for family name: '%@' size: %f bold: %d italic: %d, using family name",
-                      fontFamilyName_,
-                      fontSize_,
-                      bold_,
-                      italic_);
-        matchingFontName = fontFamilyName_;
-    }
-    
-    CTFontRef font = CTFontCreateWithName((CFStringRef)matchingFontName, fontSize_, NULL);
+    // Style descriptor was created explicitly, so generate and cache the attributes
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:fontFamilyName_];
+    NSString *bestFontName = [fontFamilyDescriptor bestFontNameWithBold:bold_ italic:italic_];
+    CTFontRef font = CTFontCreateWithName((CFStringRef)bestFontName, fontSize_, NULL);
     
     if (font == NULL)
     {
-        KBCLogWarning(@"could not create Core Text font with font name %@", matchingFontName);
+        KBCLogWarning(@"could not create Core Text font with font name %@", bestFontName);
     }
     
     NSNumber *underlineStyle = [NSNumber numberWithInt:underlined_ ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone];
@@ -171,16 +146,19 @@
     return CTFontGetSize(font);
 }
 
+- (KBTFontFamilyDescriptor *)fontFamilyDescriptor
+{
+   return [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:self.fontFamilyName];
+}
+
 - (BOOL)fontFamilySupportsBoldTrait
 {
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:self.fontFamilyName];
-    return fontFamilyDescriptor.supportsBoldTrait;
+    return self.fontFamilyDescriptor.supportsBoldTrait;
 }
 
 - (BOOL)fontFamilySupportsItalicTrait
 {
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:self.fontFamilyName];
-    return fontFamilyDescriptor.supportsItalicTrait;
+    return self.fontFamilyDescriptor.supportsItalicTrait;
 }
 
 - (BOOL)fontIsBold

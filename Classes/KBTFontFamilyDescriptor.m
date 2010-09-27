@@ -5,18 +5,6 @@
 #import "KBTFontFamilyDescriptor.h"
 #import "KBTFont.h"
 
-@interface KBTFontFamilyDescriptor()
-
-#pragma mark Initializing
-
-- (id)initWithFamilyName:(NSString *)familyName;
-
-@end
-
-#pragma mark -
-
-//--------------------------------------------------------------------------------------------------
-
 @implementation KBTFontFamilyDescriptor
 
 @synthesize familyName = familyName_;
@@ -91,6 +79,41 @@
     }
     
     return NO;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Getting Font Names for Variants
+
+- (NSString *)bestFontNameWithBold:(BOOL)bold italic:(BOOL)italic
+{
+    NSArray *fontNames = [UIFont fontNamesForFamilyName:familyName_];
+    NSString *bestFontName = nil;
+    
+    // Iterate over the fonts in the family to find one matching traits
+    for (NSString *fontName in fontNames)
+    {
+        BOOL hasBoldKeyword = KBTFontNameHasBoldKeyword(fontName);
+        BOOL hasItalicKeyword = KBTFontNameHasItalicKeyword(fontName);
+        
+        if (hasBoldKeyword == bold && hasItalicKeyword == italic)
+        {
+            bestFontName = fontName;
+            break;
+        }
+    }
+
+    // Use the family name directly as a last resort
+    if (bestFontName == nil)
+    {
+        KBCLogWarning(@"could not find matching name for family name: '%@' bold: %d italic: %d, using family name",
+                      familyName_,
+                      bold,
+                      italic);
+        bestFontName = familyName_;
+    }
+    
+    return bestFontName;
 }
 
 @end

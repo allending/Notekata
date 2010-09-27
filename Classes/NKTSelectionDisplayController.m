@@ -163,16 +163,18 @@
         self.caret.hidden = NO;
         return;
     }
-    
-    UITextRange *selectedTextRange = [delegate_ selectedTextRange];
-    
-    if (selectedTextRange != nil && selectedTextRange.empty && caretVisible_)
+    else if (provisionalTextRange == nil)
     {
-        self.caret.frame = [delegate_ inputCaretRect];
-        self.caret.blinkingEnabled = YES;
-        [self.caret restartBlinking];
-        self.caret.hidden = NO;
-        return;
+        UITextRange *selectedTextRange = [delegate_ selectedTextRange];
+        
+        if (selectedTextRange != nil && selectedTextRange.empty && caretVisible_)
+        {
+            self.caret.frame = [delegate_ inputCaretRect];
+            self.caret.blinkingEnabled = YES;
+            [self.caret restartBlinking];
+            self.caret.hidden = NO;
+            return;
+        }
     }
     
     self.caret.hidden = YES;
