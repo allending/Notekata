@@ -59,4 +59,15 @@
 
 @property (nonatomic, readonly) BOOL textIsUnderlined;
 
+#pragma mark Creating Style Descriptors
+
+- (KBTStyleDescriptor *)styleDescriptorBySettingFontFamilyName:(NSString *)fontFamilyName;
+- (KBTStyleDescriptor *)styleDescriptorBySettingFontSize:(CGFloat)fontSize;
+- (KBTStyleDescriptor *)styleDescriptorByEnablingBoldTrait;
+- (KBTStyleDescriptor *)styleDescriptorByDisablingBoldTrait;
+- (KBTStyleDescriptor *)styleDescriptorByEnablingItalicTrait;
+- (KBTStyleDescriptor *)styleDescriptorByDisablingItalicTrait;
+- (KBTStyleDescriptor *)styleDescriptorByEnablingUnderline;
+- (KBTStyleDescriptor *)styleDescriptorByDisablingUnderline;
+
 @end

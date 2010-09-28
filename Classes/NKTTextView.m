@@ -1560,6 +1560,39 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark Styling Text Ranges
+
+- (void)styleTextRange:(NKTTextRange *)textRange withTarget:(id)target selector:(SEL)selector
+{
+    if (textRange == nil || textRange.empty)
+    {
+        return;
+    }
+    
+    NSUInteger index = textRange.start.index;
+    
+    while (index < textRange.end.index)
+    {
+        NSRange longestEffectiveRange;
+        NSDictionary *attributes = [text_ attributesAtIndex:index
+                                      longestEffectiveRange:&longestEffectiveRange
+                                                    inRange:selectedTextRange_.NSRange];
+        NSDictionary *newAttributes = [target performSelector:selector withObject:attributes];
+        
+        if (newAttributes != attributes)
+        {
+            [text_ setAttributes:newAttributes range:longestEffectiveRange];
+        }
+        
+        index = longestEffectiveRange.location + longestEffectiveRange.length;
+    }
+    
+    [self regenerateContents];
+    [selectionDisplayController_ updateSelectionElements];   
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Managing Text Attributes
 
 // Input text attributes refer to the text attributes that would be applied to inserted/modified
@@ -1630,27 +1663,6 @@
     [selectionDisplayController_ updateSelectionElements];
 }
 
-- (NSDictionary *)textAttributesAtTextPosition:(NKTTextPosition *)textPosition
-{
-    if ([self.text length] == 0)
-    {
-        return nil;
-    }
-    
-    NSUInteger sourceIndex = textPosition.index;
-    
-    if (sourceIndex > [text_ length])
-    {
-        sourceIndex = [text_ length] - 1;
-    }
-    else if (sourceIndex > 0)
-    {
-        --sourceIndex;
-    }
-    
-    return [text_ attributesAtIndex:sourceIndex effectiveRange:NULL];
-}
-
 - (void)setSelectedTextRangeTextAttributes:(NSDictionary *)textAttributes
 {
     if (selectedTextRange_ == nil || selectedTextRange_.empty)
@@ -1664,6 +1676,10 @@
     [self regenerateContents];
     [selectionDisplayController_ updateSelectionElements];
 }
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Getting Fonts at Text Positions
 
 - (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction;
 {

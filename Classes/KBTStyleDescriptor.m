@@ -215,4 +215,80 @@
     return NO;
 }
 
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Creating Style Descriptors
+
+- (KBTStyleDescriptor *)styleDescriptorBySettingFontFamilyName:(NSString *)fontFamilyName
+{
+    return [[self class] styleDescriptorWithFontFamilyName:fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:self.fontIsBold
+                                                    italic:self.fontIsItalic
+                                                underlined:self.textIsUnderlined];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorBySettingFontSize:(CGFloat)fontSize
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:fontSize
+                                                      bold:self.fontIsBold
+                                                    italic:self.fontIsItalic
+                                                underlined:self.textIsUnderlined];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorByEnablingBoldTrait
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:YES
+                                                    italic:self.fontIsItalic
+                                                underlined:self.textIsUnderlined];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorByDisablingBoldTrait
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:NO
+                                                    italic:self.fontIsItalic
+                                                underlined:self.textIsUnderlined];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorByEnablingItalicTrait
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:self.fontIsBold
+                                                    italic:YES
+                                                underlined:self.textIsUnderlined];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorByDisablingItalicTrait
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:self.fontIsBold
+                                                    italic:NO
+                                                underlined:self.textIsUnderlined];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorByEnablingUnderline
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:self.fontIsBold
+                                                    italic:self.fontIsItalic
+                                                underlined:YES];
+}
+
+- (KBTStyleDescriptor *)styleDescriptorByDisablingUnderline
+{
+    return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
+                                                  fontSize:self.fontSize
+                                                      bold:self.fontIsBold
+                                                    italic:self.fontIsItalic
+                                                underlined:NO];
+}
+
 @end

@@ -50,8 +50,8 @@
 #pragma mark Responding to Font Changes
 
 - (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-               didSelectFontSize:(CGFloat)fontSize;
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
          didSelectFontFamilyName:(NSString *)fontFamilyName;
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
+               didSelectFontSize:(CGFloat)fontSize;
 
 @end

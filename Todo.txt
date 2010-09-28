@@ -5,10 +5,10 @@ General
 -------
 [ ] Optimization: Memory Profiling
 [ ] Issue: Figure out Kiwi integration
+[ ] Design: Should controller modify text directly and let view know?
 
 Controller
 ----------
-[ ] Issue: Toggling traits should add/remove, not reset every trait and font
 [ ] Feature: Store a single page and persist
 [ ] Issue: Popover + scroll view weirdness if rotated when visible
 
@@ -27,6 +27,7 @@ Text View
 [ ] Optimization: Don't need skirt lines - can use typographic bounds
 [ ] Optimization: Low memory - purge recycled sections
 [ ] Issue: Drawing underlines - not pixel perfect :(
+[ ] Design: Undo/Redo support
 
 Deferred
 --------
@@ -42,8 +43,8 @@ Deferred
 
 Done
 ----
-[x] Issue: Resizing -> Label placed wrong
-[x] Design: Controller responsible for setting up styles of text view
+[x] Issue: Text range selected, must enable all style toggles (might be applicable to sub ranges)
+[x] Issue: Toggling traits should add/remove, not reset every trait and font
 
 Notes
 -----

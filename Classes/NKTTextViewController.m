@@ -28,7 +28,6 @@
 #pragma mark Managing Text Attributes
 
 - (NSDictionary *)activeTextAttributes;
-- (void)updateTextViewTextAttributes;
 
 #pragma mark Responding to Editing Notifications
 
@@ -40,6 +39,17 @@
 - (void)italicToggleChanged:(KUIToggleButton *)toggleButton;
 - (void)underlineToggleChanged:(KUIToggleButton *)toggleButton;
 - (void)fontButtonPressed:(UIButton *)button;
+
+#pragma mark Changing Text Attributes
+
+- (NSDictionary *)attributesByAddingBoldTraitToAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByRemovingBoldTraitFromAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByAddingItalicTraitToAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByRemovingItalicTraitFromAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByAddingUnderlineToAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByRemovingUnderlineFromAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesBySettingFontSizeOfAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes;
 
 @end
 
@@ -268,6 +278,17 @@
 
 #pragma mark Configuring the Page Style
 
+- (void)setPageStyle:(NKTPageStyle)pageStyle
+{
+    if (pageStyle_ == pageStyle)
+    {
+        return;
+    }
+    
+    pageStyle_ = pageStyle;
+    [self applyPageStyle];
+}
+
 - (void)applyPageStyle
 {
     switch (pageStyle_)
@@ -340,17 +361,6 @@
     }
 }
 
-- (void)setPageStyle:(NKTPageStyle)pageStyle
-{
-    if (pageStyle_ == pageStyle)
-    {
-        return;
-    }
-    
-    pageStyle_ = pageStyle;
-    [self applyPageStyle];
-}
-
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Managing Loupes
@@ -374,44 +384,9 @@
     return [styleDescriptor attributes];
 }
 
-- (void)updateTextViewTextAttributes
-{
-    NSDictionary *activeTextAttributes = [self activeTextAttributes];
-    [textView_ setSelectedTextRangeTextAttributes:activeTextAttributes];
-    textView_.inputTextAttributes = activeTextAttributes;
-}
-
 - (NSDictionary *)defaultTextAttributes
 {
     return [self activeTextAttributes];
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Responding to Font Changes
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-               didSelectFontSize:(CGFloat)fontSize
-{
-    // Push to text view
-    [self updateTextViewTextAttributes];
-    
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
-                                                           fontPickerViewController.selectedFontFamilyName,
-                                                           (NSInteger)fontPickerViewController.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
-}
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-         didSelectFontFamilyName:(NSString *)fontFamilyName
-{
-    [self updateTextViewTextAttributes];
-    [self updateToolbarStyleItems];
-    
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
-                                 fontPickerViewController.selectedFontFamilyName,
-                                 (NSInteger)fontPickerViewController.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -422,14 +397,15 @@
 {
     if ([textView_ isFirstResponder])
     {
+        UITextRange *selectedTextRange = textView_.selectedTextRange;
         NSDictionary *inputTextAttributes = self.textView.inputTextAttributes;
         KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:inputTextAttributes];
         fontButton_.enabled = YES;
         fontPickerViewController_.selectedFontFamilyName = styleDescriptor.fontFamilyName;
         fontPickerViewController_.selectedFontSize = styleDescriptor.fontSize;
-        boldToggleButton_.enabled = styleDescriptor.fontFamilySupportsBoldTrait;
+        boldToggleButton_.enabled = !selectedTextRange.empty || styleDescriptor.fontFamilySupportsBoldTrait;
         boldToggleButton_.selected = boldToggleButton_.enabled && styleDescriptor.fontIsBold;
-        italicToggleButton_.enabled = styleDescriptor.fontFamilySupportsItalicTrait;
+        italicToggleButton_.enabled = !selectedTextRange.empty || styleDescriptor.fontFamilySupportsItalicTrait;
         italicToggleButton_.selected = italicToggleButton_.enabled && styleDescriptor.fontIsItalic;
         underlineToggleButton_.enabled = YES;
         underlineToggleButton_.selected = styleDescriptor.textIsUnderlined;
@@ -498,37 +474,6 @@
     self.pageStyle = (self.pageStyle + 1) % 6;
 }
 
-- (void)boldToggleChanged:(KUIToggleButton *)toggleButton
-{
-    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
-    
-    if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
-    {
-        italicToggleButton_.selected = NO;
-    }
-    
-    [self updateTextViewTextAttributes];
-}
-
-- (void)italicToggleChanged:(KUIToggleButton *)toggleButton
-{
-    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
-    
-    if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
-    {
-        boldToggleButton_.selected = NO;
-    }
-    
-    [self updateTextViewTextAttributes];
-}
-
-- (void)underlineToggleChanged:(KUIToggleButton *)toggleButton
-{
-    [self updateTextViewTextAttributes];
-}
-
 - (void)fontButtonPressed:(UIButton *)button
 {
     if (fontPopoverController_.popoverVisible)
@@ -541,6 +486,172 @@
                                        permittedArrowDirections:UIPopoverArrowDirectionAny
                                                        animated:YES];
     }
+}
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
+         didSelectFontFamilyName:(NSString *)fontFamilyName
+{
+    [textView_ styleTextRange:textView_.selectedTextRange
+                   withTarget:self
+                     selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
+    
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
+                                 fontPickerViewController.selectedFontFamilyName,
+                                 (NSInteger)fontPickerViewController.selectedFontSize];
+    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
+    
+    textView_.inputTextAttributes = [self activeTextAttributes];
+    [self updateToolbarStyleItems];
+}
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
+               didSelectFontSize:(CGFloat)fontSize
+{
+    [textView_ styleTextRange:textView_.selectedTextRange
+                   withTarget:self
+                     selector:@selector(attributesBySettingFontSizeOfAttributes:)];
+    
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
+                                 fontPickerViewController.selectedFontFamilyName,
+                                 (NSInteger)fontPickerViewController.selectedFontSize];
+    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
+    
+    textView_.inputTextAttributes = [self activeTextAttributes];
+}
+
+- (void)boldToggleChanged:(KUIToggleButton *)toggleButton
+{
+    NSString *fontFamilyName = fontPickerViewController_.selectedFontFamilyName;
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:fontFamilyName];
+    
+    // Deselect the italic button if the font family supports bold or italic traits exclusively
+    if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
+    {
+        italicToggleButton_.selected = NO;
+    }
+    
+    if (toggleButton.selected)
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange
+                       withTarget:self
+                         selector:@selector(attributesByAddingBoldTraitToAttributes:)];
+    }
+    else
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange
+                       withTarget:self
+                         selector:@selector(attributesByRemovingBoldTraitFromAttributes:)];
+    }
+    
+    textView_.inputTextAttributes = [self activeTextAttributes];
+}
+
+- (void)italicToggleChanged:(KUIToggleButton *)toggleButton
+{
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
+    
+    // Deselect the bold button if the font family supports bold or italic traits exclusively
+    if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
+    {
+        boldToggleButton_.selected = NO;
+    }
+    
+    if (toggleButton.selected)
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange
+                       withTarget:self
+                         selector:@selector(attributesByAddingItalicTraitToAttributes:)];
+    }
+    else
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange
+                       withTarget:self
+                         selector:@selector(attributesByRemovingItalicTraitFromAttributes:)];
+    }
+    
+    textView_.inputTextAttributes = [self activeTextAttributes];
+}
+
+- (void)underlineToggleChanged:(KUIToggleButton *)toggleButton
+{
+    if (underlineToggleButton_.selected)
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange
+                       withTarget:self
+                         selector:@selector(attributesByAddingUnderlineToAttributes:)];
+    }
+    else
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange
+                       withTarget:self
+                         selector:@selector(attributesByRemovingUnderlineFromAttributes:)];
+    }
+    
+    textView_.inputTextAttributes = [self activeTextAttributes];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Changing Text Attributes
+
+// These methods are meant to be used as callbacks by the text view when it is requested to style
+// text within a range.
+
+- (NSDictionary *)attributesByAddingBoldTraitToAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorByEnablingBoldTrait];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesByRemovingBoldTraitFromAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorByDisablingBoldTrait];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesByAddingItalicTraitToAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorByEnablingItalicTrait];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesByRemovingItalicTraitFromAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorByDisablingItalicTrait];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesByAddingUnderlineToAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorByEnablingUnderline];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesByRemovingUnderlineFromAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorByDisablingUnderline];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesBySettingFontSizeOfAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorBySettingFontSize:fontPickerViewController_.selectedFontSize];
+    return [newStyleDescriptor attributes];
+}
+
+- (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes
+{
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:attributes];
+    KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorBySettingFontFamilyName:fontPickerViewController_.selectedFontFamilyName];
+    return [newStyleDescriptor attributes];
 }
 
 @end

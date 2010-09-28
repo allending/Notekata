@@ -77,6 +77,10 @@
 @property (nonatomic, retain) UIColor *verticalMarginColor;
 @property (nonatomic) CGFloat verticalMarginInset;
 
+#pragma mark Styling Text Ranges
+
+- (void)styleTextRange:(UITextRange *)textRange withTarget:(id)target selector:(SEL)selector;
+
 #pragma mark Managing Text Attributes
 
 @property (nonatomic, copy) NSDictionary *inputTextAttributes;
