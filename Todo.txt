@@ -3,28 +3,24 @@ TODO
 
 General
 -------
+[ ] Optimization: Memory Profiling
+[ ] Issue: Figure out Kiwi integration
 
 Controller
 ----------
-[ ] Issue: Resizing -> Label placed wrong
-[ ] Design: Controller responsible for setting up styles of text view
 [ ] Issue: Toggling traits should add/remove, not reset every trait and font
-[ ] Design: Better icons for B/I/U
 [ ] Feature: Store a single page and persist
 [ ] Issue: Popover + scroll view weirdness if rotated when visible
 
 Text View
 ---------
-[ ] Issue: Caret artifact when selecting text range
-[ ] Issue: Not convinced typing attributes 100% correct yet...
-[ ] Issue: Copperplate italic?
 [ ] Issue: Keyboard input
-[ ] Design: Cancel double tap and press if duration too long or distance too short?
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
 [ ] Feature: Selection handles
 [ ] Feature: Scrolling behavior while editing
 [ ] Feature: Cut copy paste
 [ ] Feature: Context menus w/ selection
+[ ] Design: Cancel double tap and press if duration too long or distance too short?
 [ ] Design: follow UITextView conventions on ownership and follow conventions more closely
 [ ] Optimization: Use a dirty marker for typesetting e.g.: [self setLineWidthDirty];
 [ ] Optimization: Typeset at line granularity lazily
@@ -34,7 +30,9 @@ Text View
 
 Deferred
 --------
+[ ] Design: Better icons for B/I/U
 [ ] Issue: Bradley hand - no regular variant, only bold variant
+[ ] Issue: Copperplate italic?
 [ ] Issue: autocorrection and changing styles concurrently ... Tough to infer what intention is when a mixed styled word is replaced with what could be totally different word
 [ ] Issue: Weird underline drawing behavior with and without line break / descender glyphs (g, p, etc)
 [ ] Issue: Insertion when position within marked text modified - UITextInput bug?
@@ -44,10 +42,8 @@ Deferred
 
 Done
 ----
-[x] Issue: "A time of shattered" -> Font: 24, hoefler, B -> "\nShield and" -> end of line 0, enter character
-[x] Issue: Typewriter font synching broken - AmericanTypewriter / AmericanTypewriter-Bold
-[x] Issue: Marker felt
-[x] Issue: Didot
+[x] Issue: Resizing -> Label placed wrong
+[x] Design: Controller responsible for setting up styles of text view
 
 Notes
 -----

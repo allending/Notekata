@@ -21,14 +21,20 @@
 - (UIButton *)borderedButtonForToolbar;
 - (void)createToolbarItems;
 
+#pragma mark Configuring the Page Style
+
+- (void)applyPageStyle;
+
 #pragma mark Managing Text Attributes
 
 - (NSDictionary *)activeTextAttributes;
 - (void)updateTextViewTextAttributes;
 
-#pragma mark Responding to Actions
+#pragma mark Responding to Editing Notifications
 
 - (void)updateToolbarStyleItems;
+
+#pragma mark Responding to Actions
 
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton;
 - (void)italicToggleChanged:(KUIToggleButton *)toggleButton;
@@ -44,6 +50,7 @@
 @implementation NKTTextViewController
 
 @synthesize toolbar = toolbar_;
+@synthesize titleLabel = titleLabel_;
 @synthesize edgeView = edgeView_;
 @synthesize textView = textView_;
 @synthesize boldToggleButton = boldToggleButton_;
@@ -53,14 +60,31 @@
 @synthesize fontToolbarItem = fontToolbarItem_;
 @synthesize fontPickerViewController = fontPickerViewController_;
 @synthesize fontPopoverController = fontPopoverController_;
+@synthesize pageStyle = pageStyle_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
+    {
+        pageStyle_ = NKTPageStyleCreamRuledVerticalMargin;
+    }
+    
+    return self;
+}
+
+- (void)awakeFromNib
+{
+    pageStyle_ = NKTPageStyleCreamRuledVerticalMargin;
+}
+
 - (void)dealloc
 {
     [toolbar_ release];
+    [titleLabel_ release];
     [edgeView_ release];
     [textView_ release];
     [boldToggleButton_ release];
@@ -79,6 +103,7 @@
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+    KBCLogTrace();
 }
 
 - (void)viewDidLoad
@@ -101,13 +126,14 @@
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 420.0);
     
+    // Set the title that shows up on the toolbar
+    self.titleLabel.text = @"The Expedition";
+    
     // Set up the text view
     textView_.delegate = self;
-    // TODO: Sync UI (make this better)
-    [self textViewDidChangeSelection:nil];
+    [self applyPageStyle];
     
     [self createToolbarItems];
-    
     [self updateToolbarStyleItems];
 }
 
@@ -115,6 +141,7 @@
 {
     [super viewDidUnload];
     self.toolbar = nil;
+    self.titleLabel = nil;
     self.edgeView = nil;
     self.textView = nil;
     self.boldToggleButton = nil;
@@ -150,18 +177,7 @@
 }
 
 - (void)createToolbarItems
-{
-    // Title item (placed over the toolbar, not in it)
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 44.0)];
-    titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabel.text = @"The Expedition";
-    titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-    titleLabel.textColor = [UIColor lightTextColor];
-    titleLabel.textAlignment = UITextAlignmentCenter;
-    titleLabel.center = self.toolbar.center;
-    [self.view addSubview:titleLabel];
-    [titleLabel release];
-    
+{    
     NSMutableArray *toolbarItems = [NSMutableArray array];
     
     // Notebook item
@@ -241,20 +257,107 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Managing Loupes
-
-- (UIColor *)loupeFillColor
-{
-    return self.view.backgroundColor;
-}
-
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark Configuring the View Rotation Settings
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return YES;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Configuring the Page Style
+
+- (void)applyPageStyle
+{
+    switch (pageStyle_)
+    {
+        case NKTPageStylePlain:
+        {
+            UIImage *image = [UIImage imageNamed:@"PlainPaperPattern2.png"];
+            self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = NO;
+            self.textView.verticalMarginEnabled = NO;
+            break;
+        }
+        case NKTPageStylePlainRuled:
+        {
+            UIImage *image = [UIImage imageNamed:@"PlainPaperPattern2.png"];
+            self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = YES;
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.72 alpha:1.0];
+            self.textView.verticalMarginEnabled = NO;
+            break;
+        }
+        case NKTPageStylePlainRuledVerticalMargin:
+        {
+            UIImage *image = [UIImage imageNamed:@"PlainPaperPattern2.png"];
+            self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+            self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = YES;
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.73 blue:0.85 alpha:1.0];
+            self.textView.verticalMarginEnabled = YES;
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0];
+            self.textView.verticalMarginInset = 60.0;
+            break;
+        }
+        case NKTPageStyleCream:
+        {
+            UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
+            self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = NO;
+            self.textView.verticalMarginEnabled = NO;
+            break;
+        }
+        case NKTPageStyleCreamRuled:
+        {
+            UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
+            self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = YES;
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+            self.textView.verticalMarginEnabled = NO;
+            break;
+        }
+        case NKTPageStyleCreamRuledVerticalMargin:
+        {
+            UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
+            self.view.backgroundColor = [UIColor colorWithPatternImage:image];
+            self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = YES;
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+            self.textView.verticalMarginEnabled = YES;
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0];
+            self.textView.verticalMarginInset = 60.0;
+            break;
+        }
+        default:
+            KBCLogWarning(@"uknown page style, ignoring");
+            break;
+    }
+}
+
+- (void)setPageStyle:(NKTPageStyle)pageStyle
+{
+    if (pageStyle_ == pageStyle)
+    {
+        return;
+    }
+    
+    pageStyle_ = pageStyle;
+    [self applyPageStyle];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Managing Loupes
+
+- (UIColor *)loupeFillColor
+{
+    return self.view.backgroundColor;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -390,65 +493,9 @@
 
 #pragma mark Responding to Actions
 
- - (void)usePlainStyle
-{
-    KBCLogTrace();
-    UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
-    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.textView.horizontalRulesEnabled = NO;
-    self.textView.verticalMarginEnabled = NO;
-}
-
-//- (void)usePlainRuledStyle
-//{
-//    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
-//    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-//    self.textView.horizontalRulesEnabled = YES;
-//    self.textView.horizontalRuleColor = [UIColor colorWithRed:0.77 green:0.77 blue:0.72 alpha:1.0];
-//    self.textView.verticalMarginEnabled = NO;
-//    [self.textView setNeedsDisplay];
-//}
-
-- (void)useCreamRuledStyle
-{
-    KBCLogTrace();
-    UIImage *image = [UIImage imageNamed:@"CreamPaperPattern.png"];
-    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-    self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 80.0, 60.0);
-    self.textView.horizontalRulesEnabled = YES;
-    self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
-    self.textView.verticalMarginEnabled = YES;
-    self.textView.verticalMarginColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0];
-    self.textView.verticalMarginInset = 60.0;
-}
-
-//- (void)useCollegeRuledStyle
-//{
-//    UIImage *image = [UIImage imageNamed:@"PlainPaperPattern.png"];
-//    self.view.backgroundColor = [UIColor colorWithPatternImage:image];
-//    self.textView.horizontalRulesEnabled = YES;
-//    self.textView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.77 blue:0.9 alpha:1.0];
-//    self.textView.verticalMarginEnabled = YES;
-//    self.textView.verticalMarginColor = [UIColor colorWithRed:0.83 green:0.3 blue:0.29 alpha:1.0];
-//    self.textView.verticalMarginInset = 60.0;
-//    [self.textView setNeedsDisplay];
-//}
-
 - (void)pageStylePressed:(UIButton *)button
 {
-    pageStyle_ = (pageStyle_ + 1) % 2;
-    
-    switch (pageStyle_)
-    {
-        case 0:
-            [self usePlainStyle];
-            break;
-        case 1:
-            [self useCreamRuledStyle];
-            break;
-        default:
-            break;
-    }
+    self.pageStyle = (self.pageStyle + 1) % 6;
 }
 
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton

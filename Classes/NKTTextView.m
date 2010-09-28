@@ -275,10 +275,16 @@
 
 #pragma mark Configuring Text Layout and Style
 
-- (void)setMargins:(UIEdgeInsets)newMargins
+- (void)setMargins:(UIEdgeInsets)margins
 {
-    margins_ = newMargins;
+    if (UIEdgeInsetsEqualToEdgeInsets(margins_, margins))
+    {
+        return;
+    }
+    
+    margins_ = margins;
     [self regenerateContents];
+    [selectionDisplayController_ updateSelectionElements];
 }
 
 - (void)setLineHeight:(CGFloat)lineHeight 
@@ -288,6 +294,7 @@
     [self untileVisibleSections];
     [self tileSections];
     [self updateContentSize];
+    [selectionDisplayController_ updateSelectionElements];
 }
 
 - (void)setHorizontalRulesEnabled:(BOOL)horizontalRulesEnabled
@@ -300,6 +307,34 @@
     horizontalRulesEnabled_ = horizontalRulesEnabled;
     [self untileVisibleSections];
     [self tileSections];
+    [selectionDisplayController_ updateSelectionElements];
+}
+
+- (void)setHorizontalRuleColor:(UIColor *)horizontalRuleColor
+{
+    if (horizontalRuleColor_ == horizontalRuleColor)
+    {
+        return;
+    }
+    
+    [horizontalRuleColor_ release];
+    horizontalRuleColor_ = [horizontalRuleColor retain];
+    [self untileVisibleSections];
+    [self tileSections];
+    [selectionDisplayController_ updateSelectionElements];
+}
+
+- (void)setHorizontalRuleOffset:(CGFloat)horizontalRuleOffset
+{
+    if (horizontalRuleOffset_ == horizontalRuleOffset)
+    {
+        return;
+    }
+    
+    horizontalRuleOffset_ = horizontalRuleOffset;
+    [self untileVisibleSections];
+    [self tileSections];
+    [selectionDisplayController_ updateSelectionElements];
 }
 
 - (void)setVerticalMarginEnabled:(BOOL)verticalMarginEnabled
@@ -312,6 +347,34 @@
     verticalMarginEnabled_ = verticalMarginEnabled;
     [self untileVisibleSections];
     [self tileSections];
+    [selectionDisplayController_ updateSelectionElements];
+}
+
+- (void)setVerticalMarginColor:(UIColor *)verticalMarginColor
+{
+    if (verticalMarginColor_ == verticalMarginColor)
+    {
+        return;
+    }
+    
+    [verticalMarginColor_ release];
+    verticalMarginColor_ = [verticalMarginColor retain];
+    [self untileVisibleSections];
+    [self tileSections];
+    [selectionDisplayController_ updateSelectionElements];
+}
+
+- (void)setVerticalMarginInset:(CGFloat)verticalMarginInset
+{
+    if (verticalMarginInset_ == verticalMarginInset)
+    {
+        return;
+    }
+    
+    verticalMarginInset_ = verticalMarginInset;
+    [self untileVisibleSections];
+    [self tileSections];
+    [selectionDisplayController_ updateSelectionElements];
 }
 
 //--------------------------------------------------------------------------------------------------
