@@ -3,6 +3,7 @@ TODO
 
 General
 -------
+[ ] Issue: Use newline char set instead of \n
 [ ] Optimization: Memory Profiling
 [ ] Issue: Figure out Kiwi integration
 [ ] Design: Should controller modify text directly and let view know?
@@ -16,6 +17,8 @@ Controller
 Text View
 ---------
 [x] Issue: Keyboard input
+    - Add spaces to beginning of text and move caret to end of 'hold', move word backwards behaves wrongly
+    - Move to beginning of 'This day'. Move line forward behaves wrongly
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
 [ ] Feature: Selection handles
 [ ] Feature: Scrolling behavior while editing

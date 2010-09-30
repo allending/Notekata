@@ -1452,7 +1452,7 @@
 {
     KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
 
-    return UITextWritingDirectionLeftToRight;
+    return UITextWritingDirectionNatural;
 //    UITextWritingDirection writingDirection = UITextWritingDirectionLeftToRight;
 //    CTParagraphStyleRef paragraphStyle = (CTParagraphStyleRef)[text_ attribute:(id)kCTParagraphStyleAttributeName
 //                                                                       atIndex:textPosition.index
@@ -1643,7 +1643,7 @@
 //
 - (CGRect)firstRectForRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"range: %@", NSStringFromRange(textRange.NSRange));
+//    KBCLogDebug(@"range: %@", NSStringFromRange(textRange.NSRange));
     
     NSArray *rects = [self rectsForTextRange:textRange];
     
