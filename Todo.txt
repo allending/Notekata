@@ -9,12 +9,13 @@ General
 
 Controller
 ----------
+[ ] Null style should not cause crazy behavior
 [ ] Feature: Store a single page and persist
 [ ] Issue: Popover + scroll view weirdness if rotated when visible
 
 Text View
 ---------
-[ ] Issue: Keyboard input
+[x] Issue: Keyboard input
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
 [ ] Feature: Selection handles
 [ ] Feature: Scrolling behavior while editing
@@ -43,8 +44,6 @@ Deferred
 
 Done
 ----
-[x] Issue: Text range selected, must enable all style toggles (might be applicable to sub ranges)
-[x] Issue: Toggling traits should add/remove, not reset every trait and font
 
 Notes
 -----

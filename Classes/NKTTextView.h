@@ -10,6 +10,7 @@
 @class NKTDragGestureRecognizer;
 @class NKTLoupe;
 @class NKTTextViewGestureRecognizerDelegate;
+@class NKTTextViewTokenizer;
 
 //--------------------------------------------------------------------------------------------------
 // NKTTextView implements the behavior for a view with support for text styling and printed-page
@@ -47,7 +48,7 @@
     NKTTextRange *provisionalTextRange_;
     
     id <UITextInputDelegate> inputDelegate_;
-    UITextInputStringTokenizer *tokenizer_;
+    NKTTextViewTokenizer *tokenizer_;
     
     NKTSelectionDisplayController *selectionDisplayController_;
     NKTLoupe *bandLoupe_;
@@ -93,6 +94,15 @@
 @property (nonatomic, readonly) UITapGestureRecognizer *tapGestureRecognizer;
 @property (nonatomic, readonly) UILongPressGestureRecognizer *longPressGestureRecognizer;
 @property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
+
+#pragma mark Tokenizing
+
+- (BOOL)isTextPosition:(UITextPosition *)textPosition atLineBoundaryInDirection:(UITextDirection)direction;
+- (BOOL)isTextPosition:(UITextPosition *)textPosition withinLineInDirection:(UITextDirection)direction;
+- (UITextPosition *)positionFromTextPosition:(UITextPosition *)textPosition
+                   toLineBoundaryInDirection:(UITextDirection)direction;
+- (UITextRange *)textRangeForLineEnclosingTextPosition:(UITextPosition *)textPosition
+                                           inDirection:(UITextDirection)direction;
 
 @end
 

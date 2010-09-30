@@ -50,6 +50,12 @@
     return [NKTTextRange textRangeWithIndex:range.location length:range.length];
 }
 
+// TODO: verify
+- (NSString *)text
+{
+    return [[text_ string] substringWithRange:self.textRange.NSRange];
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Getting Typographic Bounds

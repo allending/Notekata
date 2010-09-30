@@ -26,6 +26,7 @@
 		9F65A42D1249A37F0006BD17 /* NKTFontPickerViewTableViewBottomCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F65A42C1249A37F0006BD17 /* NKTFontPickerViewTableViewBottomCap.png */; };
 		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
 		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
+		9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */; };
 		9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA540FB122A56A30005323E /* NKTLoupe.m */; };
 		9FA5410F122A59530005323E /* BandLoupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410A122A59530005323E /* BandLoupe.png */; };
 		9FA54110122A59530005323E /* BandLoupeMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410B122A59530005323E /* BandLoupeMask.png */; };
@@ -93,6 +94,8 @@
 		9F6711CA122B9F4D00B0811B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTSelectionDisplayController.h; sourceTree = "<group>"; };
 		9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTSelectionDisplayController.m; sourceTree = "<group>"; };
+		9F70F9BE12545C0200F3025B /* NKTTextViewTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewTokenizer.h; sourceTree = "<group>"; };
+		9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewTokenizer.m; sourceTree = "<group>"; };
 		9FA540FA122A56A30005323E /* NKTLoupe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLoupe.h; sourceTree = "<group>"; };
 		9FA540FB122A56A30005323E /* NKTLoupe.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTLoupe.m; sourceTree = "<group>"; };
 		9FA5410A122A59530005323E /* BandLoupe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BandLoupe.png; sourceTree = "<group>"; };
@@ -336,6 +339,8 @@
 				F544536111ED61A5009D392B /* NKTTextView.m */,
 				9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */,
 				9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */,
+				9F70F9BE12545C0200F3025B /* NKTTextViewTokenizer.h */,
+				9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -446,6 +451,7 @@
 				9FCBC16B1248AD6D008A0A1F /* NKTFontPickerViewController.m in Sources */,
 				9FCBC20A1248BC30008A0A1F /* NKTFontPickerView.m in Sources */,
 				9FF42BE0124A7017009B9691 /* KUISegmentedControl.m in Sources */,
+				9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

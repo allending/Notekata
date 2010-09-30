@@ -36,7 +36,7 @@
 #pragma mark Creating Text Ranges
 
 - (NKTTextRange *)textRange;
-- (NKTTextRange *)textRangeUntilTextPosition:(NKTTextPosition *)textPosition;
+- (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Comparing Text Posiitons
 

@@ -32,6 +32,8 @@
 
 @property (nonatomic, readonly) NKTTextRange *textRange;
 
+@property (nonatomic, readonly) NSString *text;
+
 #pragma mark Getting Typographic Bounds
 
 @property (nonatomic, readonly) CGFloat ascent;
