@@ -4,6 +4,7 @@
 
 #import "NKTTextSection.h"
 #import "NKTLine.h"
+#import "NKTFramesetter.h"
 
 @interface NKTTextSection()
 
@@ -33,13 +34,10 @@
 @implementation NKTTextSection
 
 @synthesize index = index_;
-
-@synthesize typesettedLines = typesettedLines_;
-
+@synthesize framesetter = framesetter_;
 @synthesize margins = margins_;
 @synthesize lineHeight = lineHeight_;
 @synthesize numberOfSkirtLines = numberOfSkirtLines_;
-
 @synthesize horizontalRulesEnabled = horizontalRulesEnabled_;
 @synthesize horizontalRuleColor = horizontalRuleColor_;
 @synthesize horizontalRuleOffset = horizontalRuleOffset_;
@@ -67,7 +65,6 @@
 
 - (void)dealloc
 {
-    [typesettedLines_ release];
     [horizontalRuleColor_ release];
     [verticalMarginColor_ release];
     [super dealloc];
@@ -190,7 +187,7 @@
     for (NSUInteger lineIndex = lineRange.location; lineIndex < lastLineIndex; ++lineIndex)
     {
         CGContextSetTextPosition(context, 0.0, baselineOffset);
-        NKTLine *line = [typesettedLines_ objectAtIndex:lineIndex];
+        NKTLine *line = [framesetter_ lineAtIndex:lineIndex];
         [line drawInContext:context];
         baselineOffset -= lineHeight_;
     }
@@ -198,6 +195,11 @@
     CGContextRestoreGState(context);
 }
 
+// Computes the range for lines that should be drawn in this text section based on the current
+// bounds of the text section.
+//
+// TODO: clean this up
+//
 - (NSRange)typesettedLineRangeForDrawing
 {
     // Text sections with negative indices don't have any typesetted lines
@@ -206,23 +208,26 @@
         return NSMakeRange(NSNotFound, 0);
     }
     
-    CGFloat sectionOffset = [self verticalOffset];
     // Note that lines draw from the upper-left corner
+    
+    CGFloat sectionOffset = [self verticalOffset];
+    // Find the first line index that could be visible in this section's bounds
     NSInteger firstLineIndex = (NSInteger)floorf(sectionOffset - margins_.top) / lineHeight_;
     firstLineIndex -= numberOfSkirtLines_;
     firstLineIndex = MAX(firstLineIndex, 0);
     
-    if (firstLineIndex > (NSInteger)([typesettedLines_ count] - 1))
+    if (firstLineIndex > (framesetter_.numberOfLines - 1))
     {
         return NSMakeRange(NSNotFound, 0);
     }
     
     CGFloat firstLineOffset = [self verticalOffsetForLineAtIndex:firstLineIndex];
     CGFloat nextSectionOffset = sectionOffset + CGRectGetHeight(self.bounds);
+    // Find the number of lines that could be visible in this section's bounds
     NSUInteger numberOfLines = (NSUInteger)ceilf((nextSectionOffset - firstLineOffset) / lineHeight_);
     // Account for skirt lines before and after section
     numberOfLines += (2 * numberOfSkirtLines_);
-    numberOfLines = MIN(numberOfLines, [typesettedLines_ count] - firstLineIndex);
+    numberOfLines = MIN(numberOfLines, framesetter_.numberOfLines - firstLineIndex);
     return NSMakeRange(firstLineIndex, numberOfLines);
 }
 

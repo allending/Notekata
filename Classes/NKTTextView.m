@@ -12,22 +12,16 @@
 #import "NKTTextSection.h"
 #import "NKTTextViewGestureRecognizerDelegate.h"
 #import "NKTTextViewTokenizer.h"
+#import "NKTFramesetter.h"
 
 @interface NKTTextView()
 
 #pragma mark Initializing
 
 - (void)NKTTextView_requiredInit;
-- (void)createGestureRecognizers;
+- (void)initGestureRecognizers;
 
-#pragma mark Generating the View Contents
-
-- (void)regenerateContents;
-
-#pragma mark Typesetting
-
-- (void)typesetLines;
-
+// TODO: move to a class that helps with tiling
 #pragma mark Tiling Sections
 
 - (void)tileSections;
@@ -37,6 +31,13 @@
 - (void)configureSection:(NKTTextSection *)section atIndex:(NSInteger)index;
 - (CGRect)frameForSectionAtIndex:(NSInteger)index;
 
+#pragma mark Framesetting
+
+@property (nonatomic, readonly) CGFloat lineWidth;
+@property (nonatomic, readonly) NKTFramesetter *framesetter;
+
+- (void)setNeedsFramesetting;
+
 #pragma mark Responding to Gestures
 
 @property (nonatomic, retain) NKTTextPosition *doubleTapStartTextPosition;
@@ -44,12 +45,6 @@
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer;
-
-#pragma mark Getting Lines
-
-- (BOOL)indexAddressesNonTypesettedLine:(NSUInteger)lineIndex;
-- (NSUInteger)lastLineIndex;
-- (NSUInteger)indexForLineContainingTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Managing Loupes
 
@@ -68,11 +63,6 @@
 
 #pragma mark Geometry and Hit-Testing
 
-- (UITextPosition *)closestTextPositionToPoint:(CGPoint)point onLineAtIndex:(NSUInteger)index;
-- (CGPoint)originForLineAtIndex:(NSUInteger)index;
-- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line;
-- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSUInteger)index;
-- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition;
 - (CGRect)caretRectWithOrigin:(CGPoint)origin font:(UIFont *)font;
 
 #pragma mark Getting Fonts at Text Positions
@@ -88,21 +78,16 @@
 @implementation NKTTextView
 
 @synthesize text = text_;
-
 @synthesize margins = margins_;
 @synthesize lineHeight = lineHeight_;
-
 @synthesize horizontalRulesEnabled = horizontalRulesEnabled_;
 @synthesize horizontalRuleColor = horizontalRuleColor_;
 @synthesize horizontalRuleOffset = horizontalRuleOffset_;
 @synthesize verticalMarginEnabled = verticalMarginEnabled_;
 @synthesize verticalMarginColor = verticalMarginColor_;
 @synthesize verticalMarginInset = verticalMarginInset_;
-
 @synthesize inputTextAttributes = inputTextAttributes_;
-
 @synthesize inputDelegate = inputDelegate_;
-
 @synthesize nonEditTapGestureRecognizer = nonEditTapGestureRecognizer_;
 @synthesize tapGestureRecognizer = tapGestureRecognizer_;
 @synthesize longPressGestureRecognizer = longPressGestureRecognizer_;
@@ -133,37 +118,28 @@
 - (void)NKTTextView_requiredInit
 {
     self.alwaysBounceVertical = YES;
-    
     text_ = [[NSMutableAttributedString alloc] init];
-    
     margins_ = UIEdgeInsetsMake(60.0, 80.0, 80.0, 60.0);
     lineHeight_ = 32.0;
-    //margins = UIEdgeInsetsMake(90.0, 90.0, 120.0, 90.0);
-    //lineHeight = 30.0;
-    
     horizontalRulesEnabled_ = YES;
     horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
-    //horizontalRuleColor_ = [[UIColor colorWithRed:0.78 green:0.78 blue:0.65 alpha:1.0] retain];
     horizontalRuleOffset_ = 3.0;
     verticalMarginEnabled_ = YES;
     verticalMarginColor_ = [[UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0] retain];
     verticalMarginInset_ = 60.0;
-    
     visibleSections_ = [[NSMutableSet alloc] init];
     reusableSections_ = [[NSMutableSet alloc] init];    
     underlayViews_ = [[NSMutableSet alloc] init];
     overlayViews = [[NSMutableSet alloc] init];
-    
     selectionDisplayController_ = [[NKTSelectionDisplayController alloc] init];
     selectionDisplayController_.delegate = self;
-    
-    [self createGestureRecognizers];
+    [self initGestureRecognizers];
 }
 
-- (void)createGestureRecognizers
+- (void)initGestureRecognizers
 {
     gestureRecognizerDelegate_ = [[NKTTextViewGestureRecognizerDelegate alloc] initWithTextView:self];
-    
+
     doubleTapAndDragGestureRecognizer_ = [[NKTDragGestureRecognizer alloc] initWithTarget:self
                                                                                    action:@selector(handleDoubleTapAndDrag:)];
     doubleTapAndDragGestureRecognizer_.delegate = gestureRecognizerDelegate_;
@@ -190,38 +166,28 @@
 - (void)dealloc
 {
     [text_ release];
-    
     [horizontalRuleColor_ release];
     [verticalMarginColor_ release];
-    
-    [typesettedLines_ release];
-    
     [visibleSections_ release];
     [reusableSections_ release];
     [underlayViews_ release];
     [overlayViews release];
-    
     [inputTextAttributes_ release];
-    
     [selectedTextRange_ release];
     [markedTextRange_ release];
     [markedTextStyle_ release];
     [markedText_ release];
     [provisionalTextRange_ release];
-    
     [tokenizer_ release];
-    
     [selectionDisplayController_ release];
     [bandLoupe_ release];
     [roundLoupe_ release];
-    
     [gestureRecognizerDelegate_ release];
     [nonEditTapGestureRecognizer_ release];
     [tapGestureRecognizer_ release];
     [longPressGestureRecognizer_ release];
     [doubleTapAndDragGestureRecognizer_ release];
     [doubleTapStartTextPosition_ release];
-    
     [super dealloc];
 }
 
@@ -232,7 +198,7 @@
 - (void)updateContentSize
 {
     CGSize size = self.bounds.size;
-    size.height = ((CGFloat)[typesettedLines_ count] *  lineHeight_) + margins_.top + margins_.bottom;
+    size.height = self.framesetter.frameSize.height + margins_.top + margins_.bottom;
     self.contentSize = size;
 }
 
@@ -248,7 +214,7 @@
     }
     
     [super setFrame:frame];
-    [self regenerateContents];
+    [self setNeedsFramesetting];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -270,7 +236,7 @@
     [text retain];
     [text_ release];
     text_ = text;
-    [self regenerateContents];
+    [self setNeedsFramesetting];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -285,8 +251,7 @@
     }
     
     margins_ = margins;
-    [self regenerateContents];
-    [selectionDisplayController_ updateSelectionElements];
+    [self setNeedsFramesetting];
 }
 
 - (void)setLineHeight:(CGFloat)lineHeight 
@@ -381,55 +346,6 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Generating the View Contents
-
-- (void)regenerateContents
-{
-    [self typesetLines];
-    [self untileVisibleSections];
-    [self tileSections];
-    [self updateContentSize];
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Typesetting
-
-- (void)typesetLines
-{
-    [typesettedLines_ release];
-    typesettedLines_ = nil;
-    
-    if ([text_ length] == 0)
-    {
-        return;
-    }
-    
-    typesettedLines_ = [[NSMutableArray alloc] init];
-    CTTypesetterRef typesetter = CTTypesetterCreateWithAttributedString((CFAttributedStringRef)text_);
-    CFIndex length = (CFIndex)[text_ length];
-    CGFloat lineWidth = CGRectGetWidth(self.bounds) - (margins_.left + margins_.right);
-    CFIndex charIndex = 0;
-    NSUInteger lineIndex = 0;
-    
-    while (charIndex < length)
-    {
-        CFIndex charCount = CTTypesetterSuggestLineBreak(typesetter, charIndex, lineWidth);
-        CFRange range = CFRangeMake(charIndex, charCount);
-        CTLineRef ctLine = CTTypesetterCreateLine(typesetter, range);
-        NKTLine *line = [[NKTLine alloc] initWithIndex:lineIndex text:text_ ctLine:ctLine];
-        CFRelease(ctLine);
-        [typesettedLines_ addObject:line];
-        [line release];
-        charIndex += charCount;
-        ++lineIndex;
-    }
-    
-    CFRelease(typesetter);
-}
-
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark Tiling Sections
 
 - (void)tileSections
@@ -512,7 +428,7 @@
 {
     section.frame = [self frameForSectionAtIndex:index];
     section.index = index;
-    section.typesettedLines = typesettedLines_;
+    section.framesetter = framesetter_;
     section.margins = margins_;
     section.lineHeight = lineHeight_;
     section.horizontalRulesEnabled = horizontalRulesEnabled_;
@@ -530,6 +446,33 @@
     sectionFrame.origin.x = 0.0;
     sectionFrame.origin.y = (CGFloat)index * CGRectGetHeight(sectionFrame);
     return sectionFrame;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Framesetting
+
+- (CGFloat)lineWidth
+{
+    return self.bounds.size.width - margins_.left - margins_.right;
+}
+
+- (void)setNeedsFramesetting
+{
+    [framesetter_ release];
+    framesetter_ = nil;
+    [selectionDisplayController_ updateSelectionElements];
+    [self setNeedsDisplay];
+}
+
+- (NKTFramesetter *)framesetter
+{
+    if (framesetter_ == nil)
+    {
+        framesetter_ = [[NKTFramesetter alloc] initWithText:text_ lineWidth:[self lineWidth]];
+    }
+    
+    return framesetter_;    
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -586,7 +529,7 @@
     selectionDisplayController_.caretVisible = YES;
     
     CGPoint touchLocation = [gestureRecognizer locationInView:self];
-    NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:touchLocation];
+    NKTTextPosition *textPosition = [self.framesetter textPositionLogicallyClosestToPoint:touchLocation];
     
     if ([selectedTextRange_ isEqualToTextPosition:textPosition])
     {
@@ -673,108 +616,9 @@
 
 #pragma mark Getting Lines
 
-// Line indices used within the text view may not actually address a physical typesetted line in
-// certain cases (e.g. a fake virtual line added after a line break at the end of the text). This
-// method checks to see if an index being used is for such a line, in which case the caller can
-// perform some alternative computation.
-//
-- (BOOL)indexAddressesNonTypesettedLine:(NSUInteger)lineIndex
+- (NSInteger)virtualIndexForLineContainingPoint:(CGPoint)point
 {
-    return lineIndex >= [typesettedLines_ count];
-}
-
-// Returns the index of the last typesetted line.
-//
-// This method should only be called if the caller is sure that there is at least one typesetted
-// line.
-//
-- (NSUInteger)lastTypesettedLineIndex
-{
-    if ([typesettedLines_ count] == 0)
-    {
-        KBCLogWarning(@"no typesetted lines exist, returning 0");
-        return 0;
-    }
-    
-    return [typesettedLines_ count] - 1;
-}
-
-// Returns the last line index.
-//
-// The last line index may is one beyond the last typesetted line index if the text ends with a
-// line break. Otherwise, the last line index is the same as the last typesetted line index.
-//
-- (NSUInteger)lastLineIndex
-{
-    // Line break at end - return the line beyond the last typesetted line
-    if ([[text_ string] hasSuffix:@"\n"])
-    {
-        return [typesettedLines_ count];
-    }
-    // Last character is not a line break - return the last typesetted line
-    else
-    {
-        return [typesettedLines_ count] - 1;
-    }
-}
-
-// Returns the index for the line that 'appears' to contain the specified text position.
-//
-// In most cases, the line that 'appears' to contain the text position will be the typesetted line
-// whose text range contains the text position.
-//
-// However, if the text position is beyond the range of the text (and thus, any typesetted lines),
-// the index returned will be the last line index.
-//
-- (NSUInteger)indexForLineContainingTextPosition:(NKTTextPosition *)textPosition
-{
-    // No typesetted lines
-    if ([typesettedLines_ count] == 0)
-    {
-        return 0;
-    }
-    // Text position beyond the range of any typesetted line
-    else if (textPosition.index >= [text_ length])
-    {
-        return [self lastLineIndex];
-    }
-    // A typesetted line contains the text position
-    else
-    {
-        for (NKTLine *line in typesettedLines_)
-        {
-            if ([line.textRange containsTextPosition:textPosition])
-            {
-                return line.index;
-            }
-        }
-    }
-    
-    KBCLogWarning(@"expected a typesetted line to contain text position %d, but none do. returning last line index",
-                  textPosition.index);
-    return [typesettedLines_ count] - 1;
-}
-
-// Returns the index for the closest line to a point specified in view space.
-//
-- (NSUInteger)indexForClosestLineToPoint:(CGPoint)point
-{
-    // Assuming a uniform line height, the index of the line that would contain point can be
-    // computed with simple arithmetic
-    NSInteger virtualLineIndex = (NSInteger)floor((point.y - margins_.top) / lineHeight_);
-    
-    if (virtualLineIndex < 0)
-    {
-        return 0;
-    }
-    else if ((NSUInteger)virtualLineIndex > [self lastLineIndex])
-    {
-        return [self lastLineIndex];
-    }
-    else
-    {
-        return (NSUInteger)virtualLineIndex;
-    }
+    return (NSInteger)floor((point.y - margins_.top) / lineHeight_);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -838,12 +682,11 @@
     if (anchorToLine)
     {
         // Set the zoom center of the loupe to the baseline with the same offset as the original point
-        NSUInteger lineIndex = [self indexForClosestLineToPoint:point];
-        CGPoint lineOrigin = [self originForLineAtIndex:lineIndex];
-        CGPoint zoomCenter = CGPointMake(point.x, lineOrigin.y);
+        NKTLine *line = [self.framesetter lineClosestToPoint:point];
+        CGPoint zoomCenter = CGPointMake(point.x, line.origin.y);
         loupe.zoomCenter = [self convertPoint:zoomCenter toView:loupe.zoomedView];
         // Anchor loupe to a point just on top of the line with the same offset as the original point
-        CGPoint anchor = CGPointMake(point.x, lineOrigin.y - (lineHeight_ * 0.8));
+        CGPoint anchor = CGPointMake(point.x, line.origin.y - (lineHeight_ * 0.8));
         anchor = KBCClampPointToRect(anchor, self.bounds);
         loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
@@ -860,7 +703,7 @@
 
 - (void)configureLoupe:(NKTLoupe *)loupe toMagnifyTextPosition:(NKTTextPosition *)textPosition
 {
-    CGPoint sourcePoint = [self originForCharAtTextPosition:textPosition];
+    CGPoint sourcePoint = [self.framesetter originForCharAtTextPosition:textPosition];
     loupe.zoomCenter = [self convertPoint:sourcePoint toView:loupe.zoomedView];
     // Anchor loupe to a point just on top of the text position, clamped to the bounds rect
     CGPoint anchor = CGPointMake(sourcePoint.x, sourcePoint.y - (lineHeight_ * 0.8));
@@ -899,7 +742,7 @@
     // Get the inherited attributes
     if ([self hasText])
     {
-        NSUInteger inheritedAttributesIndex = replacementTextRange.start.index;
+        NSUInteger inheritedAttributesIndex = replacementTextRange.start.location;
         
         // If the replacement range is empty, inserted characters inherit the attributes of the
         // character preceding the range, if any.
@@ -919,18 +762,18 @@
     // inherited after insertion match the insertion attributes
     if ([inheritedAttributes isEqualToDictionary:inputTextAttributes])
     {
-        [text_ replaceCharactersInRange:replacementTextRange.NSRange withString:text];
+        [text_ replaceCharactersInRange:replacementTextRange.nsRange withString:text];
     }
     else
     {
         NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text
                                                                                attributes:inputTextAttributes];
-        [text_ replaceCharactersInRange:replacementTextRange.NSRange withAttributedString:attributedString];
+        [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
         [attributedString release];
     }
     
-    [self regenerateContents];
-
+    [self setNeedsFramesetting];
+    
     // Notify delegate
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
     {
@@ -965,8 +808,8 @@
         deletionTextRange = [selectedTextRange_ textRangeByGrowingLeft];
     }
     
-    [text_ deleteCharactersInRange:deletionTextRange.NSRange];
-    [self regenerateContents];
+    [text_ deleteCharactersInRange:deletionTextRange.nsRange];
+    [self setNeedsFramesetting];
     
     // Notify delegate
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
@@ -989,32 +832,32 @@
 {
 //    KBCLogDebug(@"range: %@", NSStringFromRange(textRange.NSRange));
     
-    return [[text_ string] substringWithRange:textRange.NSRange];
+    return [[text_ string] substringWithRange:textRange.nsRange];
 }
 
 // UITextInput method
 //
 - (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText
 {
-    KBCLogDebug(@"range: %@ text: %@", NSStringFromRange(textRange.NSRange), replacementText);
+    KBCLogDebug(@"range: %@ text: %@", NSStringFromRange(textRange.nsRange), replacementText);
     
-    [text_ replaceCharactersInRange:textRange.NSRange withString:replacementText];
-    [self regenerateContents];
+    [text_ replaceCharactersInRange:textRange.nsRange withString:replacementText];
+    [self setNeedsFramesetting];
     
     // The text range to be replaced lies fully before the selected text range
-    if (textRange.end.index <= selectedTextRange_.start.index)
+    if (textRange.end.location <= selectedTextRange_.start.location)
     {
         NSInteger changeInLength = [replacementText length] - textRange.length;
-        NSUInteger newStartIndex = selectedTextRange_.start.index + changeInLength;
-        NKTTextRange *newTextRange = [selectedTextRange_ textRangeByReplacingStartIndexWithIndex:newStartIndex];
+        NSUInteger newStartIndex = selectedTextRange_.start.location + changeInLength;
+        NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLocation:newStartIndex];
         [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
     // The text range overlaps the selected text range
-    else if ((textRange.start.index >= selectedTextRange_.start.index) &&
-             (textRange.start.index < selectedTextRange_.end.index))
+    else if ((textRange.start.location >= selectedTextRange_.start.location) &&
+             (textRange.start.location < selectedTextRange_.end.location))
     {
-        NSUInteger newLength = textRange.start.index - selectedTextRange_.start.index;
-        NKTTextRange *newTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start length:newLength];
+        NSUInteger newLength = textRange.start.location - selectedTextRange_.start.location;
+        NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLength:newLength];
         [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
 }
@@ -1167,18 +1010,17 @@
     NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_
                                                                            attributes:inputTextAttributes];
-    [text_ replaceCharactersInRange:replacementTextRange.NSRange withAttributedString:attributedString];
+    [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
     [attributedString release];
     
-    [self regenerateContents];
+    [self setNeedsFramesetting];
     
-    NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:replacementTextRange.start
-                                                               length:[markedText_ length]];
+    NKTTextRange *textRange = [replacementTextRange textRangeByChangingLength:[markedText_ length]];
     self.markedTextRange = textRange;
     
     // Update the selected text range within the marked text
-    NSUInteger newIndex = markedTextRange_.start.index + relativeSelectedRange.location;
-    NKTTextRange *newTextRange = [NKTTextRange textRangeWithIndex:newIndex length:relativeSelectedRange.length];
+    NSUInteger newIndex = markedTextRange_.start.location + relativeSelectedRange.location;
+    NKTTextRange *newTextRange = [NKTTextRange textRangeWithNSRange:NSMakeRange(newIndex, relativeSelectedRange.length)];
     [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     
     // Input text attributes are reset when marked text is set
@@ -1218,7 +1060,7 @@
 //
 - (UITextRange *)textRangeFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
 {
-//    KBCLogDebug(@"from: %d to: %d", fromPosition.index, toPosition.index);
+//    KBCLogDebug(@"%d : %d", fromPosition.index, toPosition.index);
     
     return [fromPosition textRangeWithTextPosition:toPosition];
 }
@@ -1227,20 +1069,20 @@
 //
 - (UITextPosition *)positionFromPosition:(NKTTextPosition *)textPosition offset:(NSInteger)offset
 {
-//    KBCLogDebug(@"position: %d offset: %d", textPosition.index, offset);
+//    KBCLogDebug(@"%d : %d", textPosition.index, offset);
     
-    NSInteger index = (NSInteger)textPosition.index + offset;
+    NSInteger index = (NSInteger)textPosition.location + offset;
     
     if (index < 0)
     {
-        return [NKTTextPosition textPositionWithIndex:0];
+        return [NKTTextPosition textPositionWithLocation:0];
     }
     else if (index > [text_ length])
     {
-        return [NKTTextPosition textPositionWithIndex:[text_ length]];
+        return [NKTTextPosition textPositionWithLocation:[text_ length]];
     }
     
-    return [NKTTextPosition textPositionWithIndex:index];
+    return [NKTTextPosition textPositionWithLocation:index];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1251,7 +1093,7 @@
                              inDirection:(UITextLayoutDirection)direction
                                   offset:(NSInteger)offset
 {
-    KBCLogDebug(@"position: %d direction: %d offset: %d", textPosition.index, direction, offset);
+//    KBCLogDebug(@"%d : %@ : %d", textPosition.index, KBTStringFromUITextDirection(direction), offset);
     
     NKTTextPosition *offsetTextPosition = nil;
     
@@ -1269,24 +1111,34 @@
         }
         case UITextLayoutDirectionUp:
         {
-            NSUInteger sourceLineIndex = [self indexForLineContainingTextPosition:textPosition];
+            NKTLine *initialLine = [self.framesetter lineContainingTextPosition:textPosition];
             
             // Return the beginning of document if offset puts the position above the first line
-            if (offset > sourceLineIndex)
+            if (offset > initialLine.index)
             {
                 return [self beginningOfDocument];
             }
             
-            NSUInteger targetLineIndex = sourceLineIndex - offset;
-            CGPoint sourcePoint = [self originForCharAtTextPosition:textPosition];
-            return [self closestTextPositionToPoint:sourcePoint onLineAtIndex:targetLineIndex];
+            NSUInteger targetLineIndex = initialLine.index - offset;
+            NKTLine *targetLine = [self.framesetter lineAtIndex:targetLineIndex];
+            CGPoint point = [self.framesetter originForCharAtTextPosition:textPosition];            
+            CGPoint targetLinePoint = [self.framesetter convertPoint:point toLine:targetLine];
+            return [targetLine closestTextPositionToPoint:targetLinePoint];
         }
         case UITextLayoutDirectionDown:
         {
-            NSUInteger sourceLineIndex = [self indexForLineContainingTextPosition:textPosition];
-            NSUInteger targetLineIndex = sourceLineIndex + offset;
-            CGPoint sourcePoint = [self originForCharAtTextPosition:textPosition];
-            return [self closestTextPositionToPoint:sourcePoint onLineAtIndex:targetLineIndex];
+            NKTLine *initialLine = [self.framesetter lineContainingTextPosition:textPosition];
+            NSUInteger targetLineIndex = initialLine.index + offset;
+            
+            if (targetLineIndex >= self.framesetter.numberOfLines)
+            {
+                return [self endOfDocument];
+            }
+            
+            NKTLine *targetLine = [self.framesetter lineAtIndex:targetLineIndex];
+            CGPoint point = [self.framesetter originForCharAtTextPosition:textPosition];
+            CGPoint targetLinePoint = [self.framesetter convertPoint:point toLine:targetLine];
+            return [targetLine closestTextPositionToPoint:targetLinePoint];
         }
     }
     
@@ -1299,7 +1151,7 @@
 {
 //    KBCLogTrace();
     
-    return [NKTTextPosition textPositionWithIndex:0];
+    return [NKTTextPosition textPositionWithLocation:0];
 }
 
 // UITextInput method
@@ -1307,7 +1159,7 @@
 {
 //    KBCLogTrace();
     
-    return [NKTTextPosition textPositionWithIndex:[text_ length]];
+    return [NKTTextPosition textPositionWithLocation:[text_ length]];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1320,11 +1172,11 @@
 {
 //    KBCLogDebug(@"position: %d position: %d", textPosition.index, otherTextPosition.index);
     
-    if (textPosition.index < otherTextPosition.index)
+    if (textPosition.location < otherTextPosition.location)
     {
         return NSOrderedAscending;
     }
-    else if (textPosition.index > otherTextPosition.index)
+    else if (textPosition.location > otherTextPosition.location)
     {
         return NSOrderedDescending;
     }
@@ -1340,7 +1192,7 @@
 {
 //    KBCLogDebug(@"position: %d position: %d", fromPosition.index, toPosition.index);
     
-    return (toPosition.index - fromPosition.index);
+    return (toPosition.location - fromPosition.location);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1351,7 +1203,7 @@
 //
 - (UITextPosition *)positionWithinRange:(NKTTextRange *)textRange farthestInDirection:(UITextLayoutDirection)direction
 {
-    KBCLogDebug(@"range: %@ direction: %d", textRange.NSRange, direction);
+    KBCLogDebug(@"range: %@ direction: %d", textRange.nsRange, direction);
     
     NKTTextPosition *textPosition = nil;
     
@@ -1382,56 +1234,24 @@
     return textPosition;
 }
 
-// Returns a text range from a text position to the end of the text range of a line.
-//
-// If the line index corresponds to a non-typesetted line, a range from the text position to the
-// end of document is returned.
-//
-- (UITextRange *)textRangeFromTextPosition:(NKTTextPosition *)textPosition toEndOfLineAtIndex:(NSUInteger)lineIndex
-{
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self endOfDocument]];
-    }
-    
-    NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-    return [textPosition textRangeWithTextPosition:typesettedLine.textRange.end];
-}
-
-// Returns a text range from the beginning of a line to a text position.
-//
-// If the line index corresponds to a non-typesetted line, a range from the text position to the
-// end of document is returned.
-//
-- (UITextRange *)textRangeToTextPosition:(NKTTextPosition *)textPosition fromStartOfLineAtIndex:(NSUInteger)lineIndex
-{
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self endOfDocument]];
-    }
-    
-    NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-    return [textPosition textRangeWithTextPosition:typesettedLine.textRange.start];
-}
-
 // UITextInput method
 //
 - (UITextRange *)characterRangeByExtendingPosition:(NKTTextPosition *)textPosition
                                        inDirection:(UITextLayoutDirection)direction
 {
-    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
+    KBCLogDebug(@"position: %d direction: %d", textPosition.location, direction);
     
     switch (direction)
     {
         case UITextLayoutDirectionRight:
         {
-            NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-            return [self textRangeFromTextPosition:textPosition toEndOfLineAtIndex:lineIndex];
+            NKTLine *line = [self.framesetter lineContainingTextPosition:textPosition];
+            return [line.textRange textRangeByClippingUntilTextPosition:textPosition];
         }
         case UITextLayoutDirectionLeft:
         {
-            NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-            return [self textRangeToTextPosition:textPosition fromStartOfLineAtIndex:lineIndex];
+            NKTLine *line = [self.framesetter lineContainingTextPosition:textPosition];
+            return [line.textRange textRangeByClippingFromTextPosition:textPosition];
         }
         case UITextLayoutDirectionUp:
         {
@@ -1450,117 +1270,19 @@
 - (UITextWritingDirection)baseWritingDirectionForPosition:(NKTTextPosition *)textPosition
                                               inDirection:(UITextStorageDirection)direction
 {
-    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
+    KBCLogDebug(@"position: %d direction: %d", textPosition.location, direction);
 
     return UITextWritingDirectionNatural;
-//    UITextWritingDirection writingDirection = UITextWritingDirectionLeftToRight;
-//    CTParagraphStyleRef paragraphStyle = (CTParagraphStyleRef)[text_ attribute:(id)kCTParagraphStyleAttributeName
-//                                                                       atIndex:textPosition.index
-//                                                                effectiveRange:NULL];
-//    
-//    if (paragraphStyle != NULL)
-//    {        
-//        CTParagraphStyleGetValueForSpecifier(paragraphStyle,
-//                                             kCTParagraphStyleSpecifierBaseWritingDirection,
-//                                             sizeof(CTWritingDirection), &writingDirection);
-//    }
-//    
-//    return writingDirection;
 }
 
 - (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"direction: %d range: %@", writingDirection, NSStringFromRange(textRange.NSRange));
-    
-//    // WTF ... this is one fucked up API
-//    CTParagraphStyleSetting settings[1];
-//    settings[0].spec = kCTParagraphStyleSpecifierBaseWritingDirection;
-//    settings[0].valueSize = sizeof(CTWritingDirection);
-//    settings[0].value = &writingDirection;
-//    
-//    CTParagraphStyleRef paragraphStyle = CTParagraphStyleCreate(settings, 1);
-//    NSDictionary *attributes = [NSDictionary dictionaryWithObject:(id)paragraphStyle
-//                                                           forKey:(id)kCTParagraphStyleAttributeName];
-//    CFRelease(paragraphStyle);
-//    // TODO: This should really be an attribute merge right?
-//    [text_ addAttributes:attributes range:textRange.NSRange];
+    KBCLogDebug(@"direction: %d range: %@", writingDirection, NSStringFromRange(textRange.nsRange));
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Geometry and Hit-Testing
-
-// Returns the text position within a line's range that is closest to a point in view space.
-//
-// Only the character offset is used in the computation. If the index passed in corresponds to a
-// non-typesetted line, the end of document is returned.
-//
-- (UITextPosition *)closestTextPositionToPoint:(CGPoint)point onLineAtIndex:(NSUInteger)lineIndex
-{
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return [self endOfDocument];
-    }
-    
-    CGPoint lineLocalPoint = [self convertPoint:point toLineAtIndex:lineIndex];
-    NKTLine *line = [typesettedLines_ objectAtIndex:lineIndex];
-    return [line closestTextPositionToPoint:lineLocalPoint];
-}
-
-- (CGPoint)originForLineAtIndex:(NSUInteger)index
-{
-    CGFloat y = margins_.top + lineHeight_ + ((CGFloat)index * lineHeight_);
-    CGPoint lineOrigin = CGPointMake(margins_.left, y);
-    return lineOrigin;
-}
-
-- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line
-{
-    CGPoint lineOrigin = [self originForLineAtIndex:line.index];
-    return CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
-}
-
-- (CGPoint)convertPoint:(CGPoint)point toLineAtIndex:(NSUInteger)index
-{
-    CGPoint lineOrigin = [self originForLineAtIndex:index];
-    return CGPointMake(point.x - lineOrigin.x, point.y - lineOrigin.y);
-}
-
-- (CGRect)rectForTypesettedLineAtIndex:(NSUInteger)lineIndex
-{
-    CGFloat width = self.bounds.size.width - margins_.left - margins_.right;
-    CGPoint origin = [self originForLineAtIndex:lineIndex];
-    const CGFloat heightPadding = 1.0;
-    NKTLine *line = [typesettedLines_ objectAtIndex:lineIndex];
-    origin.y -= (line.ascent + heightPadding);
-    return CGRectMake(origin.x, origin.y, width, line.ascent + line.descent + (heightPadding * 2.0));
-}
-
-// TODO: documentation, move this
-//
-- (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition onLineAtIndex:(NSUInteger)lineIndex
-{
-    // If index is for a non-typesetted line, the closest text 
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return 0.0;
-    }
-    
-    NKTLine *line = [typesettedLines_ objectAtIndex:lineIndex];
-    return [line offsetForCharAtTextPosition:textPosition];
-}
-
-// Text position is valid - since we never create invalid text positions
-//
-// TODO: share logic with lastLineIndex?
-// never need to check for whether line index is ok or not except at bottom level
-- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition
-{
-    NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-    CGPoint lineOrigin = [self originForLineAtIndex:lineIndex];
-    CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition onLineAtIndex:lineIndex];
-    return CGPointMake(lineOrigin.x + charOffset, lineOrigin.y);
-}
 
 // If the end of the text range is the end of the text and ends in a line break, the last rect
 // returned will span the end of the rect for the last line to take into account the presence
@@ -1568,75 +1290,7 @@
 //
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
 {
-    // When computing rects for text ranges, only typesetted lines are used
-    
-    NSUInteger firstLineIndex = [self indexForLineContainingTextPosition:textRange.start];
-    
-    if ([self indexAddressesNonTypesettedLine:firstLineIndex])
-    {
-        return nil;
-    }
-    
-    NSUInteger lastLineIndex = [self indexForLineContainingTextPosition:textRange.end];
-    
-    if ([self indexAddressesNonTypesettedLine:lastLineIndex])
-    {
-        lastLineIndex = [self lastTypesettedLineIndex];
-    }
-    
-    // Dealing with single rect on a line
-    if (firstLineIndex == lastLineIndex)
-    {
-        // Get the rect for the entire line and adjust its x origin
-        CGRect firstLineRect = [self rectForTypesettedLineAtIndex:firstLineIndex];
-        CGFloat firstCharOffset = [self offsetForCharAtTextPosition:textRange.start onLineAtIndex:firstLineIndex];
-        firstLineRect.origin.x += firstCharOffset;
-        
-        // Handle case where the end of the text range lies on a non-typesetted line
-        if (textRange.end.index == [text_ length] && [[text_ string] hasSuffix:@"\n"])
-        {
-            firstLineRect.size.width -= firstCharOffset;
-        }
-        else
-        {
-            CGFloat lastCharOffset = [self offsetForCharAtTextPosition:textRange.end onLineAtIndex:firstLineIndex];
-            firstLineRect.size.width = lastCharOffset - firstCharOffset;
-        }
-        
-        return [NSArray arrayWithObject:[NSValue valueWithCGRect:firstLineRect]];
-    }
-    // Dealing with multiple lines
-    else
-    {
-        NSMutableArray *rects = [[[NSMutableArray alloc] init] autorelease];
-        
-        // Rect for first line
-        CGRect firstLineRect = [self rectForTypesettedLineAtIndex:firstLineIndex];
-        CGFloat firstCharOffset = [self offsetForCharAtTextPosition:textRange.start onLineAtIndex:firstLineIndex];
-        firstLineRect.origin.x += firstCharOffset;
-        firstLineRect.size.width -= firstCharOffset;
-        [rects addObject:[NSValue valueWithCGRect:firstLineRect]];
-        
-        // Rects for lines in between
-        for (NSUInteger lineIndex = firstLineIndex + 1; lineIndex < lastLineIndex; ++lineIndex)
-        {
-            CGRect lineRect = [self rectForTypesettedLineAtIndex:lineIndex];
-            [rects addObject:[NSValue valueWithCGRect:lineRect]];
-        }
-        
-        // Rect for last line
-        CGRect lastLineRect = [self rectForTypesettedLineAtIndex:lastLineIndex];
-        
-        // Handle case where the end of the text range DOES NOT lie on a non-typesetted line
-        if (textRange.end.index != [text_ length] || ![[text_ string] hasSuffix:@"\n"])
-        {
-            CGFloat lastCharOffset = [self offsetForCharAtTextPosition:textRange.end onLineAtIndex:lastLineIndex];
-            lastLineRect.size.width = lastCharOffset;
-        }
-        
-        [rects addObject:[NSValue valueWithCGRect:lastLineRect]];
-        return rects;
-    }
+    return [self.framesetter rectsForTextRange:textRange];
 }
 
 // UITextInput method
@@ -1672,7 +1326,7 @@
 - (CGRect)inputCaretRect
 {
     NKTTextPosition *caretTextPosition = selectedTextRange_.start;
-    CGPoint charOrigin = [self originForCharAtTextPosition:caretTextPosition];
+    CGPoint charOrigin = [self.framesetter originForCharAtTextPosition:caretTextPosition];
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:self.inputTextAttributes];
     UIFont *font = [styleDescriptor uiFontForFontStyle];
     return [self caretRectWithOrigin:charOrigin font:font];
@@ -1682,9 +1336,9 @@
 //
 - (CGRect)caretRectForPosition:(NKTTextPosition *)textPosition
 {
-    KBCLogDebug(@"position: %d", textPosition.index);
+    KBCLogDebug(@"position: %d", textPosition.location);
     
-    CGPoint charOrigin = [self originForCharAtTextPosition:textPosition];
+    CGPoint charOrigin = [self.framesetter originForCharAtTextPosition:textPosition];
     UIFont *font = [self fontAtTextPosition:textPosition inDirection:UITextStorageDirectionForward];
     return [self caretRectWithOrigin:charOrigin font:font];
 }
@@ -1696,52 +1350,17 @@
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point
 {
 //    KBCLogDebug(@"point: %@", NSStringFromCGPoint(point));
-    
-    NSUInteger lineIndex = [self indexForClosestLineToPoint:point];    
-    return [self closestTextPositionToPoint:point onLineAtIndex:lineIndex];
+    return [self.framesetter textPositionGeometricallyClosestToPoint:point];
 }
 
 // UITextInput method
 //
-// TODO: figure out when this is called by UITextInput, and implement accordingly
+// TODO: figure out when this is called by UITextInput, and implement accordingly .. returns nil for now
 //
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"point: %@ range: %@", NSStringFromCGPoint(point), NSStringFromRange(textRange.NSRange));
-    
-    NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:point];
-    
-    if ([textRange containsTextPosition:textPosition])
-    {
-        return textPosition;
-    }
-    
-    // At this point, the closest text position lies on either the first line or the last line
-    
-    NSUInteger firstLineIndex = [self indexForLineContainingTextPosition:textRange.start];
-    
-    if ([self indexAddressesNonTypesettedLine:firstLineIndex])
-    {
-        return textRange.start;
-    }
-    
-    CGPoint firstLineOrigin = [self originForLineAtIndex:firstLineIndex];
-    
-    if (point.y <= firstLineOrigin.y)
-    {
-        return [self closestTextPositionToPoint:point onLineAtIndex:firstLineIndex];
-    }
-    else
-    {
-        NSUInteger lastLineIndex = [self indexForLineContainingTextPosition:textRange.end];
-        
-        if ([self indexAddressesNonTypesettedLine:lastLineIndex])
-        {
-            lastLineIndex = [self lastTypesettedLineIndex];
-        }
-        
-        return [self closestTextPositionToPoint:point onLineAtIndex:lastLineIndex];
-    }
+    KBCLogDebug(@"******* point: %@ range: %@ *******", NSStringFromCGPoint(point), NSStringFromRange(textRange.nsRange));
+    return nil;
 }
 
 // UITextInput method
@@ -1775,7 +1394,7 @@
 //
 - (NSDictionary *)textStylingAtPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction
 {
-    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
+    KBCLogDebug(@"position: %d direction: %d", textPosition.location, direction);
     
     UIFont *font = [self fontAtTextPosition:textPosition inDirection:direction];
     UIColor *color = [UIColor blackColor];
@@ -1796,14 +1415,14 @@
         return;
     }
     
-    NSUInteger index = textRange.start.index;
+    NSUInteger index = textRange.start.location;
     
-    while (index < textRange.end.index)
+    while (index < textRange.end.location)
     {
         NSRange longestEffectiveRange;
         NSDictionary *attributes = [text_ attributesAtIndex:index
                                       longestEffectiveRange:&longestEffectiveRange
-                                                    inRange:selectedTextRange_.NSRange];
+                                                    inRange:selectedTextRange_.nsRange];
         NSDictionary *newAttributes = [target performSelector:selector withObject:attributes];
         
         if (newAttributes != attributes)
@@ -1814,8 +1433,7 @@
         index = longestEffectiveRange.location + longestEffectiveRange.length;
     }
     
-    [self regenerateContents];
-    [selectionDisplayController_ updateSelectionElements];   
+    [self setNeedsFramesetting];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1851,22 +1469,22 @@
     // of the selection
     if (!self.selectedTextRange.empty)
     {
-        return [self.text attributesAtIndex:textPosition.index effectiveRange:NULL];
+        return [self.text attributesAtIndex:textPosition.location effectiveRange:NULL];
     }
     // The typing attributes at the beginning of a paragraph are the attributes for the first
     // character of the paragraph
-    else if ((textPosition.index < [self.text length]) &&
+    else if ((textPosition.location < [self.text length]) &&
              [self.tokenizer isPosition:textPosition
                              atBoundary:UITextGranularityParagraph
                             inDirection:UITextStorageDirectionForward])
     {
-        return [self.text attributesAtIndex:textPosition.index effectiveRange:NULL];
+        return [self.text attributesAtIndex:textPosition.location effectiveRange:NULL];
     }
     // Selected text range is empty, use the typing attributes for the character preceding the
     // insertion point if possible
     else
     {
-        NSUInteger index = textPosition.index;
+        NSUInteger index = textPosition.location;
         
         if (index > 0)
         {
@@ -1890,28 +1508,14 @@
     [selectionDisplayController_ updateSelectionElements];
 }
 
-- (void)setSelectedTextRangeTextAttributes:(NSDictionary *)textAttributes
-{
-    if (selectedTextRange_ == nil || selectedTextRange_.empty)
-    {
-        return;
-    }
-    
-    // TODO: Don't need to set anything if the existing attributes at position match and the
-    // effective range contains the selected range
-    [text_ setAttributes:textAttributes range:selectedTextRange_.NSRange];
-    [self regenerateContents];
-    [selectionDisplayController_ updateSelectionElements];
-}
-
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Getting Fonts at Text Positions
 
+// Note that the direction is ignored in this implementation.
+//
 - (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction;
 {
-    // NOTE: Direction is ignored
-    
     UIFont *font = nil;
     
     if (text_ == nil || [text_ length] == 0)
@@ -1922,7 +1526,7 @@
     // Read the style information at the character preceding the index because that is the style that
     // would be used when text is inserted at that position
     
-    NSUInteger sourceIndex = textPosition.index;
+    NSUInteger sourceIndex = textPosition.location;
     
     if (sourceIndex > [text_ length])
     {
@@ -1983,122 +1587,10 @@
 
 #pragma mark Tokenizing
 
-- (BOOL)isTextPosition:(NKTTextPosition *)textPosition atLineBoundaryInDirection:(UITextDirection)direction
+- (NKTTextRange *)textRangeForLineContainingTextPosition:(NKTTextPosition *)textPosition
 {
-//    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
-    
-    NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-    
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return YES;
-    }
-    
-    NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-    
-    if (direction == UITextLayoutDirectionRight || direction == UITextStorageDirectionForward)
-    {
-        return textPosition.index == typesettedLine.textRange.end.index;
-    }
-    else if (direction == UITextLayoutDirectionLeft || direction == UITextStorageDirectionBackward)
-    {
-        return textPosition.index == typesettedLine.textRange.start.index;
-    }
-    
-    return NO;
-}
-
-- (BOOL)isTextPosition:(NKTTextPosition *)textPosition withinLineInDirection:(UITextDirection)direction
-{
-//    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction); 
-    
-    NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-    
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return YES;
-    }
-    
-    NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-    
-    if (direction == UITextLayoutDirectionRight || direction == UITextStorageDirectionForward)
-    {
-        return (textPosition.index >= typesettedLine.textRange.start.index) &&
-               (textPosition.index < typesettedLine.textRange.end.index);
-    }
-    else if (direction == UITextLayoutDirectionLeft || direction == UITextStorageDirectionBackward)
-    {
-        return (textPosition.index > typesettedLine.textRange.start.index) &&
-               (textPosition.index <= typesettedLine.textRange.end.index);
-    }
-    
-    return NO;
-}
-
-- (UITextPosition *)positionFromTextPosition:(NKTTextPosition *)textPosition
-                   toLineBoundaryInDirection:(UITextDirection)direction
-{
-//    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
-    
-    NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-    
-    if ([self indexAddressesNonTypesettedLine:lineIndex])
-    {
-        return [self endOfDocument];
-    }
-    
-    NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-    
-    if (direction == UITextLayoutDirectionRight || direction == UITextStorageDirectionForward)
-    {
-        // If line has a line break, move to location before it
-        if (!typesettedLine.textRange.empty)
-        {
-            return [typesettedLine.textRange.end previousTextPosition];
-        }
-        else
-        {
-            return typesettedLine.textRange.end;
-        }
-    }
-    else if (direction == UITextLayoutDirectionLeft || direction == UITextStorageDirectionBackward)
-    {
-        return typesettedLine.textRange.start;        
-    }
-    
-    return nil;
-}
-
-- (UITextRange *)textRangeForLineEnclosingTextPosition:(NKTTextPosition *)textPosition
-                                           inDirection:(UITextDirection)direction
-{
-//    KBCLogDebug(@"position: %d direction: %d", textPosition.index, direction);
-    
-    NSUInteger lineIndex = [self indexForLineContainingTextPosition:textPosition];
-    
-    if (direction == UITextLayoutDirectionLeft || direction == UITextStorageDirectionBackward)
-    {
-        if ([self indexAddressesNonTypesettedLine:lineIndex])
-        {
-            --lineIndex;
-        }
-        else if (lineIndex > 0)
-        {
-            NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-            
-            if (textPosition.index == typesettedLine.textRange.start.index)
-            {
-                --lineIndex;
-            }
-        }
-        else
-        {
-            return nil;
-        }
-    }
-    
-    NKTLine *typesettedLine = [typesettedLines_ objectAtIndex:lineIndex];
-    return typesettedLine.textRange;
+    NKTLine *line = [self.framesetter lineContainingTextPosition:textPosition];
+    return line.textRange;
 }
 
 @end

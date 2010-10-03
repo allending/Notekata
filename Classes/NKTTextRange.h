@@ -7,48 +7,45 @@
 @class NKTTextPosition;
 
 //--------------------------------------------------------------------------------------------------
-// NKTTextRange is a subclass of UITextRange that creates NKTTextPosition objects to represent its
-// text positions.
+// NKTTextRange is a subclass of UITextRange that represents text position with instances of
+// NKTTextPosition.
 //--------------------------------------------------------------------------------------------------
 
 @interface NKTTextRange : UITextRange
 {
 @private
-    NKTTextPosition *start_;
-    NSUInteger length_;
+    NSRange nsRange_;
 }
 
 #pragma mark Initializing
 
-- (id)initWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length;
-- (id)initWithIndex:(NSUInteger)index length:(NSUInteger)length;
+- (id)initWithNSRange:(NSRange)nsRange;
 
-+ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length;
-+ (id)textRangeWithIndex:(NSUInteger)index length:(NSUInteger)length;
++ (id)textRangeWithNSRange:(NSRange)nsRange;
 
-#pragma mark Getting Range Lengths
+#pragma mark Accessing the Range
 
+@property (nonatomic, readonly) NSRange nsRange;
+@property (nonatomic, readonly) NSUInteger location;
 @property (nonatomic, readonly) NSUInteger length;
 
-#pragma mark Getting NSRanges
-
-- (NSRange)NSRange;
-
-#pragma mark Checking Text Positions
+#pragma mark Checking for Text Position Containment
 
 - (BOOL)containsTextPosition:(NKTTextPosition *)textPosition;
-
-#pragma mark Creating Text Ranges
-
-- (NKTTextRange *)textRangeByGrowingLeft;
-
-- (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)length;
-- (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)index;
 
 #pragma mark Comparing Text Ranges
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange;
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark Creating Text Ranges
+
+- (NKTTextRange *)textRangeByGrowingLeft;
+- (NKTTextRange *)textRangeByGrowingRight;
+- (NKTTextRange *)textRangeByChangingLocation:(NSUInteger)location;
+- (NKTTextRange *)textRangeByChangingLength:(NSUInteger)length;
+- (NKTTextRange *)textRangeByClippingUntilTextPosition:(NKTTextPosition *)textPosition;
+- (NKTTextRange *)textRangeByClippingFromTextPosition:(NKTTextPosition *)textPosition;
 
 @end
 

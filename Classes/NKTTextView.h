@@ -7,6 +7,7 @@
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
 
+@class NKTFramesetter;
 @class NKTDragGestureRecognizer;
 @class NKTLoupe;
 @class NKTTextViewGestureRecognizerDelegate;
@@ -22,9 +23,11 @@
 @private
     NSMutableAttributedString *text_;
     
+    NKTFramesetter *framesetter_;
+    
+    // Styling
     UIEdgeInsets margins_;
     CGFloat lineHeight_;
-    
     BOOL horizontalRulesEnabled_;
     UIColor *horizontalRuleColor_;
     CGFloat horizontalRuleOffset_;
@@ -32,28 +35,35 @@
     UIColor *verticalMarginColor_;
     CGFloat verticalMarginInset_;
     
+    // Input
     NSDictionary *inputTextAttributes_;
     
-    NSMutableArray *typesettedLines_;
-    
+    // Subview Tiling
     NSMutableSet *visibleSections_;
     NSMutableSet *reusableSections_;
+    
+    // View Management
     NSMutableSet *underlayViews_;
     NSMutableSet *overlayViews;
+    NKTSelectionDisplayController *selectionDisplayController_;
+    NKTLoupe *bandLoupe_;
+    NKTLoupe *roundLoupe_;
     
+    // Selections
     NKTTextRange *selectedTextRange_;
     NKTTextRange *markedTextRange_;
     NSDictionary *markedTextStyle_;
     NSString *markedText_;
     NKTTextRange *provisionalTextRange_;
-    
+
+    // Input delegate provided by UITextInput
     id <UITextInputDelegate> inputDelegate_;
+    
+    // Tokenization
     NKTTextViewTokenizer *tokenizer_;
     
-    NKTSelectionDisplayController *selectionDisplayController_;
-    NKTLoupe *bandLoupe_;
-    NKTLoupe *roundLoupe_;
-    
+    // TODO: pull out into own policy delegate
+    // Gesture recognizers
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate_;
     UITapGestureRecognizer *nonEditTapGestureRecognizer_;
     UITapGestureRecognizer *tapGestureRecognizer_;
@@ -86,8 +96,6 @@
 
 @property (nonatomic, copy) NSDictionary *inputTextAttributes;
 
-- (void)setSelectedTextRangeTextAttributes:(NSDictionary *)textAttributes;
-
 #pragma mark Accessing Gesture Recognizers
 
 @property (nonatomic, readonly) UITapGestureRecognizer *nonEditTapGestureRecognizer;
@@ -97,12 +105,7 @@
 
 #pragma mark Tokenizing
 
-- (BOOL)isTextPosition:(UITextPosition *)textPosition atLineBoundaryInDirection:(UITextDirection)direction;
-- (BOOL)isTextPosition:(UITextPosition *)textPosition withinLineInDirection:(UITextDirection)direction;
-- (UITextPosition *)positionFromTextPosition:(UITextPosition *)textPosition
-                   toLineBoundaryInDirection:(UITextDirection)direction;
-- (UITextRange *)textRangeForLineEnclosingTextPosition:(UITextPosition *)textPosition
-                                           inDirection:(UITextDirection)direction;
+- (NKTTextRange *)textRangeForLineContainingTextPosition:(UITextPosition *)textPosition;
 
 @end
 

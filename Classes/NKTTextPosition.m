@@ -7,32 +7,32 @@
 
 @implementation NKTTextPosition
 
-@synthesize index = index_;
+@synthesize location = location_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index
+- (id)initWithLocation:(NSUInteger)location
 {
     if ((self = [super init]))
     {
-        if (index == NSNotFound)
+        if (location == NSNotFound)
         {
-            KBCLogWarning(@"index is NSNotFound, returning nil");
+            KBCLogWarning(@"location is NSNotFound, returning nil");
             [self release];
             return nil;
         }
         
-        index_ = index;
+        location_ = location;
     }
     
     return self;
 }
 
-+ (id)textPositionWithIndex:(NSUInteger)index
++ (id)textPositionWithLocation:(NSUInteger)location
 {
-    return [[[self alloc] initWithIndex:index] autorelease];
+    return [[[self alloc] initWithLocation:location] autorelease];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -41,29 +41,33 @@
 
 - (NKTTextPosition *)previousTextPosition
 {
-    if (index_ == 0)
+    if (location_ == 0)
     {
         return nil;
     }
     
-    return [[self class] textPositionWithIndex:(index_ - 1)];
+    return [[self class] textPositionWithLocation:(location_ - 1)];
 }
 
 - (NKTTextPosition *)nextTextPosition
 {
-    return [[self class] textPositionWithIndex:(index_ + 1)];
+    return [[self class] textPositionWithLocation:(location_ + 1)];
 }
 
 - (NKTTextPosition *)textPositionByApplyingOffset:(NSInteger)offset
 {
-    NSInteger newIndex = (NSInteger)index_ + offset;
+    NSInteger newLocation = (NSInteger)location_ + offset;
     
-    if (newIndex < 0)
+    if (newLocation < 0)
     {
+        KBCLogWarning(@"applying offset %d to location %d creates invalid location %d, returning nil",
+                      offset,
+                      location_,
+                      newLocation);
         return nil;
     }
     
-    return [[self class] textPositionWithIndex:newIndex];
+    return [[self class] textPositionWithLocation:(NSUInteger)newLocation];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -72,18 +76,19 @@
 
 - (NKTTextRange *)textRange
 {
-    return [NKTTextRange textRangeWithTextPosition:self length:0];
+    return [NKTTextRange textRangeWithNSRange:NSMakeRange(location_, 0)];
 }
 
 - (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition
 {
-    if (index_ < textPosition.index)
+    if (location_ < textPosition.location)
     {
-        return [NKTTextRange textRangeWithTextPosition:self length:(textPosition.index - index_)];
+        return [NKTTextRange textRangeWithNSRange:NSMakeRange(location_, textPosition.location - location_)];
     }
     else
     {
-        return [NKTTextRange textRangeWithTextPosition:textPosition length:(index_ - textPosition.index)];
+        return [NKTTextRange textRangeWithNSRange:NSMakeRange(textPosition.location,
+                                                              location_ - textPosition.location)];
     }
 }
 
@@ -93,7 +98,21 @@
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
 {
-    return index_ == textPosition.index;
+    if (textPosition == nil)
+    {
+        return NO;
+    }
+    
+    return location_ == textPosition.location;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Describing
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"%d", location_];
 }
 
 @end

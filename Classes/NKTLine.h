@@ -18,24 +18,30 @@
     NSUInteger index_;
     NSAttributedString *text_;
     CTLineRef ctLine_;
+    CGPoint origin_;
 }
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine;
+// Initializes the NKTLine with the given Core Text line. If the Core Text line is NULL, the text
+// range for the line will be the empty range at the end of the text.
+- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine origin:(CGPoint)origin;
 
 #pragma mark Accessing the Index
 
 @property (nonatomic, readonly) NSUInteger index;
 
+#pragma mark Accessing the Text
+
+@property (nonatomic, readonly) NSString *lineText;
+
 #pragma mark Getting Text Ranges
 
 @property (nonatomic, readonly) NKTTextRange *textRange;
 
-@property (nonatomic, readonly) NSString *text;
+#pragma mark Getting Line Geometry
 
-#pragma mark Getting Typographic Bounds
-
+@property (nonatomic, readonly) CGPoint origin;
 @property (nonatomic, readonly) CGFloat ascent;
 @property (nonatomic, readonly) CGFloat descent;
 @property (nonatomic, readonly) CGFloat leading;
@@ -50,7 +56,6 @@
 // the last string index. Insertions can be made using the returned text position can be used to
 // insert text on the same line before the line break.
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
-- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange;
 
 #pragma mark Drawing
 

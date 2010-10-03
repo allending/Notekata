@@ -3,10 +3,9 @@ TODO
 
 General
 -------
-[ ] Issue: Use newline char set instead of \n
+[ ] Design: Should controller modify text directly and let view know?
 [ ] Optimization: Memory Profiling
 [ ] Issue: Figure out Kiwi integration
-[ ] Design: Should controller modify text directly and let view know?
 
 Controller
 ----------
@@ -16,14 +15,13 @@ Controller
 
 Text View
 ---------
-[x] Issue: Keyboard input
-    - Add spaces to beginning of text and move caret to end of 'hold', move word backwards behaves wrongly
-    - Move to beginning of 'This day'. Move line forward behaves wrongly
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
 [ ] Feature: Selection handles
 [ ] Feature: Scrolling behavior while editing
 [ ] Feature: Cut copy paste
 [ ] Feature: Context menus w/ selection
+[ ] Issue: An issue with weird hardware keyboard movement during text input? Beat on test cases more
+[ ] Feature: Undo/Redo support
 [ ] Design: Cancel double tap and press if duration too long or distance too short?
 [ ] Design: follow UITextView conventions on ownership and follow conventions more closely
 [ ] Optimization: Use a dirty marker for typesetting e.g.: [self setLineWidthDirty];
@@ -31,10 +29,10 @@ Text View
 [ ] Optimization: Don't need skirt lines - can use typographic bounds
 [ ] Optimization: Low memory - purge recycled sections
 [ ] Issue: Drawing underlines - not pixel perfect :(
-[ ] Design: Undo/Redo support
 
 Deferred
 --------
+[ ] Issue: When end of text is newline, keyboard up movement granularity has minor issue when caret is on the last line
 [ ] Design: Better icons for B/I/U
 [ ] Issue: Bradley hand - no regular variant, only bold variant
 [ ] Issue: Copperplate italic?
@@ -47,21 +45,8 @@ Deferred
 
 Done
 ----
-
-Notes
------
-Font traits are painful:
-    normal:                                  bold and italic disabled
-    normal + bold:                           bold enabled, italic disabled
-    normal + italic:                         italic enabled, bold disabled
-    normal + bold + italic:                  bold and italic enabled, exclusive bold/italic
-    normal + bold + italic + bold-italic:    bold and italic enabled
-    normal + bold-italic:                    bold-italic linked
-    normal + bold + bold-italic:             italic tied to bold
-    normal + italic + bold-italic:           bold tied to italic
-    bold:                                    bold disabled-selected, italic disabled
-    italic:                                  italic disabled-selected, bold disabled
-    bold + italic:                           bold and italic enabled, exclusive bold/italic, untoggleable
-    bold + bold-italic:                      bold disabled-selected, italic enabled
-    italic + bold-italic:                    italic disabled-selected, bold enabled
-    bold-italic:                             bold and italic disabled-selected
+[x] Issue: Tap out of bounds latches to x coordinate
+[x] Issue: Keyboard input mostly works
+[x] Issue: Select all when text doesn't end with newline
+[x] Issue: Refactor tokenizer
+[x] Issue: Use newline char set instead of \n

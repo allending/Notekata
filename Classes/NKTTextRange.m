@@ -7,41 +7,29 @@
 
 @implementation NKTTextRange
 
-@synthesize length = length_;
+@synthesize nsRange = nsRange_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length
+- (id)initWithNSRange:(NSRange)nsRange
 {
     if ((self = [super init]))
     {
-        start_ = [textPosition retain];
-        length_ = length;
+        nsRange_ = nsRange;
     }
     
     return self;
 }
 
-- (id)initWithIndex:(NSUInteger)index length:(NSUInteger)length
++ (id)textRangeWithNSRange:(NSRange)nsRange
 {
-    return [self initWithTextPosition:[NKTTextPosition textPositionWithIndex:index] length:length];
-}
-
-+ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition length:(NSUInteger)length
-{
-    return [[[self alloc] initWithTextPosition:textPosition length:length] autorelease];
-}
-
-+ (id)textRangeWithIndex:(NSUInteger)index length:(NSUInteger)length
-{
-    return [[[self alloc] initWithIndex:index length:length] autorelease];
+    return [[[self alloc] initWithNSRange:nsRange] autorelease];
 }
 
 - (void)dealloc
 {
-    [start_ release];
     [super dealloc];
 }
 
@@ -56,39 +44,44 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark Accessing the Range
+
+- (NSUInteger)location
+{
+    return nsRange_.location;
+}
+
+- (NSUInteger)length
+{
+    return nsRange_.length;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Defining Ranges of Text
 
 - (NKTTextPosition *)start
 {
-    return start_;
+    return [NKTTextPosition textPositionWithLocation:nsRange_.location];
 }
 
 - (NKTTextPosition *)end
 {
-    return [NKTTextPosition textPositionWithIndex:start_.index + length_];
+    return [NKTTextPosition textPositionWithLocation:NSMaxRange(nsRange_)];
 }
 
 - (BOOL)isEmpty
 {
-    return length_ == 0;
+    return nsRange_.length == 0;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting NSRanges
-
-- (NSRange)NSRange
-{
-    return NSMakeRange(start_.index, length_);
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Checking Text Positions
+#pragma mark Checking for Text Position Containment
 
 - (BOOL)containsTextPosition:(NKTTextPosition *)textPosition
 {
-    return textPosition.index >= start_.index && textPosition.index < (start_.index + length_);
+    return NSLocationInRange(textPosition.location, nsRange_);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -97,24 +90,67 @@
 
 - (NKTTextRange *)textRangeByGrowingLeft
 {
-    if (start_.index > 0)
+    NSRange range = nsRange_;
+    
+    if (range.location > 0)
     {
-        return [[self class] textRangeWithIndex:(start_.index - 1) length:length_ + 1];
+        --range.location;
+        ++range.length;
     }
-    else
-    {
-        return [[self retain] autorelease];
-    }
+    
+    return [[self class] textRangeWithNSRange:range];
 }
 
-- (NKTTextRange *)textRangeByReplacingLengthWithLength:(NSUInteger)length
+- (NKTTextRange *)textRangeByGrowingRight
 {
-    return [[self class] textRangeWithIndex:start_.index length:length];
+    NSRange range = NSMakeRange(nsRange_.location, nsRange_.length + 1);
+    return [[self class] textRangeWithNSRange:range];
 }
 
-- (NKTTextRange *)textRangeByReplacingStartIndexWithIndex:(NSUInteger)index
+- (NKTTextRange *)textRangeByChangingLocation:(NSUInteger)location
 {
-    return [[self class] textRangeWithIndex:index length:length_];
+    NSRange range = NSMakeRange(location, nsRange_.length);
+    return [[self class] textRangeWithNSRange:range];
+}
+
+- (NKTTextRange *)textRangeByChangingLength:(NSUInteger)length
+{
+    NSRange range = NSMakeRange(nsRange_.location, length);
+    return [[self class] textRangeWithNSRange:range];
+}
+
+- (NKTTextRange *)textRangeByClippingUntilTextPosition:(NKTTextPosition *)textPosition
+{
+    if (self.empty && ![self isEqualToTextPosition:textPosition])
+    {
+        KBCLogWarning(@"range %@ is empty and is not equal to text position %@, returning nil", self, textPosition);
+        return nil;
+    }
+    
+    if (!NSLocationInRange(textPosition.location, nsRange_))
+    {
+        KBCLogWarning(@"text position %d is not located in non-empty range %@", textPosition, self);
+    }
+    
+    NSRange nsRange = NSMakeRange(nsRange_.location, textPosition.location - nsRange_.location);
+    return [NKTTextRange textRangeWithNSRange:nsRange];
+}
+
+- (NKTTextRange *)textRangeByClippingFromTextPosition:(NKTTextPosition *)textPosition
+{
+    if (self.empty && ![self isEqualToTextPosition:textPosition])
+    {
+        KBCLogWarning(@"range %@ is empty and is not equal to text position %@, returning nil", self, textPosition);
+        return nil;
+    }
+    
+    if (!NSLocationInRange(textPosition.location, nsRange_))
+    {
+        KBCLogWarning(@"text position %d is not located in non-empty range %@", textPosition, self);
+    }
+    
+    NSRange nsRange = NSMakeRange(textPosition.location, NSMaxRange(nsRange_) -  textPosition.location);
+    return [NKTTextRange textRangeWithNSRange:nsRange];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -131,8 +167,10 @@
     {
         return [self isEqualToTextPosition:object];
     }
-    
-    return [super isEqual:object];
+    else
+    {
+        return [super isEqual:object];
+    }
 }
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange
@@ -142,7 +180,7 @@
         return NO;
     }
     
-    return start_.index == textRange.start.index && length_ == textRange.length;
+    return NSEqualRanges(nsRange_, textRange.nsRange);
 }
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
@@ -152,7 +190,16 @@
         return NO;
     }
     
-    return [start_ isEqualToTextPosition:textPosition] && length_ == 0;
+    return self.empty && nsRange_.location == textPosition.location;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Describing
+
+- (NSString *)description
+{
+    return NSStringFromRange(nsRange_);
 }
 
 @end

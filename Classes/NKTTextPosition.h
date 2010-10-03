@@ -14,18 +14,18 @@
 @interface NKTTextPosition : UITextPosition
 {
 @private
-    NSUInteger index_;
+    NSUInteger location_;
 }
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index;
+- (id)initWithLocation:(NSUInteger)location;
 
-+ (id)textPositionWithIndex:(NSUInteger)index;
++ (id)textPositionWithLocation:(NSUInteger)location;
 
-#pragma mark Accessing the Index
+#pragma mark Accessing the Location
 
-@property (nonatomic, readonly) NSUInteger index;
+@property (nonatomic, readonly) NSUInteger location;
 
 #pragma mark Creating Text Positions
 

@@ -151,7 +151,7 @@
                                                                                       bold:NO
                                                                                     italic:NO
                                                                                 underlined:NO];
-    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:@"Hold your ground, hold your ground. Sons of Gondor, of Rohan, my brothers. I see in your eyes the same fear that would take the heart of me. A day may come when the courage of men fails, when we forsake our friends and break all bonds of fellowship, but it is not this day.\n\n"
+    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:@"   Hold your ground, hold your ground. Sons of Gondor, of Rohan, my brothers. I see in your eyes the same fear that would take the heart of me. A day may come when the courage of men fails, when we forsake our friends and break all bonds of fellowship, but it is not this day.\n\n"
                                                                  "This day we fight! For all that you hold dear on this good Earth, I bid you stand, Men of the West!"
                                                                  attributes:[descriptor attributes]];
     textView_.text = string;

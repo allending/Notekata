@@ -58,3 +58,45 @@ NSString *KBTDebugDescriptionForAttributedString(NSAttributedString *attributedS
     
     return description;
 }
+
+NSString *KBTStringFromUITextDirection(UITextDirection direction)
+{
+    switch (direction)
+    {
+        case UITextStorageDirectionForward:
+            return @"Forward";
+        case UITextStorageDirectionBackward:
+            return @"Backward";
+        case UITextLayoutDirectionRight:
+            return @"Right";
+        case UITextLayoutDirectionLeft:
+            return @"Left";
+        case UITextLayoutDirectionUp:
+            return @"Up";
+        case UITextLayoutDirectionDown:
+            return @"Down";
+    }
+    
+    return @"Unknown";
+}
+
+NSString *KBTStringFromUITextGranularity(UITextGranularity granularity)
+{
+    switch (granularity)
+    {
+        case UITextGranularityCharacter:
+            return @"Character";
+        case UITextGranularityWord:
+            return @"Word";
+        case UITextGranularitySentence:
+            return @"Sentence";
+        case UITextGranularityParagraph:
+            return @"Paragraph";
+        case UITextGranularityLine:
+            return @"Line";
+        case UITextGranularityDocument:
+            return @"Document";
+    }
+    
+    return @"Unknown";
+}

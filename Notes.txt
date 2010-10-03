@@ -1,0 +1,18 @@
+Notes
+-----
+
+Font traits are painful:
+    normal:                                  bold and italic disabled
+    normal + bold:                           bold enabled, italic disabled
+    normal + italic:                         italic enabled, bold disabled
+    normal + bold + italic:                  bold and italic enabled, exclusive bold/italic
+    normal + bold + italic + bold-italic:    bold and italic enabled
+    normal + bold-italic:                    bold-italic linked
+    normal + bold + bold-italic:             italic tied to bold
+    normal + italic + bold-italic:           bold tied to italic
+    bold:                                    bold disabled-selected, italic disabled
+    italic:                                  italic disabled-selected, bold disabled
+    bold + italic:                           bold and italic enabled, exclusive bold/italic, untoggleable
+    bold + bold-italic:                      bold disabled-selected, italic enabled
+    italic + bold-italic:                    italic disabled-selected, bold enabled
+    bold-italic:                             bold and italic disabled-selected

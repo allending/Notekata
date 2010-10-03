@@ -4,6 +4,8 @@
 
 #import "KobaUI.h"
 
+@class NKTFramesetter;
+
 //--------------------------------------------------------------------------------------------------
 // NKTTextSection renders a frame's worth of typesetted text. It is used internally by NKTTextView.
 //--------------------------------------------------------------------------------------------------
@@ -12,13 +14,10 @@
 {
 @private
     NSInteger index_;
-    
-    NSArray *typesettedLines_;
-    
+    NKTFramesetter *framesetter_;
     UIEdgeInsets margins_;
     CGFloat lineHeight_;
     NSUInteger numberOfSkirtLines_;
-    
     BOOL horizontalRulesEnabled_;
     UIColor *horizontalRuleColor_;
     CGFloat horizontalRuleOffset_;
@@ -30,13 +29,10 @@
 #pragma mark Configuring the Text Section
 
 @property (nonatomic) NSInteger index;
-
-@property (nonatomic, retain) NSArray *typesettedLines;
-
+@property (nonatomic, assign) NKTFramesetter *framesetter;
 @property (nonatomic) UIEdgeInsets margins;
 @property (nonatomic) CGFloat lineHeight;
 @property (nonatomic) NSUInteger numberOfSkirtLines;
-
 @property (nonatomic, getter = areHorizontalRulesEnabled) BOOL horizontalRulesEnabled;
 @property (nonatomic, retain) UIColor *horizontalRuleColor;
 @property (nonatomic) CGFloat horizontalRuleOffset;

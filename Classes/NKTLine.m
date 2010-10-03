@@ -9,25 +9,25 @@
 @implementation NKTLine
 
 @synthesize index = index_;
+@synthesize origin = origin_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine
+- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine origin:(CGPoint)origin
 {
     if ((self = [super init]))
     {
-        if (text == nil || ctLine == NULL)
+        index_ = index;
+        text = text;
+        
+        if (ctLine)
         {
-            KBCLogWarning(@"invalid initialization arguments, returning nil");
-            [self release];
-            return nil;
+            ctLine_ = (CTLineRef)CFRetain(ctLine);
         }
         
-        index_ = index;
-        text_ = [text retain];
-        ctLine_ = (CTLineRef)CFRetain(ctLine);
+        origin_ = origin;
     }
     
     return self;
@@ -35,9 +35,21 @@
 
 - (void)dealloc
 {
-    [text_ release];
-    CFRelease(ctLine_);
+    if (ctLine_)
+    {
+        CFRelease(ctLine_);
+    }
+    
     [super dealloc];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Accessing the Text
+
+- (NSString *)lineText
+{
+    return [[text_ string] substringWithRange:self.textRange.nsRange];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -47,18 +59,12 @@
 - (NKTTextRange *)textRange
 {
     CFRange range = CTLineGetStringRange(ctLine_);
-    return [NKTTextRange textRangeWithIndex:range.location length:range.length];
-}
-
-// TODO: verify
-- (NSString *)text
-{
-    return [[text_ string] substringWithRange:self.textRange.NSRange];
+    return [NKTTextRange textRangeWithNSRange:NSMakeRange(range.location, range.length)];
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Typographic Bounds
+#pragma mark Getting Line Geometry
 
 - (CGFloat)ascent
 {
@@ -87,7 +93,7 @@
 
 - (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
-    CGFloat offset = CTLineGetOffsetForStringIndex(ctLine_, (CFIndex)textPosition.index, NULL);
+    CGFloat offset = CTLineGetOffsetForStringIndex(ctLine_, (CFIndex)textPosition.location, NULL);
     return offset;
 }
 
@@ -104,37 +110,8 @@
         return textRange.start;
     }
     
-    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine_, point);
-    
-    // Adjust the character index if it is beyond the text range of the line
-    if (charIndex == textRange.end.index)
-    {
-        // Decrement unless the index is the last character and is not a line break
-        if (charIndex != [text_ length] || [[text_ string] hasSuffix:@"\n"])
-        {
-            --charIndex;
-        }
-    }
-    
-    return [NKTTextPosition textPositionWithIndex:charIndex];
-}
-
-- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
-{
-    NKTTextPosition *textPosition = [self closestTextPositionToPoint:point];
-    
-    if (textPosition.index < textRange.start.index)
-    {
-        return textRange.start;
-    }
-    else if (textPosition.index > textRange.end.index)
-    {
-        return textRange.end;
-    }
-    else
-    {
-        return textPosition;
-    }
+    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine_, point);    
+    return [NKTTextPosition textPositionWithLocation:charIndex];
 }
 
 //--------------------------------------------------------------------------------------------------
