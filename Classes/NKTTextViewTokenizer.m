@@ -684,7 +684,7 @@
                 position.location,
                 KBTStringFromUITextGranularity(granularity),
                 KBTStringFromUITextDirection(direction),
-                NSStringFromRange(((NKTTextRange *)result).nsRange));
+                NSStringFromRange(((NKTTextRange *)result).range));
     
     return result;
 }

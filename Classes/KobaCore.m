@@ -2,11 +2,9 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "KobaCore.h"
 
-#import "KBCGeometry.h"
-#import "KBCLogging.h"
-#import "KBCMath.h"
-
-CFRange CFRangeFromNSRange(NSRange range);
+CFRange CFRangeFromNSRange(NSRange range)
+{
+    return CFRangeMake((CFIndex)range.location, (CFIndex)range.length);
+}

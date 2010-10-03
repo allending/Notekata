@@ -762,13 +762,13 @@
     // inherited after insertion match the insertion attributes
     if ([inheritedAttributes isEqualToDictionary:inputTextAttributes])
     {
-        [text_ replaceCharactersInRange:replacementTextRange.nsRange withString:text];
+        [text_ replaceCharactersInRange:replacementTextRange.range withString:text];
     }
     else
     {
         NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text
                                                                                attributes:inputTextAttributes];
-        [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
+        [text_ replaceCharactersInRange:replacementTextRange.range withAttributedString:attributedString];
         [attributedString release];
     }
     
@@ -808,7 +808,7 @@
         deletionTextRange = [selectedTextRange_ textRangeByGrowingLeft];
     }
     
-    [text_ deleteCharactersInRange:deletionTextRange.nsRange];
+    [text_ deleteCharactersInRange:deletionTextRange.range];
     [self setNeedsFramesetting];
     
     // Notify delegate
@@ -832,16 +832,16 @@
 {
 //    KBCLogDebug(@"range: %@", NSStringFromRange(textRange.NSRange));
     
-    return [[text_ string] substringWithRange:textRange.nsRange];
+    return [[text_ string] substringWithRange:textRange.range];
 }
 
 // UITextInput method
 //
 - (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText
 {
-    KBCLogDebug(@"range: %@ text: %@", NSStringFromRange(textRange.nsRange), replacementText);
+    KBCLogDebug(@"range: %@ text: %@", NSStringFromRange(textRange.range), replacementText);
     
-    [text_ replaceCharactersInRange:textRange.nsRange withString:replacementText];
+    [text_ replaceCharactersInRange:textRange.range withString:replacementText];
     [self setNeedsFramesetting];
     
     // The text range to be replaced lies fully before the selected text range
@@ -1010,7 +1010,7 @@
     NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_
                                                                            attributes:inputTextAttributes];
-    [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
+    [text_ replaceCharactersInRange:replacementTextRange.range withAttributedString:attributedString];
     [attributedString release];
     
     [self setNeedsFramesetting];
@@ -1020,7 +1020,7 @@
     
     // Update the selected text range within the marked text
     NSUInteger newIndex = markedTextRange_.start.location + relativeSelectedRange.location;
-    NKTTextRange *newTextRange = [NKTTextRange textRangeWithNSRange:NSMakeRange(newIndex, relativeSelectedRange.length)];
+    NKTTextRange *newTextRange = [NKTTextRange textRangeWithRange:NSMakeRange(newIndex, relativeSelectedRange.length)];
     [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     
     // Input text attributes are reset when marked text is set
@@ -1203,7 +1203,7 @@
 //
 - (UITextPosition *)positionWithinRange:(NKTTextRange *)textRange farthestInDirection:(UITextLayoutDirection)direction
 {
-    KBCLogDebug(@"range: %@ direction: %d", textRange.nsRange, direction);
+    KBCLogDebug(@"range: %@ direction: %d", textRange.range, direction);
     
     NKTTextPosition *textPosition = nil;
     
@@ -1277,7 +1277,7 @@
 
 - (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"direction: %d range: %@", writingDirection, NSStringFromRange(textRange.nsRange));
+    KBCLogDebug(@"direction: %d range: %@", writingDirection, NSStringFromRange(textRange.range));
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1359,7 +1359,7 @@
 //
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"******* point: %@ range: %@ *******", NSStringFromCGPoint(point), NSStringFromRange(textRange.nsRange));
+    KBCLogDebug(@"******* point: %@ range: %@ *******", NSStringFromCGPoint(point), NSStringFromRange(textRange.range));
     return nil;
 }
 
@@ -1422,7 +1422,7 @@
         NSRange longestEffectiveRange;
         NSDictionary *attributes = [text_ attributesAtIndex:index
                                       longestEffectiveRange:&longestEffectiveRange
-                                                    inRange:selectedTextRange_.nsRange];
+                                                    inRange:selectedTextRange_.range];
         NSDictionary *newAttributes = [target performSelector:selector withObject:attributes];
         
         if (newAttributes != attributes)

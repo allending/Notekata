@@ -8,57 +8,70 @@
 @class NKTTextRange;
 @class NKTTextPosition;
 
-//--------------------------------------------------------------------------------------------------
-// NKTLine represents a typesetted line that renders a range of text.
-//--------------------------------------------------------------------------------------------------
+@protocol NKTLineDelegate;
 
+// NKTLine represents a typesetted line that renders a range of text.
+//
 @interface NKTLine : NSObject
 {
 @private
+    id <NKTLineDelegate> delegate_;
     NSUInteger index_;
-    NSAttributedString *text_;
-    CTLineRef ctLine_;
+    NSRange range_;
     CGPoint origin_;
+    CTLineRef line_;
 }
 
 #pragma mark Initializing
 
-// Initializes the NKTLine with the given Core Text line. If the Core Text line is NULL, the text
-// range for the line will be the empty range at the end of the text.
-- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine origin:(CGPoint)origin;
+- (id)initWithDelegate:(id <NKTLineDelegate>)delegate
+                 index:(NSUInteger)index
+                 range:(NSRange)range
+                origin:(CGPoint)origin;
 
 #pragma mark Accessing the Index
 
 @property (nonatomic, readonly) NSUInteger index;
 
-#pragma mark Accessing the Text
+#pragma mark Accessing the Text Range
 
-@property (nonatomic, readonly) NSString *lineText;
-
-#pragma mark Getting Text Ranges
-
+@property (nonatomic, readonly) NSRange range;
 @property (nonatomic, readonly) NKTTextRange *textRange;
 
-#pragma mark Getting Line Geometry
+#pragma mark Accessing the Origin
 
 @property (nonatomic, readonly) CGPoint origin;
+
+#pragma mark Getting Line Typographic Information
+
 @property (nonatomic, readonly) CGFloat ascent;
 @property (nonatomic, readonly) CGFloat descent;
 @property (nonatomic, readonly) CGFloat leading;
 
-#pragma mark Getting Offsets
+#pragma mark Getting Character Offsets
 
-- (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition;
+- (CGFloat)offsetForTextPosition:(NKTTextPosition *)textPosition;
 
-#pragma mark Hit Testing
+#pragma mark Hit-Testing
 
-// If the last character on the line is a line break, the text position returned will no more than
-// the last string index. Insertions can be made using the returned text position can be used to
-// insert text on the same line before the line break.
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
 #pragma mark Drawing
 
 - (void)drawInContext:(CGContextRef)context;
+
+@end
+
+#pragma mark -
+
+//--------------------------------------------------------------------------------------------------
+
+// NKTLineDelegate
+//
+@protocol NKTLineDelegate
+
+#pragma mark Getting the Typesetter
+
+@property (nonatomic, readonly) CTTypesetterRef typesetter;
 
 @end

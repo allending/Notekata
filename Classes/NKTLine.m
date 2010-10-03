@@ -6,27 +6,38 @@
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
 
+@interface NKTLine()
+
+#pragma mark Accessing the Typeset Line
+
+@property (nonatomic, readonly) CTLineRef line;
+
+@end
+
+#pragma mark -
+
+//--------------------------------------------------------------------------------------------------
+
 @implementation NKTLine
 
 @synthesize index = index_;
+@synthesize range = range_;
 @synthesize origin = origin_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
-- (id)initWithIndex:(NSUInteger)index text:(NSAttributedString *)text ctLine:(CTLineRef)ctLine origin:(CGPoint)origin
+- (id)initWithDelegate:(id <NKTLineDelegate>)delegate
+                 index:(NSUInteger)index
+                 range:(NSRange)range
+                origin:(CGPoint)origin
 {
     if ((self = [super init]))
     {
+        delegate_ = delegate;
         index_ = index;
-        text = text;
-        
-        if (ctLine)
-        {
-            ctLine_ = (CTLineRef)CFRetain(ctLine);
-        }
-        
+        range_ = range;
         origin_ = origin;
     }
     
@@ -35,9 +46,9 @@
 
 - (void)dealloc
 {
-    if (ctLine_)
+    if (line_ != NULL)
     {
-        CFRelease(ctLine_);
+        CFRelease(line_);
     }
     
     [super dealloc];
@@ -45,72 +56,75 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Accessing the Text
+#pragma mark Accessing the Typeset Line
 
-- (NSString *)lineText
+- (CTLineRef)line
 {
-    return [[text_ string] substringWithRange:self.textRange.nsRange];
+    if (line_ == NULL && (range_.length != 0))
+    {
+        CTTypesetterRef typesetter = [delegate_ typesetter];
+        line_ = CTTypesetterCreateLine(typesetter, CFRangeFromNSRange(range_));
+    }
+    
+    return line_;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Text Ranges
+#pragma mark Accessing the Text Range
 
 - (NKTTextRange *)textRange
 {
-    CFRange range = CTLineGetStringRange(ctLine_);
-    return [NKTTextRange textRangeWithNSRange:NSMakeRange(range.location, range.length)];
+    return [NKTTextRange textRangeWithRange:range_];
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Line Geometry
+#pragma mark Getting Line Typographic Information
 
 - (CGFloat)ascent
 {
-    CGFloat ascent;
-    CTLineGetTypographicBounds(ctLine_, &ascent, NULL, NULL);
+    CGFloat ascent = 0.0;
+    CTLineGetTypographicBounds(self.line, &ascent, NULL, NULL);
     return ascent;
 }
 
 - (CGFloat)descent
 {
-    CGFloat descent;
-    CTLineGetTypographicBounds(ctLine_, NULL, &descent, NULL);
+    CGFloat descent = 0.0;
+    CTLineGetTypographicBounds(self.line, NULL, &descent, NULL);
     return descent;
 }
 
 - (CGFloat)leading
 {
-    CGFloat leading;
-    CTLineGetTypographicBounds(ctLine_, NULL, NULL, &leading);
+    CGFloat leading = 0.0;
+    CTLineGetTypographicBounds(self.line, NULL, NULL, &leading);
     return leading;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Offsets
+#pragma mark Getting Character Offsets
 
-- (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
+- (CGFloat)offsetForTextPosition:(NKTTextPosition *)textPosition
 {
-    CGFloat offset = CTLineGetOffsetForStringIndex(ctLine_, (CFIndex)textPosition.location, NULL);
+    CGFloat offset = CTLineGetOffsetForStringIndex(self.line, (CFIndex)textPosition.location, NULL);
     return offset;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Hit Testing
+#pragma mark Hit-Testing
 
 - (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point
 {
-    NKTTextRange *textRange = self.textRange;
-    
-    if (textRange.empty)
+    if (range_.length == 0)
     {
-        return textRange.start;
+        return [NKTTextPosition textPositionWithLocation:range_.location];
     }
     
-    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(ctLine_, point);    
+    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(self.line, point);
     return [NKTTextPosition textPositionWithLocation:charIndex];
 }
 
@@ -120,7 +134,7 @@
 
 - (void)drawInContext:(CGContextRef)context
 {
-    CTLineDraw(ctLine_, context);
+    CTLineDraw(self.line, context);
 }
 
 @end

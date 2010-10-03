@@ -76,18 +76,18 @@
 
 - (NKTTextRange *)textRange
 {
-    return [NKTTextRange textRangeWithNSRange:NSMakeRange(location_, 0)];
+    return [NKTTextRange textRangeWithRange:NSMakeRange(location_, 0)];
 }
 
 - (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition
 {
     if (location_ < textPosition.location)
     {
-        return [NKTTextRange textRangeWithNSRange:NSMakeRange(location_, textPosition.location - location_)];
+        return [NKTTextRange textRangeWithRange:NSMakeRange(location_, textPosition.location - location_)];
     }
     else
     {
-        return [NKTTextRange textRangeWithNSRange:NSMakeRange(textPosition.location,
+        return [NKTTextRange textRangeWithRange:NSMakeRange(textPosition.location,
                                                               location_ - textPosition.location)];
     }
 }

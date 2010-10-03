@@ -14,18 +14,18 @@
 @interface NKTTextRange : UITextRange
 {
 @private
-    NSRange nsRange_;
+    NSRange range_;
 }
 
 #pragma mark Initializing
 
-- (id)initWithNSRange:(NSRange)nsRange;
+- (id)initWithRange:(NSRange)range;
 
-+ (id)textRangeWithNSRange:(NSRange)nsRange;
++ (id)textRangeWithRange:(NSRange)range;
 
 #pragma mark Accessing the Range
 
-@property (nonatomic, readonly) NSRange nsRange;
+@property (nonatomic, readonly) NSRange range;
 @property (nonatomic, readonly) NSUInteger location;
 @property (nonatomic, readonly) NSUInteger length;
 

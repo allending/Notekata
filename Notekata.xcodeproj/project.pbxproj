@@ -27,6 +27,7 @@
 		9F65A42D1249A37F0006BD17 /* NKTFontPickerViewTableViewBottomCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F65A42C1249A37F0006BD17 /* NKTFontPickerViewTableViewBottomCap.png */; };
 		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
 		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
+		9F6E4E4E1258E342005721FB /* KobaCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6E4E4D1258E342005721FB /* KobaCore.m */; };
 		9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */; };
 		9F7D2BA412585738006D23DD /* NKTFramesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F7D2BA312585738006D23DD /* NKTFramesetter.m */; };
 		9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA540FB122A56A30005323E /* NKTLoupe.m */; };
@@ -97,6 +98,7 @@
 		9F6711CA122B9F4D00B0811B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9F6CB33B122E99DA00D914B4 /* NKTSelectionDisplayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTSelectionDisplayController.h; sourceTree = "<group>"; };
 		9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTSelectionDisplayController.m; sourceTree = "<group>"; };
+		9F6E4E4D1258E342005721FB /* KobaCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KobaCore.m; sourceTree = "<group>"; };
 		9F70F9BE12545C0200F3025B /* NKTTextViewTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewTokenizer.h; sourceTree = "<group>"; };
 		9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewTokenizer.m; sourceTree = "<group>"; };
 		9F7D2BA212585738006D23DD /* NKTFramesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFramesetter.h; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 				9FC347661238EEEC001AFF98 /* KBCMath.h */,
 				9FC347671238EEEC001AFF98 /* KBCMath.m */,
 				9F67110D122B901E00B0811B /* KobaCore.h */,
+				9F6E4E4D1258E342005721FB /* KobaCore.m */,
 			);
 			name = KobaCore;
 			sourceTree = "<group>";
@@ -462,6 +465,7 @@
 				9FF42BE0124A7017009B9691 /* KUISegmentedControl.m in Sources */,
 				9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */,
 				9F7D2BA412585738006D23DD /* NKTFramesetter.m in Sources */,
+				9F6E4E4E1258E342005721FB /* KobaCore.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

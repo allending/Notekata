@@ -3,13 +3,22 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "KobaUI.h"
+#import "KobaText.h"
+#import "NKTLine.h"
 
-@interface NKTFramesetter : NSObject
+@class NKTTextPosition;
+@class NKTTextRange;
+
+// NKTFramesetter
+//
+@interface NKTFramesetter : NSObject <NKTLineDelegate>
 {
 @private
     NSAttributedString *text_;
     CGFloat lineWidth_;
     CGFloat lineHeight_;
+    CTTypesetterRef typesetter_;
+    NSMutableArray *lines_;
 }
 
 #pragma mark Initializing
@@ -20,7 +29,11 @@
 
 @property (nonatomic, readonly) CGSize frameSize;
 
-#pragma mark Getting Lines
+#pragma mark Notifying the Framesetter of Changes
+
+- (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark Managing Lines
 
 @property (nonatomic, readonly) NSUInteger numberOfLines;
 
