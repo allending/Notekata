@@ -148,6 +148,9 @@
         lineOrigin.y -= lineHeight_;
     }
     
+    // TODO: guarantee at least one typeset line .. sentinel is pointless if it isn't always
+    // there
+    //
     // Add a sentinel line if the text ends with a line break or if the text is empty
     if ([[text_ string] isLastCharacterNewline] || [text_ length] == 0)
     {
@@ -183,6 +186,16 @@
     return [self.lines objectAtIndex:lineIndex];
 }
 
+- (NKTLine *)firstLine
+{
+    return [self.lines objectAtIndex:0];
+}
+
+- (NKTLine *)lastLine
+{
+    return [self.lines objectAtIndex:self.numberOfLines - 1];
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Converting Coordinates
@@ -212,9 +225,9 @@
     return [self.lines objectAtIndex:lineIndex];
 }
 
-//*********************************************
-// TODO: refine semantics of method - use affinity param?
-//*********************************************
+// TODO: potential affinity semantic
+//
+// need to have a semantic that means 'line that text position appears on, possibly with affinity option'
 - (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition
 {
     for (NKTLine *line in self.lines)
@@ -255,6 +268,7 @@
     return [line closestTextPositionToPoint:linePoint];
 }
 
+// TODO: potential affinity semantic
 - (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
     NKTLine *line = [self lineContainingTextPosition:textPosition];
@@ -262,6 +276,7 @@
     return CGPointMake(line.origin.x + charOffset, line.origin.y);
 }
 
+// TODO: potential affinity semantic
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
 {
     NKTLine *firstLine = [self lineContainingTextPosition:textRange.start];
@@ -293,20 +308,62 @@
     }
 }
 
+- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point
+                                   lineContainingPoint:(NKTLine **)lineContainingPoint
+{
+    NSInteger lineIndex = (NSInteger)floor(point.y / lineHeight_);
+    
+    if (lineIndex < 0)
+    {
+        if (lineContainingPoint != NULL)
+        {
+            *lineContainingPoint = [self firstLine];
+        }
+        
+        return [NKTTextPosition textPositionWithLocation:0];
+    }
+    else if (lineIndex > self.numberOfLines)
+    {
+        if (lineContainingPoint != NULL)
+        {
+            *lineContainingPoint = [self lastLine];
+        }
+        
+        return [NKTTextPosition textPositionWithLocation:[text_ length] - 1];
+    }
+    else
+    {
+        NKTLine *line = [self.lines objectAtIndex:lineIndex];
+        
+        if (lineContainingPoint != NULL)
+        {
+            *lineContainingPoint = line;
+        }
+        
+        return [line closestTextPositionToPoint:point];
+    }
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Drawing
 
+// Draws the given range of lines. The framesetter expects the CTM to be set up with the
+// framesetter's space when this method is called.
+//
 - (void)drawLinesInRange:(NSRange)range inContext:(CGContextRef)context
-{    
-    CGFloat baselineOffset = -lineHeight_ * (CGFloat)range.location;
+{
+    // The framesetter's origin is at the top left of the text frame it manages. The first line's
+    // baseline is one line height below the top of this text frame.
+    
+    CGFloat currentBaseline = -lineHeight_ * (CGFloat)(range.location + 1);
     
     for (NSUInteger lineIndex = range.location; lineIndex < NSMaxRange(range); ++lineIndex)
     {
-        CGContextSetTextPosition(context, 0.0, baselineOffset);
+        CGContextSetTextPosition(context, 0.0, currentBaseline);
         NKTLine *line = [self.lines objectAtIndex:lineIndex];
         [line drawInContext:context];
-        baselineOffset -= lineHeight_;
+        currentBaseline -= lineHeight_;
     }
 }
 

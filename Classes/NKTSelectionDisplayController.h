@@ -6,6 +6,9 @@
 
 @class NKTCaret;
 @class NKTHighlightRegion;
+@class NKTLine;
+@class NKTTextPosition;
+@class NKTTextRange;
 
 @protocol NKTSelectionDisplayControllerDelegate;
 
@@ -20,7 +23,6 @@
 {
 @private
     id <NKTSelectionDisplayControllerDelegate> delegate_;
-
     BOOL caretVisible_;
     BOOL selectedTextRegionVisible_;
     BOOL markedTextRegionVisible_;
@@ -41,7 +43,9 @@
 
 #pragma mark Updating Selection Elements
 
-- (void)updateSelectionElements;
+- (void)setSelectedTextRange:(NKTTextRange *)textRange onLine:(NKTLine *)line;
+- (void)setInterimTouchTextRange:(NKTTextRange *)textRange onLine:(NKTLine *)line;
+- (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
 
 @end
 
@@ -53,15 +57,8 @@
 
 @protocol NKTSelectionDisplayControllerDelegate
 
-#pragma mark Working with Marked and Selected Text
-
-- (UITextRange *)selectedTextRange;
-- (UITextRange *)markedTextRange;
-- (UITextRange *)provisionalTextRange;
-
 #pragma mark Geometry and Hit-Testing
 
-- (CGRect)inputCaretRect;
 - (CGRect)caretRectForPosition:(UITextPosition *)textPosition;
 - (NSArray *)rectsForTextRange:(UITextRange *)textRange;
 

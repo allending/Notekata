@@ -108,13 +108,18 @@
 #pragma mark Drawing
 
 - (void)drawRect:(CGRect)rect
-{    
+{
+    KBCLogDebug(@"%@ rect:%@", self, NSStringFromCGRect(rect));
+    
     CGContextRef context = UIGraphicsGetCurrentContext();
     [self drawHorizontalRulesInContext:context];
     [self drawVerticalMarginInContext:context];
     [self drawTypesettedLinesInContext:context];
 }
 
+// TODO: this should not assume where the first baseline is. Instead it should get it from the
+// framesetter.
+//
 - (void)drawHorizontalRulesInContext:(CGContextRef)context
 {
     // Horizontal rules are not drawn above the first typesetted line
@@ -176,13 +181,13 @@
         return;
     }
     
-    // Typesetted lines expect y axis to grow upwards when drawing
-    CGContextSaveGState(context);
+    // Apply inverse transform to bring CTM back into framesetter space
+    CGContextTranslateCTM(context, 0.0, -[self verticalOffset]);
+    // Framesetter requires an inverted space
     CGContextScaleCTM(context, 1.0, -1.0);
-    // Set up transform to be the virtual text space
-    CGContextTranslateCTM(context, margins_.left, [self verticalOffset]);
+    // Take margins into account
+    CGContextTranslateCTM(context, margins_.left, -margins_.top);
     [self.framesetter drawLinesInRange:lineRange inContext:context];
-    CGContextRestoreGState(context);
 }
 
 // Computes the range for lines that should be drawn in this text section based on the current
@@ -219,6 +224,15 @@
     numberOfLines += (2 * numberOfSkirtLines_);
     numberOfLines = MIN(numberOfLines, framesetter_.numberOfLines - firstLineIndex);
     return NSMakeRange(firstLineIndex, numberOfLines);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Debugging
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"text section %d frame:%@", index_, NSStringFromCGRect(self.frame)];
 }
 
 @end

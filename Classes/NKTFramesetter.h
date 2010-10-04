@@ -38,6 +38,8 @@
 @property (nonatomic, readonly) NSUInteger numberOfLines;
 
 - (NKTLine *)lineAtIndex:(NSUInteger)lineIndex;
+- (NKTLine *)firstLine;
+- (NKTLine *)lastLine;
 
 #pragma mark Converting Coordinates
 
@@ -51,6 +53,14 @@
 - (NKTTextPosition *)textPositionGeometricallyClosestToPoint:(CGPoint)point;
 - (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition;
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange;
+
+// 
+- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point
+                                   lineContainingPoint:(NKTLine **)lineContainingPoint;
+
+// 
+- (NKTTextPosition *)closestGeometricTextPositionToPoint:(CGPoint)point
+                                     lineContainingPoint:(NKTLine **)lineContainingPoint;
 
 #pragma mark Drawing
 

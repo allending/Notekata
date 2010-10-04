@@ -68,6 +68,7 @@
     {
         CTTypesetterRef typesetter = [delegate_ typesetter];
         line_ = CTTypesetterCreateLine(typesetter, CFRangeFromNSRange(range_));
+        KBCLogDebug(@"%@ typeset", self);
     }
     
     return line_;
