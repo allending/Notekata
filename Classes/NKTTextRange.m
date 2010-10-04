@@ -84,6 +84,11 @@
     return NSLocationInRange(textPosition.location, range_);
 }
 
+- (BOOL)containsOrIsEqualToTextPosition:(NKTTextPosition *)textPosition
+{
+    return [self containsTextPosition:textPosition] || [self isEqualToTextPosition:textPosition];
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Creating Text Ranges
@@ -195,7 +200,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Describing
+#pragma mark Debugging
 
 - (NSString *)description
 {

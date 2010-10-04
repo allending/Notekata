@@ -32,6 +32,8 @@
                  index:(NSUInteger)index
                  range:(NSRange)range
                 origin:(CGPoint)origin
+                 width:(CGFloat)width
+                height:(CGFloat)height
 {
     if ((self = [super init]))
     {
@@ -39,6 +41,8 @@
         index_ = index;
         range_ = range;
         origin_ = origin;
+        width_ = width;
+        height_ = height;
     }
     
     return self;
@@ -80,6 +84,42 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark Line Geometry
+
+- (CGRect)rect
+{
+    return CGRectMake(origin_.x, origin_.y, width_, height_);
+}
+
+- (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition
+{
+    CGRect rect = self.rect;
+    CGFloat fromCharOffset = [self offsetForCharAtTextPosition:fromTextPosition];
+    CGFloat toCharOffset = [self offsetForCharAtTextPosition:toTextPosition];
+    rect.origin.x += fromCharOffset;
+    rect.size.width -= (fromCharOffset + toCharOffset);
+    return rect;
+}
+
+- (CGRect)rectFromTextPosition:(NKTTextPosition *)textPosition
+{
+    CGRect rect = self.rect;
+    CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
+    rect.origin.x += charOffset;
+    rect.size.width -= charOffset;
+    return rect;
+}
+
+- (CGRect)rectToTextPosition:(NKTTextPosition *)textPosition
+{
+    CGRect rect = self.rect;
+    CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
+    rect.size.width -= charOffset;
+    return rect;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Getting Line Typographic Information
 
 - (CGFloat)ascent
@@ -107,10 +147,21 @@
 
 #pragma mark Getting Character Offsets
 
-- (CGFloat)offsetForTextPosition:(NKTTextPosition *)textPosition
+- (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
-    CGFloat offset = CTLineGetOffsetForStringIndex(self.line, (CFIndex)textPosition.location, NULL);
-    return offset;
+    if (![self.textRange containsOrIsEqualToTextPosition:textPosition])
+    {
+        KBCLogWarning(@"text position %@ is not located on %@, returning 0.0", textPosition, self);
+        return 0.0;
+    }
+    
+    if (range_.length == 0)
+    {
+        return 0.0;
+    }
+    
+    CGFloat charOffset = CTLineGetOffsetForStringIndex(self.line, (CFIndex)textPosition.location, NULL);
+    return charOffset;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -135,6 +186,15 @@
 - (void)drawInContext:(CGContextRef)context
 {
     CTLineDraw(self.line, context);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Debugging
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"line %d %@", index_, NSStringFromRange(range_)];
 }
 
 @end

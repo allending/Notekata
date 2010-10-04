@@ -19,6 +19,8 @@
     NSUInteger index_;
     NSRange range_;
     CGPoint origin_;
+    CGFloat width_;
+    CGFloat height_;
     CTLineRef line_;
 }
 
@@ -27,7 +29,9 @@
 - (id)initWithDelegate:(id <NKTLineDelegate>)delegate
                  index:(NSUInteger)index
                  range:(NSRange)range
-                origin:(CGPoint)origin;
+                origin:(CGPoint)origin
+                 width:(CGFloat)width
+                height:(CGFloat)height;
 
 #pragma mark Accessing the Index
 
@@ -38,9 +42,14 @@
 @property (nonatomic, readonly) NSRange range;
 @property (nonatomic, readonly) NKTTextRange *textRange;
 
-#pragma mark Accessing the Origin
+#pragma mark Line Geometry
 
 @property (nonatomic, readonly) CGPoint origin;
+@property (nonatomic, readonly) CGRect rect;
+
+- (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition;
+- (CGRect)rectFromTextPosition:(NKTTextPosition *)textPosition;
+- (CGRect)rectToTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Getting Line Typographic Information
 
@@ -50,7 +59,7 @@
 
 #pragma mark Getting Character Offsets
 
-- (CGFloat)offsetForTextPosition:(NKTTextPosition *)textPosition;
+- (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Hit-Testing
 

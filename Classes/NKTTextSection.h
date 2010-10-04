@@ -29,7 +29,7 @@
 #pragma mark Configuring the Text Section
 
 @property (nonatomic) NSInteger index;
-@property (nonatomic, assign) NKTFramesetter *framesetter;
+@property (nonatomic, retain) NKTFramesetter *framesetter;
 @property (nonatomic) UIEdgeInsets margins;
 @property (nonatomic) CGFloat lineHeight;
 @property (nonatomic) NSUInteger numberOfSkirtLines;

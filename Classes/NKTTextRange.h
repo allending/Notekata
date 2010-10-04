@@ -32,6 +32,7 @@
 #pragma mark Checking for Text Position Containment
 
 - (BOOL)containsTextPosition:(NKTTextPosition *)textPosition;
+- (BOOL)containsOrIsEqualToTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Comparing Text Ranges
 

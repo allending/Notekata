@@ -36,7 +36,8 @@
 @property (nonatomic, readonly) CGFloat lineWidth;
 @property (nonatomic, readonly) NKTFramesetter *framesetter;
 
-- (void)setNeedsFramesetting;
+- (void)invalidateFramesetter;
+- (void)regenerateContents;
 
 #pragma mark Responding to Gestures
 
@@ -214,7 +215,7 @@
     }
     
     [super setFrame:frame];
-    [self setNeedsFramesetting];
+    [self regenerateContents];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -236,7 +237,7 @@
     [text retain];
     [text_ release];
     text_ = text;
-    [self setNeedsFramesetting];
+    [self regenerateContents];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -251,7 +252,7 @@
     }
     
     margins_ = margins;
-    [self setNeedsFramesetting];
+    [self regenerateContents];
 }
 
 - (void)setLineHeight:(CGFloat)lineHeight 
@@ -428,7 +429,7 @@
 {
     section.frame = [self frameForSectionAtIndex:index];
     section.index = index;
-    section.framesetter = framesetter_;
+    section.framesetter = self.framesetter;
     section.margins = margins_;
     section.lineHeight = lineHeight_;
     section.horizontalRulesEnabled = horizontalRulesEnabled_;
@@ -457,19 +458,25 @@
     return self.bounds.size.width - margins_.left - margins_.right;
 }
 
-- (void)setNeedsFramesetting
+- (void)invalidateFramesetter
 {
     [framesetter_ release];
     framesetter_ = nil;
-    [selectionDisplayController_ updateSelectionElements];
-    [self setNeedsDisplay];
+}
+
+- (void)regenerateContents
+{
+    [self invalidateFramesetter];
+    [self untileVisibleSections];
+    [self tileSections];
+    [self updateContentSize];
 }
 
 - (NKTFramesetter *)framesetter
 {
     if (framesetter_ == nil)
     {
-        framesetter_ = [[NKTFramesetter alloc] initWithText:text_ lineWidth:[self lineWidth]];
+        framesetter_ = [[NKTFramesetter alloc] initWithText:text_ lineWidth:[self lineWidth] lineHeight:lineHeight_];
     }
     
     return framesetter_;    
@@ -772,7 +779,7 @@
         [attributedString release];
     }
     
-    [self setNeedsFramesetting];
+    [self regenerateContents];
     
     // Notify delegate
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
@@ -809,7 +816,7 @@
     }
     
     [text_ deleteCharactersInRange:deletionTextRange.range];
-    [self setNeedsFramesetting];
+    [self regenerateContents];
     
     // Notify delegate
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
@@ -842,7 +849,7 @@
     KBCLogDebug(@"range: %@ text: %@", NSStringFromRange(textRange.range), replacementText);
     
     [text_ replaceCharactersInRange:textRange.range withString:replacementText];
-    [self setNeedsFramesetting];
+    [self regenerateContents];
     
     // The text range to be replaced lies fully before the selected text range
     if (textRange.end.location <= selectedTextRange_.start.location)
@@ -1013,7 +1020,7 @@
     [text_ replaceCharactersInRange:replacementTextRange.range withAttributedString:attributedString];
     [attributedString release];
     
-    [self setNeedsFramesetting];
+    [self regenerateContents];
     
     NKTTextRange *textRange = [replacementTextRange textRangeByChangingLength:[markedText_ length]];
     self.markedTextRange = textRange;
@@ -1433,7 +1440,7 @@
         index = longestEffectiveRange.location + longestEffectiveRange.length;
     }
     
-    [self setNeedsFramesetting];
+    [self regenerateContents];
 }
 
 //--------------------------------------------------------------------------------------------------

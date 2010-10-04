@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#define KBC_LOGGING_STRIP_DEBUG 0
+#define KBC_LOGGING_STRIP_DEBUG 1
 
 #import "NKTTextViewTokenizer.h"
 #import "KobaText.h"

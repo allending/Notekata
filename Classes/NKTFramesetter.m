@@ -4,6 +4,8 @@
 
 #import "NKTFramesetter.h"
 #import "NKTLine.h"
+#import "NKTTextPosition.h"
+#import "NKTTextRange.h"
 
 @interface NKTFramesetter()
 
@@ -16,10 +18,6 @@
 @property (nonatomic, readonly) NSArray *lines;
 
 - (void)typesetLinesFromIndex:(NSUInteger)lineIndex;
-
-#pragma mark Hit-Testing and Geometry
-
-- (CGPoint)originForLineAtIndex:(NSUInteger)lineIndex;
 
 @end
 
@@ -136,12 +134,13 @@
     // Typeset until end of text
     while (currentLocation < [text_ length])
     {
-        CFIndex lineLength = CTTypesetterSuggestLineBreak(self.typesetter, currentLocation, lineWidth_);
+        NSUInteger lineLength = (NSUInteger)CTTypesetterSuggestLineBreak(self.typesetter, currentLocation, lineWidth_);
         NKTLine *line = [[NKTLine alloc] initWithDelegate:self
                                                     index:currentLineIndex
-                                                    range:NSMakeRange((NSUInteger)currentLocation,
-                                                                      (NSUInteger)lineLength)
-                                                   origin:lineOrigin];
+                                                    range:NSMakeRange(currentLocation, lineLength)
+                                                   origin:lineOrigin
+                                                    width:lineWidth_
+                                                   height:lineHeight_];
         [lines_ addObject:line];
         [line release];
         ++currentLineIndex;
@@ -150,14 +149,16 @@
     }
     
     // Add a sentinel line if the text ends with a line break or if the text is empty
-    if ([[text_ string] isLastCharacterLineBreak] || [text_ length] == 0)
+    if ([[text_ string] isLastCharacterNewline] || [text_ length] == 0)
     {
-        NKTLine *sentinelLine = [[NKTLine alloc] initWithDelegate:self
-                                                            index:[lines_ count]
-                                                            range:NSMakeRange([text_ length], 0)
-                                                           origin:lineOrigin];
-        [lines_ addObject:sentinelLine];
-        [sentinelLine release];
+        NKTLine *sentinel = [[NKTLine alloc] initWithDelegate:self
+                                                        index:[lines_ count]
+                                                        range:NSMakeRange([text_ length], 0)
+                                                       origin:lineOrigin
+                                                        width:lineWidth_
+                                                       height:lineHeight_];
+        [lines_ addObject:sentinel];
+        [sentinel release];
     }
 }
 
@@ -179,16 +180,134 @@
 
 - (NKTLine *)lineAtIndex:(NSUInteger)lineIndex
 {
-    return [lines_ objectAtIndex:lineIndex];
+    return [self.lines objectAtIndex:lineIndex];
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Converting Coordinates
+
+- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line
+{
+    return CGPointMake(point.x - line.origin.x, point.y - line.origin.y);
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Hit-Testing and Geometry
 
-- (CGPoint)originForLineAtIndex:(NSUInteger)lineIndex
+- (NKTLine *)lineClosestToPoint:(CGPoint)point
 {
-    return CGPointMake(0.0, lineHeight_ * (CGFloat)lineIndex);
+    NSInteger lineIndex = (NSInteger)floor(point.y / lineHeight_);
+    
+    if (lineIndex < 0)
+    {
+        lineIndex = 0;
+    }
+    else if (lineIndex > self.numberOfLines)
+    {
+        lineIndex = self.numberOfLines - 1;
+    }
+    
+    return [self.lines objectAtIndex:lineIndex];
+}
+
+//*********************************************
+// TODO: refine semantics of method - use affinity param?
+//*********************************************
+- (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition
+{
+    for (NKTLine *line in self.lines)
+    {
+        if ([line.textRange containsTextPosition:textPosition] ||
+            [line.textRange isEqualToTextPosition:textPosition])
+        {
+            return line;
+        }
+    }
+    
+    KBCLogWarning(@"could not find line containing text position %@, returning nil", textPosition);
+    return nil;
+}
+
+- (NKTTextPosition *)textPositionLogicallyClosestToPoint:(CGPoint)point
+{
+    NSInteger lineIndex = (NSInteger)floor(point.y / lineHeight_);
+    
+    if (lineIndex < 0)
+    {
+        return [NKTTextPosition textPositionWithLocation:0];
+    }
+    else if (lineIndex > self.numberOfLines)
+    {
+        return [NKTTextPosition textPositionWithLocation:[text_ length] - 1];
+    }
+
+    NKTLine *line = [self.lines objectAtIndex:lineIndex];
+    CGPoint linePoint = [self convertPoint:point toLine:line];
+    return [line closestTextPositionToPoint:linePoint];
+}
+
+- (NKTTextPosition *)textPositionGeometricallyClosestToPoint:(CGPoint)point
+{
+    NKTLine *line = [self lineClosestToPoint:point];
+    CGPoint linePoint = [self convertPoint:point toLine:line];
+    return [line closestTextPositionToPoint:linePoint];
+}
+
+- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition
+{
+    NKTLine *line = [self lineContainingTextPosition:textPosition];
+    CGFloat charOffset = [line offsetForCharAtTextPosition:textPosition];
+    return CGPointMake(line.origin.x + charOffset, line.origin.y);
+}
+
+- (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
+{
+    NKTLine *firstLine = [self lineContainingTextPosition:textRange.start];
+    NKTLine *lastLine = [self lineContainingTextPosition:textRange.end];
+    
+    // Single rect
+    if (firstLine == lastLine)
+    {
+        CGRect lineRect = [firstLine rectFromTextPosition:textRange.start toTextPosition:textRange.end];
+        return [NSArray arrayWithObject:[NSValue valueWithCGRect:lineRect]];
+    }
+    // Dealing with multiple lines
+    else
+    {
+        NSMutableArray *rects = [NSMutableArray arrayWithCapacity:lastLine.index - firstLine.index];
+        CGRect firstLineRect = [firstLine rectFromTextPosition:textRange.start];
+        [rects addObject:[NSValue valueWithCGRect:firstLineRect]];
+        
+        for (NSUInteger lineIndex = firstLine.index; lineIndex < lastLine.index; ++lineIndex)
+        {
+            NKTLine *line = [self.lines objectAtIndex:lineIndex];
+            CGRect lineRect = [line rect];
+            [rects addObject:[NSValue valueWithCGRect:lineRect]];
+        }
+        
+        CGRect lastLineRect = [lastLine rectToTextPosition:textRange.end];
+        [rects addObject:[NSValue valueWithCGRect:lastLineRect]];
+        return rects;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+#pragma mark Drawing
+
+- (void)drawLinesInRange:(NSRange)range inContext:(CGContextRef)context
+{    
+    CGFloat baselineOffset = -lineHeight_ * (CGFloat)range.location;
+    
+    for (NSUInteger lineIndex = range.location; lineIndex < NSMaxRange(range); ++lineIndex)
+    {
+        CGContextSetTextPosition(context, 0.0, baselineOffset);
+        NKTLine *line = [self.lines objectAtIndex:lineIndex];
+        [line drawInContext:context];
+        baselineOffset -= lineHeight_;
+    }
 }
 
 @end

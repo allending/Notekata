@@ -52,4 +52,8 @@
 - (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition;
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange;
 
+#pragma mark Drawing
+
+- (void)drawLinesInRange:(NSRange)range inContext:(CGContextRef)context;
+
 @end

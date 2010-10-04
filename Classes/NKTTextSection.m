@@ -65,6 +65,7 @@
 
 - (void)dealloc
 {
+    [framesetter_ release];
     [horizontalRuleColor_ release];
     [verticalMarginColor_ release];
     [super dealloc];
@@ -180,18 +181,7 @@
     CGContextScaleCTM(context, 1.0, -1.0);
     // Set up transform to be the virtual text space
     CGContextTranslateCTM(context, margins_.left, [self verticalOffset]);
-    
-    NSUInteger lastLineIndex = lineRange.location + lineRange.length;
-    CGFloat baselineOffset = -[self verticalOffsetForLineAtIndex:lineRange.location];
-    
-    for (NSUInteger lineIndex = lineRange.location; lineIndex < lastLineIndex; ++lineIndex)
-    {
-        CGContextSetTextPosition(context, 0.0, baselineOffset);
-        NKTLine *line = [framesetter_ lineAtIndex:lineIndex];
-        [line drawInContext:context];
-        baselineOffset -= lineHeight_;
-    }
-    
+    [self.framesetter drawLinesInRange:lineRange inContext:context];
     CGContextRestoreGState(context);
 }
 

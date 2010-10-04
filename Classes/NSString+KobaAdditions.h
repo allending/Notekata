@@ -3,11 +3,9 @@
 //--------------------------------------------------------------------------------------------------
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
-#import "KBCGeometry.h"
-#import "KBCLogging.h"
-#import "KBCMath.h"
-#import "NSString+KobaAdditions.h"
+@interface NSString(KobaAdditions)
 
-CFRange CFRangeFromNSRange(NSRange range);
+- (BOOL)isLastCharacterNewline;
+
+@end

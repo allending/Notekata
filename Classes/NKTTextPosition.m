@@ -108,7 +108,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Describing
+#pragma mark Debugging
 
 - (NSString *)description
 {
