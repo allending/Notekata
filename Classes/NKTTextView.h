@@ -22,7 +22,6 @@
 {
 @private
     NSMutableAttributedString *text_;
-    
     NKTFramesetter *framesetter_;
     
     // Styling
@@ -50,11 +49,12 @@
     NKTLoupe *roundLoupe_;
     
     // Selections
+    UITextStorageDirection selectionAffinity_;
+    NKTTextRange *interimSelectedTextRange_;
     NKTTextRange *selectedTextRange_;
     NKTTextRange *markedTextRange_;
     NSDictionary *markedTextStyle_;
     NSString *markedText_;
-    NKTTextRange *provisionalTextRange_;
 
     // Input delegate provided by UITextInput
     id <UITextInputDelegate> inputDelegate_;

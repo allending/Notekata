@@ -43,9 +43,10 @@
 
 #pragma mark Updating Selection Elements
 
-- (void)setSelectedTextRange:(NKTTextRange *)textRange onLine:(NKTLine *)line;
-- (void)setInterimTouchTextRange:(NKTTextRange *)textRange onLine:(NKTLine *)line;
-- (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
+// Updates the selection elements. This should be called whenever the layout of the text or any
+// relevant text ranges change.
+//
+- (void)updateSelectionElements;
 
 @end
 
@@ -57,9 +58,16 @@
 
 @protocol NKTSelectionDisplayControllerDelegate
 
+#pragma mark Getting Text Ranges
+
+@property (nonatomic, readonly) NKTTextRange *interimSelectedTextRange;
+@property (nonatomic, readonly) NKTTextRange *selectedTextRange;
+@property (nonatomic, readonly) NKTTextRange *markedTextRange;
+
 #pragma mark Geometry and Hit-Testing
 
-- (CGRect)caretRectForPosition:(UITextPosition *)textPosition;
+- (CGRect)caretRectForTextPosition:(NKTTextPosition *)textPosition
+          applyInputTextAttributes:(BOOL)applyTextInputAttributes;
 - (NSArray *)rectsForTextRange:(UITextRange *)textRange;
 
 #pragma mark Managing Selection Views

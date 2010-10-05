@@ -5,6 +5,7 @@
 #import "NKTSelectionDisplayController.h"
 #import "NKTCaret.h"
 #import "NKTHighlightRegion.h"
+#import "NKTTextRange.h"
 
 @interface NKTSelectionDisplayController()
 
@@ -149,77 +150,80 @@
 
 #pragma mark Updating Selection Elements
 
-// The caret is placed at the start of the provisional text range, or the start of the selected
-// text range. A provisional text range indicates the caret should not blink because the text
-// range is not ready for input.
+- (void)updateSelectionElements
+{
+    [self updateCaret];
+    [self updateSelectedTextRegion];
+    [self updateMarkedTextRegion];
+}
+
 - (void)updateCaret
 {
-    UITextRange *provisionalTextRange = [delegate_ provisionalTextRange];
-    
-    if (provisionalTextRange != nil && provisionalTextRange.empty && caretVisible_)
+    if (!caretVisible_)
     {
-        self.caret.frame = [delegate_ caretRectForPosition:provisionalTextRange.start];
+        self.caret.hidden = YES;
+        return;
+    }
+    
+    NKTTextRange *interimSelectedTextRange = delegate_.interimSelectedTextRange;
+    NKTTextRange *selectedTextRange = delegate_.selectedTextRange;
+    
+    if (interimSelectedTextRange != nil && interimSelectedTextRange.empty)
+    {
+        self.caret.frame = [delegate_ caretRectForTextPosition:interimSelectedTextRange.start
+                                      applyInputTextAttributes:YES];
         self.caret.blinkingEnabled = NO;
         self.caret.hidden = NO;
         return;
     }
-    else if (provisionalTextRange == nil)
+    else if (selectedTextRange != nil && selectedTextRange.empty)
     {
-        UITextRange *selectedTextRange = [delegate_ selectedTextRange];
-        
-        if (selectedTextRange != nil && selectedTextRange.empty && caretVisible_)
-        {
-            self.caret.frame = [delegate_ inputCaretRect];
-            self.caret.blinkingEnabled = YES;
-            [self.caret restartBlinking];
-            self.caret.hidden = NO;
-            return;
-        }
+        self.caret.frame = [delegate_ caretRectForTextPosition:selectedTextRange.start applyInputTextAttributes:NO];
+        self.caret.blinkingEnabled = YES;
+        [self.caret restartBlinking];
+        self.caret.hidden = NO;
+        return;
     }
-    
-    self.caret.hidden = YES;
 }
 
 - (void)updateSelectedTextRegion
 {
-    UITextRange *activeTextRange = [delegate_ provisionalTextRange];
-    
-    if (activeTextRange == nil)
-    {
-        activeTextRange = [delegate_ selectedTextRange];
-    }
-    
-    if (activeTextRange != nil && !activeTextRange.empty && selectedTextRegionVisible_)
-    {
-        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:activeTextRange];
-        self.selectedTextRegion.hidden = NO;
-    }
-    else
+    if (!selectedTextRegionVisible_)
     {
         self.selectedTextRegion.hidden = YES;
+        return;
+    }
+    
+    NKTTextRange *interimSelectedTextRange = delegate_.interimSelectedTextRange;
+    NKTTextRange *selectedTextRange = delegate_.selectedTextRange;
+    
+    if (interimSelectedTextRange != nil && !interimSelectedTextRange.empty)
+    {
+        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:interimSelectedTextRange];
+        self.selectedTextRegion.hidden = NO;
+    }
+    else if (selectedTextRange != nil && !selectedTextRange.empty)
+    {
+        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:selectedTextRange];
+        self.selectedTextRegion.hidden = NO;
     }
 }
 
 - (void)updateMarkedTextRegion
 {
-    UITextRange *markedTextRange = [delegate_ markedTextRange];
+    if (!markedTextRegionVisible_)
+    {
+        self.markedTextRegion.hidden = YES;
+        return;
+    }
+    
+    UITextRange *markedTextRange = delegate_.markedTextRange;
     
     if (markedTextRange != nil && !markedTextRange.empty)
     {
         self.markedTextRegion.rects = [delegate_ rectsForTextRange:markedTextRange];
         self.markedTextRegion.hidden = NO;
     }
-    else
-    {
-        self.markedTextRegion.hidden = YES;
-    }
-}
-
-- (void)updateSelectionElements
-{
-    [self updateCaret];
-    [self updateSelectedTextRegion];
-    [self updateMarkedTextRegion];
 }
 
 @end

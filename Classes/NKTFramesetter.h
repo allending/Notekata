@@ -49,18 +49,12 @@
 
 - (NKTLine *)lineClosestToPoint:(CGPoint)point;
 - (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition;
-- (NKTTextPosition *)textPositionLogicallyClosestToPoint:(CGPoint)point;
-- (NKTTextPosition *)textPositionGeometricallyClosestToPoint:(CGPoint)point;
-- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition;
+- (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition affinity:(UITextStorageDirection)affinity;
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange;
 
-// 
-- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point
-                                   lineContainingPoint:(NKTLine **)lineContainingPoint;
-
-// 
-- (NKTTextPosition *)closestGeometricTextPositionToPoint:(CGPoint)point
-                                     lineContainingPoint:(NKTLine **)lineContainingPoint;
+- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition affinity:(UITextStorageDirection)affinity;
+- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point affinity:(UITextStorageDirection *)affinity;
+- (NKTTextPosition *)closestGeometricTextPositionToPoint:(CGPoint)point affinity:(UITextStorageDirection *)affinity;
 
 #pragma mark Drawing
 

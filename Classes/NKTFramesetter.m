@@ -230,48 +230,41 @@
 // need to have a semantic that means 'line that text position appears on, possibly with affinity option'
 - (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition
 {
+    return [self lineContainingTextPosition:textPosition affinity:UITextStorageDirectionForward];
+}
+
+// TODO: potential affinity semantic
+// who uses this method
+// rename this to line appearing to contain text position
+// ...
+// need to have a semantic that means 'line that text position appears on, possibly with affinity option'
+- (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition affinity:(UITextStorageDirection)affinity
+{
+    NKTLine *lineContainingTextPosition = nil;
+    
     for (NKTLine *line in self.lines)
     {
-        if ([line.textRange containsTextPosition:textPosition] ||
-            [line.textRange isEqualToTextPosition:textPosition])
-        {
-            return line;
+        if ([line.textRange containsTextPosition:textPosition] || [line.textRange isEqualToTextPosition:textPosition])
+        {   
+            lineContainingTextPosition = line;
         }
+    }
+    
+    // do stuff
+    if ((affinity == UITextStorageDirectionBackward) &&
+        [textPosition isEqualToTextPosition:lineContainingTextPosition.textRange.start])
+    {
+        // use previous line if available
     }
     
     KBCLogWarning(@"could not find line containing text position %@, returning nil", textPosition);
     return nil;
 }
 
-- (NKTTextPosition *)textPositionLogicallyClosestToPoint:(CGPoint)point
-{
-    NSInteger lineIndex = (NSInteger)floor(point.y / lineHeight_);
-    
-    if (lineIndex < 0)
-    {
-        return [NKTTextPosition textPositionWithLocation:0];
-    }
-    else if (lineIndex > self.numberOfLines)
-    {
-        return [NKTTextPosition textPositionWithLocation:[text_ length] - 1];
-    }
-
-    NKTLine *line = [self.lines objectAtIndex:lineIndex];
-    CGPoint linePoint = [self convertPoint:point toLine:line];
-    return [line closestTextPositionToPoint:linePoint];
-}
-
-- (NKTTextPosition *)textPositionGeometricallyClosestToPoint:(CGPoint)point
-{
-    NKTLine *line = [self lineClosestToPoint:point];
-    CGPoint linePoint = [self convertPoint:point toLine:line];
-    return [line closestTextPositionToPoint:linePoint];
-}
-
 // TODO: potential affinity semantic
-- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition
+- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition affinity:(UITextStorageDirection)affinity
 {
-    NKTLine *line = [self lineContainingTextPosition:textPosition];
+    NKTLine *line = [self lineContainingTextPosition:textPosition affinity:affinity];
     CGFloat charOffset = [line offsetForCharAtTextPosition:textPosition];
     return CGPointMake(line.origin.x + charOffset, line.origin.y);
 }
@@ -308,40 +301,58 @@
     }
 }
 
-- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point
-                                   lineContainingPoint:(NKTLine **)lineContainingPoint
+- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point affinity:(UITextStorageDirection *)affinity
 {
+    if (affinity != NULL)
+    {
+        *affinity = UITextStorageDirectionForward;
+    }
+    
     NSInteger lineIndex = (NSInteger)floor(point.y / lineHeight_);
     
     if (lineIndex < 0)
     {
-        if (lineContainingPoint != NULL)
-        {
-            *lineContainingPoint = [self firstLine];
-        }
-        
         return [NKTTextPosition textPositionWithLocation:0];
     }
     else if (lineIndex > self.numberOfLines)
     {
-        if (lineContainingPoint != NULL)
+        if (affinity != NULL)
         {
-            *lineContainingPoint = [self lastLine];
+            *affinity = UITextStorageDirectionForward;
         }
         
         return [NKTTextPosition textPositionWithLocation:[text_ length] - 1];
     }
-    else
+    
+    NKTLine *line = [self.lines objectAtIndex:lineIndex];
+    CGPoint linePoint = [self convertPoint:point toLine:line];
+    NKTTextPosition *textPosition = [line closestTextPositionToPoint:linePoint];
+    
+    if (affinity != NULL && [textPosition isEqualToTextPosition:line.textRange.end])
     {
-        NKTLine *line = [self.lines objectAtIndex:lineIndex];
-        
-        if (lineContainingPoint != NULL)
-        {
-            *lineContainingPoint = line;
-        }
-        
-        return [line closestTextPositionToPoint:point];
+        *affinity = UITextStorageDirectionBackward;
     }
+    
+    return textPosition;
+}
+
+- (NKTTextPosition *)closestGeometricTextPositionToPoint:(CGPoint)point affinity:(UITextStorageDirection *)affinity
+{
+    if (affinity != NULL)
+    {
+        *affinity = UITextStorageDirectionForward;
+    }
+    
+    NKTLine *line = [self lineClosestToPoint:point];
+    CGPoint linePoint = [self convertPoint:point toLine:line];
+    NKTTextPosition *textPosition = [line closestTextPositionToPoint:linePoint];
+    
+    if (affinity != NULL && [textPosition isEqualToTextPosition:line.textRange.end])
+    {
+        *affinity = UITextStorageDirectionBackward;
+    }
+    
+    return textPosition;
 }
 
 //--------------------------------------------------------------------------------------------------
