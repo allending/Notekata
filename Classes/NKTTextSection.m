@@ -3,8 +3,8 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextSection.h"
-#import "NKTLine.h"
 #import "NKTFramesetter.h"
+#import "NKTLine.h"
 
 @interface NKTTextSection()
 
@@ -230,7 +230,10 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"text section %d frame:%@", index_, NSStringFromCGRect(self.frame)];
+    return [NSString stringWithFormat:@"%@ (%d, %@)",
+                                       [self class],
+                                       index_,
+                                       NSStringFromCGRect(self.frame)];
 }
 
 @end

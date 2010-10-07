@@ -3,7 +3,6 @@ TODO
 
 General
 -------
-[ ] Issue: Refactor latest additions, go through inline TODOs
 [ ] Optimization: Memory Profiling
 [ ] Issue: Figure out Kiwi integration
 
@@ -15,13 +14,12 @@ Controller
 
 Text View
 ---------
-[x] Issue: End of 'West!' -> Down -> Wonky
-[ ] Issue: Test keyboard movement with new additions
+[ ] Feature: Scrolling behavior while editing
 [ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
 [ ] Feature: Selection handles
-[ ] Feature: Scrolling behavior while editing
 [ ] Feature: Cut copy paste
 [ ] Feature: Context menus w/ selection
+[ ] Issue: Test keyboard movement on actual hardware
 [ ] Issue: An issue with weird hardware keyboard movement during text input? Beat on test cases more
 [ ] Feature: Undo/Redo support
 [ ] Design: Cancel double tap and press if duration too long or distance too short?
@@ -33,6 +31,8 @@ Text View
 
 Done
 ----
+[x] Issue: Changing style should update caret
+[x] Issue: End of 'West!' -> Down -> Wonky
 [x] Issue: Integrate affinity into positions and ranges?
 [x] Optimization: Use a dirty marker for typesetting e.g.: [self setLineWidthDirty];
 [x] Optimization: Typeset at line granularity lazily

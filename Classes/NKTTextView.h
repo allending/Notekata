@@ -14,7 +14,6 @@
 @class NKTTextViewTokenizer;
 
 // NKTTextView implements the behavior for a view with support for text and page styling.
-//
 @interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
 {
 @private
@@ -85,11 +84,9 @@
 @property (nonatomic, retain) UIColor *verticalMarginColor;
 @property (nonatomic) CGFloat verticalMarginInset;
 
-#pragma mark Setting Input Text Attributes
+#pragma mark Styling Text
 
 @property (nonatomic, copy) NSDictionary *inputTextAttributes;
-
-#pragma mark Styling Text Ranges
 
 - (void)styleTextRange:(UITextRange *)textRange withTarget:(id)target selector:(SEL)selector;
 
@@ -111,7 +108,6 @@
 //--------------------------------------------------------------------------------------------------
 
 // NKTTextViewDelegate declares methods that allow clients to respond to messages from NKTTextView.
-//
 @protocol NKTTextViewDelegate <UIScrollViewDelegate>
 
 @optional

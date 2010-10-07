@@ -6,10 +6,7 @@
 
 @protocol NKTFontPickerViewControllerDelegate;
 
-//--------------------------------------------------------------------------------------------------
 // NKTFontViewController
-//--------------------------------------------------------------------------------------------------
-
 @interface NKTFontPickerViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 {
 @private
@@ -40,9 +37,8 @@
 #pragma mark -
 
 //--------------------------------------------------------------------------------------------------
-// NKTFontPickerViewControllerDelegate
-//--------------------------------------------------------------------------------------------------
 
+// NKTFontPickerViewControllerDelegate
 @protocol NKTFontPickerViewControllerDelegate <NSObject>
 
 @optional

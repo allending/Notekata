@@ -166,14 +166,13 @@
     
     if (caretVisible_ && gestureTextRange != nil && gestureTextRange.empty)
     {
-        self.caret.frame = [delegate_ caretRectForTextPosition:gestureTextRange.start
-                                      applyInputTextAttributes:YES];
+        self.caret.frame = [delegate_ caretRectForTextPosition:gestureTextRange.start applyInputTextAttributes:NO];
         self.caret.blinkingEnabled = NO;
         self.caret.hidden = NO;
     }
     else if (caretVisible_ && gestureTextRange == nil && selectedTextRange != nil && selectedTextRange.empty)
     {
-        self.caret.frame = [delegate_ caretRectForTextPosition:selectedTextRange.start applyInputTextAttributes:NO];
+        self.caret.frame = [delegate_ caretRectForTextPosition:selectedTextRange.start applyInputTextAttributes:YES];
         self.caret.blinkingEnabled = YES;
         [self.caret restartBlinking];
         self.caret.hidden = NO;

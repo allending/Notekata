@@ -9,8 +9,8 @@
 @class NKTTextPosition;
 @class NKTTextRange;
 
-// NKTFramesetter
-//
+// NKTFramesetter manages the typesetting of stylized text within a rectangular frame. It provides
+// support for efficient updates of the text frame, hit-testing, and drawing.
 @interface NKTFramesetter : NSObject <NKTLineDelegate>
 {
 @private
@@ -27,13 +27,10 @@
 
 #pragma mark Getting the Frame Size
 
+// Returns the size of the text frame based on the number of typeset lines.
 @property (nonatomic, readonly) CGSize frameSize;
 
-#pragma mark Notifying the Framesetter of Changes
-
-- (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition;
-
-#pragma mark Managing Lines
+#pragma mark Accessing Lines
 
 @property (nonatomic, readonly) NSUInteger numberOfLines;
 
@@ -41,17 +38,25 @@
 - (NKTLine *)firstLine;
 - (NKTLine *)lastLine;
 
+#pragma mark Updating the Framesetter
+
+// Call this method to make the framesetter invalidate and typeset portions of the text that have
+// changed.
+- (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition;
+
 #pragma mark Hit-Testing and Geometry
 
 - (NKTLine *)lineClosestToPoint:(CGPoint)point;
-- (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition; // TODO: add transform
+- (NKTTextPosition *)closestTextPositionForCaretToPoint:(CGPoint)point;
+- (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition;
+- (CGPoint)baselineOriginForCharAtTextPosition:(NKTTextPosition *)textPosition;
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange;
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange transform:(CGAffineTransform)transform;
-- (CGPoint)baselineOriginForCharAtTextPosition:(NKTTextPosition *)textPosition;
-- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
 #pragma mark Drawing
 
+// Draws the given range of lines. The framesetter expects the CTM to be set up with the
+// framesetter's space when this method is called.
 - (void)drawLinesInRange:(NSRange)range inContext:(CGContextRef)context;
 
 @end

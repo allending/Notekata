@@ -96,7 +96,7 @@
 
 #pragma mark Comparing Text Posiitons
 
-// TODO: take affinity into account
+// TODO: take affinity into account?
 
 - (BOOL)isEqual:(id)object
 {

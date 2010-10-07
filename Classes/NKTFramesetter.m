@@ -15,11 +15,13 @@
 
 - (void)invalidateTypesetter;
 
-#pragma mark Managing Lines
+#pragma mark Accessing Lines
 
 @property (nonatomic, readonly) NSArray *lines;
 
-- (void)typesetLinesFromIndex:(NSUInteger)lineIndex;
+#pragma mark Typesetting Lines
+
+- (void)typesetFromLineAtIndex:(NSUInteger)lineIndex;
 
 @end
 
@@ -58,7 +60,20 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark Getting the Frame Size
+
+- (CGSize)frameSize
+{
+    return CGSizeMake(lineWidth_, lineHeight_ * (CGFloat)self.numberOfLines);
+}
+
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Managing the Typesetter
+
+// It isn't clear whether it is safe to change the backing text for the typesetter returned by
+// CTTypesetterCreateWithAttributedString, so we invalidate and recreate the CTTypesetter each
+// time the text changes.
 
 - (CTTypesetterRef)typesetter
 {
@@ -81,30 +96,44 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting the Frame Size
+#pragma mark Accessing Lines
 
-- (CGSize)frameSize
+- (NSArray *)lines
 {
-    CGFloat height = lineHeight_ * (CGFloat)self.numberOfLines;
-    return CGSizeMake(lineWidth_, height);
+    if (lines_ == nil)
+    {
+        lines_ = [[NSMutableArray alloc] init];
+        [self typesetFromLineAtIndex:0];
+    }
+    
+    return lines_;
+}
+
+- (NSUInteger)numberOfLines
+{
+    return [self.lines count];
+}
+
+- (NKTLine *)lineAtIndex:(NSUInteger)lineIndex
+{
+    return [self.lines objectAtIndex:lineIndex];
+}
+
+- (NKTLine *)firstLine
+{
+    return [self.lines objectAtIndex:0];
+}
+
+- (NKTLine *)lastLine
+{
+    return [self.lines objectAtIndex:self.numberOfLines - 1];
 }
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Notifying the Framesetter of Changes
+#pragma mark Typesetting Lines
 
-- (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition
-{
-    [self invalidateTypesetter];
-    NKTLine *line = [self lineForCaretAtTextPosition:textPosition];
-    [self typesetLinesFromIndex:line.index];
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Managing Lines
-
-- (void)typesetLinesFromIndex:(NSUInteger)lineIndex
+- (void)typesetFromLineAtIndex:(NSUInteger)lineIndex
 {
     if (lineIndex > [lines_ count])
     {
@@ -112,13 +141,9 @@
         return;
     }
     
-    // Get the line index, start location, and origin of the first line that will be typeset
     NSUInteger currentLineIndex = lineIndex;
     NSUInteger currentLocation = 0;
     CGPoint currentLineBaselineOrigin = CGPointZero;
-    
-    // The framesetter's origin is at the top left of the text frame it manages. The first line's
-    // baseline is one line height below the top of this text frame.
     
     if ([lines_ count] == 0)
     {
@@ -155,17 +180,14 @@
         currentLineBaselineOrigin.y += lineHeight_;
     }
     
-    // TODO: guarantee at least one typeset line .. sentinel is pointless if it isn't always
-    // there
-    //
-    // Add a sentinel line if the text ends with a line break or if the text is empty
+    // Add a sentinel line if needed
     if ([[text_ string] isLastCharacterNewline] || [text_ length] == 0)
     {
         NKTLine *sentinel = [[NKTLine alloc] initWithDelegate:self
                                                         index:[lines_ count]
                                                          text:text_
                                                         range:NSMakeRange([text_ length], 0)
-                                                       baselineOrigin:currentLineBaselineOrigin
+                                               baselineOrigin:currentLineBaselineOrigin
                                                         width:lineWidth_
                                                        height:lineHeight_];
         [lines_ addObject:sentinel];
@@ -173,47 +195,30 @@
     }
 }
 
-- (NSArray *)lines
-{
-    if (lines_ == nil)
-    {
-        lines_ = [[NSMutableArray alloc] init];
-        [self typesetLinesFromIndex:0];
-    }
-    
-    return lines_;
-}
+//--------------------------------------------------------------------------------------------------
 
-- (NSUInteger)numberOfLines
-{
-    return [self.lines count];
-}
+#pragma mark Updating the Framesetter
 
-- (NKTLine *)lineAtIndex:(NSUInteger)lineIndex
+- (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition
 {
-    return [self.lines objectAtIndex:lineIndex];
-}
-
-- (NKTLine *)firstLine
-{
-    return [self.lines objectAtIndex:0];
-}
-
-- (NKTLine *)lastLine
-{
-    return [self.lines objectAtIndex:self.numberOfLines - 1];
+    NKTLine *line = [self lineForCaretAtTextPosition:textPosition];
+    [self invalidateTypesetter];
+    [self typesetFromLineAtIndex:line.index];
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Hit-Testing and Geometry
 
+- (NSInteger)virtualLineIndexClosestToPoint:(CGPoint)point
+{
+    //CGFloat virtualLinePointOffset = -lineHeight_ * 0.1;
+    return (NSInteger)floor(point.y / lineHeight_);
+}
+
 - (NKTLine *)lineClosestToPoint:(CGPoint)point
 {
-    // Apply a 20% line height offset to the point to account for line descent and tune for user
-    // interaction
-    CGFloat virtualLinePointOffset = -lineHeight_ * 0.2;
-    NSInteger lineIndex = (NSInteger)floor((point.y + virtualLinePointOffset) / lineHeight_);
+    NSInteger lineIndex = [self virtualLineIndexClosestToPoint:point];
     
     if (lineIndex < 0)
     {
@@ -227,19 +232,9 @@
     return [self.lines objectAtIndex:lineIndex];
 }
 
-// TODO: desired behavior
-// touch at end of a line
-// - if line ends with a newline, text position is at end of line before newline
-// - if line does not end with a newline, text position is end of line, which is also the start of the next line
-//   
-//
-// TODO: tune for hit testing
-- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point
+- (NKTTextPosition *)closestTextPositionForCaretToPoint:(CGPoint)point
 {
-    // Apply a 20% line height offset to the point to account for line descent and tune for user
-    // interaction
-    CGFloat virtualLinePointOffset = -lineHeight_ * 0.2;
-    NSInteger lineIndex = (NSInteger)floor((point.y + virtualLinePointOffset) / lineHeight_);
+    NSInteger lineIndex = [self virtualLineIndexClosestToPoint:point];
     
     if (lineIndex < 0)
     {
@@ -251,8 +246,7 @@
     }
     
     NKTLine *line = [self.lines objectAtIndex:lineIndex];
-    NKTTextPosition *textPosition = [line closestTextPositionToFramesetterPoint:point];
-    return textPosition;
+    return [line closestTextPositionForCaretToPoint:point];
 }
 
 - (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition
@@ -265,8 +259,8 @@
         }
     }
     
-    // If no lines were found to contain the text position, then the line for the caret may be
-    // the last line (happens when the end of the text is not a newline)
+    // If no lines were found to contain the text position, then the line for the caret may be the
+    // last line (happens when the end of the text is not a newline)
     NKTLine *lastLine = [self lastLine];
     
     if ([lastLine.textRange.end isEqualToTextPosition:textPosition])
@@ -274,17 +268,14 @@
         return lastLine;
     }
     
-    KBCLogWarning(@"no line contains %@", textPosition);
+    KBCLogWarning(@"no line contains %@, returning nil", textPosition);
     return nil;
 }
 
-// TODO: potential affinity semantic
 - (CGPoint)baselineOriginForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
     NKTLine *line = [self lineForCaretAtTextPosition:textPosition];
-    // TODO: just ask line
-    CGFloat charOffset = [line offsetForCharAtTextPosition:textPosition];
-    return CGPointMake(line.baselineOrigin.x + charOffset, line.baselineOrigin.y);
+    return [line baselineOriginForCharAtTextPosition:textPosition];
 }
 
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
@@ -292,21 +283,19 @@
     return [self rectsForTextRange:textRange transform:CGAffineTransformIdentity];
 }
 
-// TODO: potential affinity semantic
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange transform:(CGAffineTransform)transform
 {
     NKTLine *firstLine = [self lineForCaretAtTextPosition:textRange.start];
     NKTLine *lastLine = [self lineForCaretAtTextPosition:textRange.end];
     
-    // Single rect
+    // Single line
     if (firstLine == lastLine)
     {
-        // TODO: what if this is the last line?
         CGRect lineRect = [firstLine rectFromTextPosition:textRange.start toTextPosition:textRange.end];
         lineRect = CGRectApplyAffineTransform(lineRect, transform);
         return [NSArray arrayWithObject:[NSValue valueWithCGRect:lineRect]];
     }
-    // Dealing with multiple lines
+    //  Multiple lines
     else
     {
         NSMutableArray *rects = [NSMutableArray arrayWithCapacity:lastLine.index - firstLine.index];
@@ -325,7 +314,7 @@
         CGRect lastLineRect = [lastLine rectToTextPosition:textRange.end];
         lastLineRect = CGRectApplyAffineTransform(lastLineRect, transform);
         
-        // Last line may be the null rect if the last line is empty
+        // Last line is null when the last line is empty, and we had better not include it
         if (!CGRectEqualToRect(lastLineRect, CGRectNull))
         {
             [rects addObject:[NSValue valueWithCGRect:lastLineRect]];
@@ -339,9 +328,6 @@
 
 #pragma mark Drawing
 
-// Draws the given range of lines. The framesetter expects the CTM to be set up with the
-// framesetter's space when this method is called.
-//
 - (void)drawLinesInRange:(NSRange)range inContext:(CGContextRef)context
 {
     for (NSUInteger lineIndex = range.location; lineIndex < NSMaxRange(range); ++lineIndex)

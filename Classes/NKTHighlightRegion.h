@@ -4,8 +4,8 @@
 
 #import "KobaUI.h"
 
-// NKTHighlightRegion
-//
+// NKTHighlightRegion represents a set of colored rects that can be used as highlights for regions
+// of text.
 @interface NKTHighlightRegion : UIView
 {
 @private

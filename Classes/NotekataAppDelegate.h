@@ -6,10 +6,7 @@
 
 @class NKTTextViewController;
 
-//--------------------------------------------------------------------------------------------------
 // NotekataAppDelegate
-//--------------------------------------------------------------------------------------------------
-
 @interface NotekataAppDelegate : NSObject <UIApplicationDelegate>
 {
     UIWindow *window;

@@ -10,7 +10,7 @@
 
 @interface NKTLine()
 
-#pragma mark Accessing the Typeset Line
+#pragma mark Accessing the Core Text Line
 
 @property (nonatomic, readonly) CTLineRef line;
 
@@ -64,13 +64,13 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Accessing the Typeset Line
+#pragma mark Accessing the Core Text Line
 
 - (CTLineRef)line
 {
     if (line_ == NULL && (range_.length != 0))
     {
-        KBCLogDebug(@"core text line for %@ created", self);
+        KBCLogDebug(@"core text line created for %@", self);
         CTTypesetterRef typesetter = [delegate_ typesetter];
         line_ = CTTypesetterCreateLine(typesetter, CFRangeFromNSRange(range_));
     }
@@ -155,7 +155,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Getting Character Offsets
+#pragma mark Getting Character Positions
 
 - (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
@@ -168,29 +168,33 @@
     return charOffset;
 }
 
+- (CGPoint)baselineOriginForCharAtTextPosition:(NKTTextPosition *)textPosition
+{
+    CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
+    return CGPointMake(baselineOrigin_.x + charOffset, baselineOrigin_.y);
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Hit-Testing
 
-// TODO: rename this to for caret
-// add affinity output
-- (NKTTextPosition *)closestTextPositionToFramesetterPoint:(CGPoint)framesetterPoint
+- (NKTTextPosition *)closestTextPositionForCaretToPoint:(CGPoint)point
 {
     if (range_.length == 0)
     {
         return [NKTTextPosition textPositionWithLocation:range_.location affinity:UITextStorageDirectionForward];
     }
     
-    CGPoint localPoint = CGPointMake(framesetterPoint.x - baselineOrigin_.x, framesetterPoint.y - baselineOrigin_.y);
+    CGPoint localPoint = CGPointMake(point.x - baselineOrigin_.x, point.y - baselineOrigin_.y);
     NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(self.line, localPoint);
     UITextStorageDirection affinity = UITextStorageDirectionForward;
     
-    // When the line ends with a newline, the caret should be placed before the newline character
     if (charIndex == NSMaxRange(range_))
     {
         unichar lastChar = [[text_ string] characterAtIndex:charIndex - 1];
         NSCharacterSet *newlines = [NSCharacterSet newlineCharacterSet];
-        
+    
+        // The caret should be placed before any newlines that break the line
         if ([newlines characterIsMember:lastChar])
         {
             charIndex = charIndex - 1;
@@ -219,7 +223,10 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"line %d %@", index_, NSStringFromRange(range_)];
+    return [NSString stringWithFormat:@"%@ (%d, %@)",
+                                       [self class],
+                                       index_,
+                                       NSStringFromRange(range_)];
 }
 
 @end

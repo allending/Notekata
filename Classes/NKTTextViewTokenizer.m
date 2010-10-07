@@ -70,7 +70,7 @@
 // | 'oobar'             |   'foobar'   |   'foobar'   |
 // | one-past 'r'        |      nil     |   'foobar'   |
 // +---------------------+--------------+--------------+
-//
+
 @interface NKTTextViewTokenizer()
 
 #pragma mark Determining Text Positions Relative to Unit Boundaries
@@ -153,7 +153,6 @@
 //
 // A text position is a word boundary in the backward direction if the text position is the start
 // of a word.
-//
 - (BOOL)isTextPosition:(NKTTextPosition *)textPosition atWordBoundaryInDirection:(UITextDirection)direction
 {
     NSString *string = [textView_.text string];
@@ -208,7 +207,6 @@
 //
 // A text position is a line boundary in the backward direction if the text position is the start
 // of a line's text range.
-//
 - (BOOL)isTextPosition:(NKTTextPosition *)textPosition atLineBoundaryInDirection:(UITextDirection)direction
 {
     NKTTextRange *lineTextRange = [textView_ textRangeForLineContainingTextPosition:textPosition];
@@ -235,7 +233,6 @@
 //
 // A text position is a paragraph boundary in the backward direction if the text position is the
 // start of a paragraph (follows a newline).
-//
 - (BOOL)isTextPosition:(NKTTextPosition *)textPosition atParagraphBoundaryInDirection:(UITextDirection)direction
 {
     NSString *string = [textView_.text string];
@@ -308,7 +305,6 @@
 //
 // A text position is within a word in the backward direction if the previous text position is part
 // of a word.
-//
 - (BOOL)isTextPosition:(NKTTextPosition *)textPosition withinWordInDirection:(UITextDirection)direction
 {
     NSString *string = [textView_.text string];
@@ -349,7 +345,6 @@
 //
 // A text position is within a line in the backward direction if the text position is not the
 // start of a line's text range.
-//
 - (BOOL)isTextPosition:(NKTTextPosition *)textPosition withinLineInDirection:(UITextDirection)direction
 {
     NKTTextRange *lineTextRange = [textView_ textRangeForLineContainingTextPosition:textPosition];
@@ -381,7 +376,6 @@
 //
 // A text position is within a paragraph in the backward direction if the text position is not the
 // start of a paragraph (follows a newline).
-//
 - (BOOL)isTextPosition:(NKTTextPosition *)textPosition withinParagraphInDirection:(UITextDirection)direction
 {
     NSString *string = [textView_.text string];
@@ -454,7 +448,6 @@
 //
 // The next word boundary in the backward direction is the furthest position in the direction that
 // has the same alphanumeric 'sign' as the given position.
-//
 - (UITextPosition *)positionFromTextPosition:(NKTTextPosition *)textPosition 
                    toWordBoundaryInDirection:(UITextDirection)direction
 {
@@ -523,7 +516,6 @@
 // If the text position is the start of a line's text range, it is already at the boundary.
 // Otherwise, the next line boundary in the backward direction is the start of the line's text
 // range.
-//
 - (UITextPosition *)positionFromTextPosition:(NKTTextPosition *)textPosition 
                    toLineBoundaryInDirection:(UITextDirection)direction
 {
@@ -584,7 +576,6 @@
 // If the text position is the start of a paragraph, the next paragraph boundary in the backward
 // direction is one before the start of the paragraph. Otherwise, the next paragraph boundary in
 // the backward direction is the start of the paragraph.
-//
 - (UITextPosition *)positionFromTextPosition:(NKTTextPosition *)textPosition 
               toParagraphBoundaryInDirection:(UITextDirection)direction
 {
@@ -665,7 +656,6 @@
 // enclosed within a text unit of the given granularity, it is considered enclosed. If the text
 // position is at a text-unit boundary, it is considered enclosed only if the next position in
 // the given direction is entirely enclosed.
-//
 - (UITextRange *)rangeEnclosingPosition:(NKTTextPosition *)position
                         withGranularity:(UITextGranularity)granularity
                             inDirection:(UITextDirection)direction

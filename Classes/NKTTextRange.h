@@ -8,7 +8,6 @@
 
 // NKTTextRange is a subclass of UITextRange that represents text position with instances of
 // NKTTextPosition.
-//
 @interface NKTTextRange : UITextRange
 {
 @private
@@ -18,10 +17,10 @@
 
 #pragma mark Initializing
 
-//- (id)initWithRange:(NSRange)range;
+- (id)initWithRange:(NSRange)range;
 - (id)initWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity;
 
-//+ (id)textRangeWithRange:(NSRange)range;
++ (id)textRangeWithRange:(NSRange)range;
 + (id)textRangeWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity;
 + (id)textRangeWithTextPosition:(NKTTextPosition *)firstTextPosition
                    textPosition:(NKTTextPosition *)secondTextPosition;

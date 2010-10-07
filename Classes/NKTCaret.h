@@ -5,7 +5,6 @@
 #import "KobaUI.h"
 
 // NKTCaret marks a text position in a text view.
-//
 @interface NKTCaret : UIView
 {
 @private

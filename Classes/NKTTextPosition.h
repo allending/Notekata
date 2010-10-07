@@ -8,7 +8,6 @@
 
 // NKTTextPosition is a subclass of UITextPosition. It represents an indexed position into the 
 // backing string of a text view.
-//
 @interface NKTTextPosition : UITextPosition
 {
 @private
@@ -18,10 +17,10 @@
 
 #pragma mark Initializing
 
-//- (id)initWithLocation:(NSUInteger)location;
+- (id)initWithLocation:(NSUInteger)location;
 - (id)initWithLocation:(NSUInteger)location affinity:(UITextStorageDirection)affinity;
 
-//+ (id)textPositionWithLocation:(NSUInteger)location;
++ (id)textPositionWithLocation:(NSUInteger)location;
 + (id)textPositionWithLocation:(NSUInteger)location affinity:(UITextStorageDirection)affinity;
 
 #pragma mark Accessing the Location

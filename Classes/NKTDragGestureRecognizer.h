@@ -5,7 +5,6 @@
 #import "KobaUI.h"
 
 // NKTDragGestureRecognizer is a gesture recognizer subclass that detects tap to drag gestures.
-//
 @interface NKTDragGestureRecognizer : UIGestureRecognizer
 {
 @private

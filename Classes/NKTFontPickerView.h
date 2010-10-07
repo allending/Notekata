@@ -7,7 +7,6 @@
 // NKTFontPickerView is a view that contains ans lays out a font size control and a font family
 // table view. The interface is tuned so that end users can quickly make changes to fonts. Users
 // should use NKTFontPickerViewController instead of this class directly.
-//
 @interface NKTFontPickerView : UIView
 {
 @private

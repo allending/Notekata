@@ -6,8 +6,7 @@
 
 @class NKTFramesetter;
 
-// NKTTextSection renders a frame's worth of typesetted text. It is used internally by NKTTextView.
-//
+// NKTTextSection displays a frame of typesetted text. It is used internally by NKTTextView.
 @interface NKTTextSection : UIView
 {
 @private

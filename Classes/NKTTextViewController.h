@@ -16,10 +16,7 @@ typedef enum
     NKTPageStyleCreamRuledVerticalMargin
 } NKTPageStyle;
 
-//--------------------------------------------------------------------------------------------------
 // NotekataViewController
-//--------------------------------------------------------------------------------------------------
-
 @interface NKTTextViewController : UIViewController <NKTTextViewDelegate, NKTFontPickerViewControllerDelegate>
 {
 @private
