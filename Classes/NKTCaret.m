@@ -8,7 +8,7 @@
 
 @synthesize blinkingEnabled = blinkingEnabled_;
 
-static const CGFloat NKTCaretBlinkPeriodSeconds = 0.9;
+static const CGFloat CaretBlinkPeriodSeconds = 0.9;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ static const CGFloat NKTCaretBlinkPeriodSeconds = 0.9;
     self.alpha = 1.0;
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationRepeatCount:CGFLOAT_MAX];
-    [UIView setAnimationDuration:NKTCaretBlinkPeriodSeconds];
+    [UIView setAnimationDuration:CaretBlinkPeriodSeconds];
     self.alpha = 0.0;
     [UIView commitAnimations];
 }

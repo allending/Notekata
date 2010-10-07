@@ -2,9 +2,12 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
+#define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
+
 #import "NKTTextView.h"
 #import "KobaText.h"
 #import "NKTDragGestureRecognizer.h"
+#import "NKTFramesetter.h"
 #import "NKTLine.h"
 #import "NKTLoupe.h"
 #import "NKTTextPosition.h"
@@ -12,7 +15,6 @@
 #import "NKTTextSection.h"
 #import "NKTTextViewGestureRecognizerDelegate.h"
 #import "NKTTextViewTokenizer.h"
-#import "NKTFramesetter.h"
 
 @interface NKTTextView()
 
@@ -21,7 +23,6 @@
 - (void)NKTTextView_requiredInit;
 - (void)initGestureRecognizers;
 
-// TODO: move to a class that helps with tiling
 #pragma mark Tiling Sections
 
 - (void)tileSections;
@@ -37,11 +38,13 @@
 @property (nonatomic, readonly) NKTFramesetter *framesetter;
 
 - (void)invalidateFramesetter;
-- (void)regenerateContents;
+- (void)regenerateTextFrame;
+- (CGPoint)convertPointToFramesetter:(CGPoint)point;
+- (CGPoint)convertPointFromFramesetter:(CGPoint)point;
 
 #pragma mark Responding to Gestures
 
-@property (nonatomic, retain) NKTTextPosition *doubleTapStartTextPosition;
+@property (nonatomic, retain) NKTTextPosition *initialDoubleTapTextPosition;
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer;
@@ -49,26 +52,23 @@
 
 #pragma mark Managing Loupes
 
-@property (nonatomic, readonly) NKTLoupe *bandLoupe;
-@property (nonatomic, readonly) NKTLoupe *roundLoupe;
+@property (nonatomic, readonly) NKTLoupe *textRangeLoupe;
+@property (nonatomic, readonly) NKTLoupe *caretLoupe;
 
-- (void)configureLoupe:(NKTLoupe *)loupe toMagnifyPoint:(CGPoint)point anchorToClosestLine:(BOOL)anchorToLine;
-- (void)configureLoupe:(NKTLoupe *)loupe toMagnifyTextPosition:(NKTTextPosition *)textPosition;
+- (void)configureLoupe:(NKTLoupe *)loupe toShowPoint:(CGPoint)point anchorToLine:(BOOL)anchorToLine;
+- (void)configureLoupe:(NKTLoupe *)loupe toShowTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Managing Text Ranges
 
-- (NKTTextRange *)interimSelectedTextRange;
-- (void)setInterimSelectedTextRange:(NKTTextRange *)interimSelectedTextRange affinity:(UITextStorageDirection)affinity;
-- (void)confirmInterimSelectedTextRange;
-- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange
-                    affinity:(UITextStorageDirection)affinity
-         notifyInputDelegate:(BOOL)notifyInputDelegate;
-- (void)setMarkedTextRange:(NKTTextRange *)markedTextRange;
+@property (nonatomic, readwrite) NKTTextRange *gestureTextRange;
+
+- (void)confirmGestureTextRange;
+- (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;
+- (void)setMarkedTextRange:(NKTTextRange *)textRange;
 
 #pragma mark Geometry and Hit-Testing
 
-- (CGRect)caretRectForTextPosition:(NKTTextPosition *)textPosition
-          applyInputTextAttributes:(BOOL)applyInputTextAttributes;
+- (CGRect)caretRectForTextPosition:(NKTTextPosition *)textPosition applyInputTextAttributes:(BOOL)applyInputTextAttributes;
 - (CGRect)caretRectWithOrigin:(CGPoint)origin font:(UIFont *)font;
 
 #pragma mark Getting Fonts at Text Positions
@@ -84,6 +84,7 @@
 @implementation NKTTextView
 
 @synthesize text = text_;
+
 @synthesize margins = margins_;
 @synthesize lineHeight = lineHeight_;
 @synthesize horizontalRulesEnabled = horizontalRulesEnabled_;
@@ -92,13 +93,18 @@
 @synthesize verticalMarginEnabled = verticalMarginEnabled_;
 @synthesize verticalMarginColor = verticalMarginColor_;
 @synthesize verticalMarginInset = verticalMarginInset_;
+
+@synthesize markedTextStyle = markedTextStyle_;
+
 @synthesize inputTextAttributes = inputTextAttributes_;
+
 @synthesize inputDelegate = inputDelegate_;
+
 @synthesize nonEditTapGestureRecognizer = nonEditTapGestureRecognizer_;
 @synthesize tapGestureRecognizer = tapGestureRecognizer_;
 @synthesize longPressGestureRecognizer = longPressGestureRecognizer_;
 @synthesize doubleTapAndDragGestureRecognizer = doubleTapAndDragGestureRecognizer_;
-@synthesize doubleTapStartTextPosition = doubleTapStartTextPosition_;
+@synthesize initialDoubleTapTextPosition = initialDoubleTapTextPosition_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -145,24 +151,19 @@
 - (void)initGestureRecognizers
 {
     gestureRecognizerDelegate_ = [[NKTTextViewGestureRecognizerDelegate alloc] initWithTextView:self];
-
     doubleTapAndDragGestureRecognizer_ = [[NKTDragGestureRecognizer alloc] initWithTarget:self
                                                                                    action:@selector(handleDoubleTapAndDrag:)];
     doubleTapAndDragGestureRecognizer_.delegate = gestureRecognizerDelegate_;
-    
     nonEditTapGestureRecognizer_ = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                            action:@selector(handleTap:)];
     nonEditTapGestureRecognizer_.delegate = gestureRecognizerDelegate_;
     [nonEditTapGestureRecognizer_ requireGestureRecognizerToFail:doubleTapAndDragGestureRecognizer_];
-    
     tapGestureRecognizer_ = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                     action:@selector(handleTap:)];
     tapGestureRecognizer_.delegate = gestureRecognizerDelegate_;
-    
     longPressGestureRecognizer_ = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                                 action:@selector(handleLongPress:)];
     longPressGestureRecognizer_.delegate = gestureRecognizerDelegate_;
-    
     [self addGestureRecognizer:tapGestureRecognizer_];
     [self addGestureRecognizer:nonEditTapGestureRecognizer_];
     [self addGestureRecognizer:longPressGestureRecognizer_];
@@ -172,12 +173,11 @@
 - (void)dealloc
 {
     [text_ release];
-    [framesetter_ release];
     
     [horizontalRuleColor_ release];
     [verticalMarginColor_ release];
 
-    [inputTextAttributes_ release];
+    [framesetter_ release];
     
     [visibleSections_ release];
     [reusableSections_ release];
@@ -185,23 +185,25 @@
     [underlayViews_ release];
     [overlayViews release];
     [selectionDisplayController_ release];
-    [bandLoupe_ release];
-    [roundLoupe_ release];
+    [textRangeLoupe_ release];
+    [caretLoupe_ release];
 
-    [interimSelectedTextRange_ release];
+    [gestureTextRange_ release];
     [selectedTextRange_ release];
     [markedTextRange_ release];
     [markedTextStyle_ release];
     [markedText_ release];
-
+    
+    [inputTextAttributes_ release];
+    
     [tokenizer_ release];
-
+    
     [gestureRecognizerDelegate_ release];
     [nonEditTapGestureRecognizer_ release];
     [tapGestureRecognizer_ release];
     [longPressGestureRecognizer_ release];
     [doubleTapAndDragGestureRecognizer_ release];
-    [doubleTapStartTextPosition_ release];
+    [initialDoubleTapTextPosition_ release];
     
     [super dealloc];
 }
@@ -229,13 +231,17 @@
     }
     
     [super setFrame:frame];
-    [self regenerateContents];
+    [self regenerateTextFrame];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Laying out Views
 
+// Called when scrolling occurs (behavior inherited from UIScrollView). We tile the sections as
+// neccesary whenever scrolling occurs.
+//
 - (void)layoutSubviews 
 {
     [super layoutSubviews];
@@ -246,12 +252,19 @@
 
 #pragma mark Accessing the Text
 
-- (void)setText:(NSMutableAttributedString *)text
+- (void)setText:(NSAttributedString *)text
 {
-    [text retain];
+    if (text_ == text)
+    {
+        return;
+    }
+    
     [text_ release];
-    text_ = text;
-    [self regenerateContents];
+    text_ = [[NSMutableAttributedString alloc] initWithAttributedString:text];
+    [self regenerateTextFrame];
+    self.gestureTextRange = nil;
+    self.selectedTextRange = nil;
+    self.markedTextRange = nil;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -260,39 +273,27 @@
 
 - (void)setMargins:(UIEdgeInsets)margins
 {
-    if (UIEdgeInsetsEqualToEdgeInsets(margins_, margins))
-    {
-        return;
-    }
-    
     margins_ = margins;
-    [self regenerateContents];
+    [self regenerateTextFrame];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)setLineHeight:(CGFloat)lineHeight 
 {
     lineHeight_ = lineHeight;
-    [self regenerateContents];
+    [self regenerateTextFrame];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)setHorizontalRulesEnabled:(BOOL)horizontalRulesEnabled
-{
-    if (horizontalRulesEnabled_ == horizontalRulesEnabled)
-    {
-        return;
-    }
-    
+{   
     horizontalRulesEnabled_ = horizontalRulesEnabled;
-    [self regenerateContents];
+    [self untileVisibleSections];
+    [self tileSections];
 }
 
 - (void)setHorizontalRuleColor:(UIColor *)horizontalRuleColor
 {
-    if (horizontalRuleColor_ == horizontalRuleColor)
-    {
-        return;
-    }
-    
     [horizontalRuleColor_ release];
     horizontalRuleColor_ = [horizontalRuleColor retain];
     [self untileVisibleSections];
@@ -301,11 +302,6 @@
 
 - (void)setHorizontalRuleOffset:(CGFloat)horizontalRuleOffset
 {
-    if (horizontalRuleOffset_ == horizontalRuleOffset)
-    {
-        return;
-    }
-    
     horizontalRuleOffset_ = horizontalRuleOffset;
     [self untileVisibleSections];
     [self tileSections];
@@ -313,11 +309,6 @@
 
 - (void)setVerticalMarginEnabled:(BOOL)verticalMarginEnabled
 {
-    if (verticalMarginEnabled_ == verticalMarginEnabled)
-    {
-        return;
-    }
-    
     verticalMarginEnabled_ = verticalMarginEnabled;
     [self untileVisibleSections];
     [self tileSections];
@@ -325,11 +316,6 @@
 
 - (void)setVerticalMarginColor:(UIColor *)verticalMarginColor
 {
-    if (verticalMarginColor_ == verticalMarginColor)
-    {
-        return;
-    }
-    
     [verticalMarginColor_ release];
     verticalMarginColor_ = [verticalMarginColor retain];
     [self untileVisibleSections];
@@ -338,11 +324,6 @@
 
 - (void)setVerticalMarginInset:(CGFloat)verticalMarginInset
 {
-    if (verticalMarginInset_ == verticalMarginInset)
-    {
-        return;
-    }
-    
     verticalMarginInset_ = verticalMarginInset;
     [self untileVisibleSections];
     [self tileSections];
@@ -379,7 +360,7 @@
             
             if (section == nil)
             {
-                section = [[NKTTextSection alloc] initWithFrame:self.bounds];
+                section = [[NKTTextSection alloc] initWithFrame:bounds];
             }
             
             [self configureSection:section atIndex:index];
@@ -461,21 +442,6 @@
     return self.bounds.size.width - margins_.left - margins_.right;
 }
 
-- (void)invalidateFramesetter
-{
-    [framesetter_ release];
-    framesetter_ = nil;
-}
-
-- (void)regenerateContents
-{
-    [self invalidateFramesetter];
-    [self untileVisibleSections];
-    [self tileSections];
-    [self updateContentSize];
-    [selectionDisplayController_ updateSelectionElements];
-}
-
 - (NKTFramesetter *)framesetter
 {
     if (framesetter_ == nil)
@@ -486,10 +452,36 @@
     return framesetter_;    
 }
 
+- (void)invalidateFramesetter
+{
+    [framesetter_ release];
+    framesetter_ = nil;
+}
+
+- (void)regenerateTextFrame
+{
+    [self invalidateFramesetter];
+    [self untileVisibleSections];
+    [self tileSections];
+    [self updateContentSize];
+}
+
+- (CGPoint)convertPointToFramesetter:(CGPoint)point
+{
+    return CGPointMake(point.x - margins_.left, point.y - margins_.top);
+}
+
+- (CGPoint)convertPointFromFramesetter:(CGPoint)point
+{
+    return CGPointMake(point.x + margins_.left, point.y + margins_.top);
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Managing the Responder Chain
 
+// Returning YES allows the view to receive keyboard input
+//
 - (BOOL)canBecomeFirstResponder
 {
     return YES;
@@ -504,9 +496,10 @@
         return NO;
     }
     
-    [self setSelectedTextRange:nil affinity:UITextStorageDirectionForward notifyInputDelegate:NO];
-    selectionDisplayController_.caretVisible = NO;
-
+    self.gestureTextRange = nil;
+    [self setSelectedTextRange:nil notifyInputDelegate:NO];
+    self.markedTextRange = nil;
+    
     if ([self.delegate respondsToSelector:@selector(textViewDidEndEditing:)])
     {
         [self.delegate textViewDidEndEditing:self];
@@ -515,21 +508,9 @@
     return YES;
 }
 
-- (BOOL)becomeFirstResponder
-{
-    BOOL becameFirstResponder = [super becomeFirstResponder];
-    selectionDisplayController_.caretVisible = YES;
-    return becameFirstResponder;
-}
-
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Responding to Gestures
-
-- (CGPoint)convertPointToFramesetter:(CGPoint)point
-{
-    return CGPointMake(point.x - margins_.left, point.y - margins_.top);
-}
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
 {
@@ -547,22 +528,16 @@
         }
     }
     
-    CGPoint touchLocation = [gestureRecognizer locationInView:self];
-    CGPoint framesetterPoint = [self convertPointToFramesetter:touchLocation];
-    UITextStorageDirection affinity = UITextStorageDirectionForward;
-    NKTTextPosition *textPosition = [self.framesetter closestLogicalTextPositionToPoint:framesetterPoint
-                                                                               affinity:&affinity];
-    [self setSelectedTextRange:[textPosition textRange] affinity:affinity notifyInputDelegate:YES];
-    
-    // Marked text loses provisional status if selected text range moves outside it
-    if (![markedTextRange_ containsTextPosition:textPosition])
-    {
-        self.markedTextRange = nil;
-    }
+    CGPoint point = [gestureRecognizer locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionToPoint:framesetterPoint];
+    [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:YES];
+    self.markedTextRange = nil;
+    selectionDisplayController_.caretVisible = YES;
     
     if (becameFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
     {
-        [self.delegate textViewDidBeginEditing:self];        
+        [self.delegate textViewDidBeginEditing:self];
     }
 }
 
@@ -571,140 +546,118 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan ||
         gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        CGPoint touchLocation = [gestureRecognizer locationInView:self];
-        CGPoint framesetterPoint = [self convertPointToFramesetter:touchLocation];
-        NKTTextPosition *textPosition = nil;
-        UITextStorageDirection affinity = UITextStorageDirectionForward;
-        
-        // Text position computation depends on whether there is marked text or not
-        if (markedTextRange_ != nil && !markedTextRange_.empty)
-        {
-            textPosition = [self.framesetter closestGeometricTextPositionToPoint:framesetterPoint affinity:&affinity];
-            [self configureLoupe:self.bandLoupe toMagnifyTextPosition:textPosition];
-            [self.bandLoupe setHidden:NO animated:YES];
-        }
-        else
-        {
-            textPosition = [self.framesetter closestLogicalTextPositionToPoint:framesetterPoint affinity:&affinity];
-            [self configureLoupe:self.roundLoupe toMagnifyPoint:touchLocation anchorToClosestLine:NO];
-            [self.roundLoupe setHidden:NO animated:YES];
-        }
-        
-        [self setInterimSelectedTextRange:[textPosition textRange] affinity:affinity];
+        CGPoint point = [gestureRecognizer locationInView:self];
+        CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+        NKTTextPosition *textPosition = [self.framesetter closestTextPositionToPoint:framesetterPoint];
+        self.gestureTextRange = [textPosition textRange];
+        self.markedTextRange = nil;
+        [self configureLoupe:self.caretLoupe toShowPoint:point anchorToLine:NO];
+        [self.caretLoupe setHidden:NO animated:YES];
         selectionDisplayController_.caretVisible = YES;
     }
     else
     {
-        [self confirmInterimSelectedTextRange];
-        [self.bandLoupe setHidden:YES animated:YES];
-        [self.roundLoupe setHidden:YES animated:YES];
+        [self confirmGestureTextRange];
+        [self.caretLoupe setHidden:YES animated:YES];
         selectionDisplayController_.caretVisible = [self isFirstResponder];
     }
 }
 
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer
 {
-    CGPoint touchLocation = [gestureRecognizer locationInView:self];
-    CGPoint framesetterPoint = [self convertPointToFramesetter:touchLocation];
-    UITextStorageDirection affinity = UITextStorageDirectionForward;
-    NKTTextPosition *textPosition = [self.framesetter closestLogicalTextPositionToPoint:framesetterPoint
-                                                                               affinity:&affinity];
+    CGPoint point = [gestureRecognizer locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionToPoint:framesetterPoint];
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
-        self.doubleTapStartTextPosition = textPosition;
-        [self setInterimSelectedTextRange:[textPosition textRange] affinity:affinity];
+        self.initialDoubleTapTextPosition = textPosition;
+        self.gestureTextRange = [textPosition textRange];
+        self.markedTextRange = nil;
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        [self configureLoupe:self.bandLoupe toMagnifyPoint:touchLocation anchorToClosestLine:YES];
-        [self.bandLoupe setHidden:NO animated:YES];
-        NKTTextRange *textRange = [self.doubleTapStartTextPosition textRangeWithTextPosition:textPosition];
-        [self setInterimSelectedTextRange:textRange affinity:affinity];
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:self.initialDoubleTapTextPosition
+                                                           textPosition:textPosition];
+        [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
+        [self.textRangeLoupe setHidden:NO animated:YES];
     }
     else
     {
-        [self confirmInterimSelectedTextRange];
-        [self.bandLoupe setHidden:YES animated:YES];
-        self.doubleTapStartTextPosition = nil;
+        self.initialDoubleTapTextPosition = nil;
+        [self confirmGestureTextRange];
+        [self.textRangeLoupe setHidden:YES animated:YES];
     }
-}
-
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Getting Lines
-
-- (NSInteger)virtualIndexForLineContainingPoint:(CGPoint)point
-{
-    return (NSInteger)floor((point.y - margins_.top) / lineHeight_);
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Managing Loupes
 
-- (NKTLoupe *)bandLoupe
+- (NKTLoupe *)textRangeLoupe
 {    
-    if (bandLoupe_ == nil)
+    if (textRangeLoupe_ == nil)
     {
-        bandLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
-        bandLoupe_.hidden = YES;
-        bandLoupe_.zoomedView = self;
+        textRangeLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
+        textRangeLoupe_.hidden = YES;
+        textRangeLoupe_.zoomedView = self;
         
         if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
         {
-            bandLoupe_.fillColor = [self.delegate loupeFillColor];
+            textRangeLoupe_.fillColor = [self.delegate loupeFillColor];
         }
         
         if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
         {
-            [self.delegate addLoupe:bandLoupe_];
+            [self.delegate addLoupe:textRangeLoupe_];
         }
         else
         {
-            [self.superview addSubview:bandLoupe_];
+            [self.superview addSubview:textRangeLoupe_];
         }
     }
     
-    return bandLoupe_;
+    return textRangeLoupe_;
 }
 
-- (NKTLoupe *)roundLoupe
+- (NKTLoupe *)caretLoupe
 {
-    if (roundLoupe_ == nil)
+    if (caretLoupe_ == nil)
     {
-        roundLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
-        roundLoupe_.hidden = YES;
-        roundLoupe_.zoomedView = self;
+        caretLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
+        caretLoupe_.hidden = YES;
+        caretLoupe_.zoomedView = self;
 
         if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
         {
-            roundLoupe_.fillColor = [self.delegate loupeFillColor];
+            caretLoupe_.fillColor = [self.delegate loupeFillColor];
         }
         
         if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
         {
-            [self.delegate addLoupe:roundLoupe_];
+            [self.delegate addLoupe:caretLoupe_];
         }
         else
         {
-            [self.superview addSubview:roundLoupe_];
+            [self.superview addSubview:caretLoupe_];
         }
     }
     
-    return roundLoupe_;
+    return caretLoupe_;
 }
 
-- (void)configureLoupe:(NKTLoupe *)loupe toMagnifyPoint:(CGPoint)point anchorToClosestLine:(BOOL)anchorToLine
+- (void)configureLoupe:(NKTLoupe *)loupe toShowPoint:(CGPoint)point anchorToLine:(BOOL)anchorToLine
 {
     if (anchorToLine)
     {
         // Set the zoom center of the loupe to the baseline with the same offset as the original point
-        NKTLine *line = [self.framesetter lineClosestToPoint:point];
-        CGPoint zoomCenter = CGPointMake(point.x, line.origin.y);
+        CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+        NKTLine *line = [self.framesetter lineClosestToPoint:framesetterPoint];
+        CGPoint baselineOrigin = [self convertPointFromFramesetter:line.baselineOrigin];
+        CGPoint zoomCenter = CGPointMake(point.x, baselineOrigin.y);
         loupe.zoomCenter = [self convertPoint:zoomCenter toView:loupe.zoomedView];
-        // Anchor loupe to a point just on top of the line with the same offset as the original point
-        CGPoint anchor = CGPointMake(point.x, line.origin.y - (lineHeight_ * 0.8));
+        // Anchor loupe to a point just on top of the line
+        CGPoint anchor = CGPointMake(point.x, baselineOrigin.y - (lineHeight_ * 0.75));
         anchor = KBCClampPointToRect(anchor, self.bounds);
         loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
@@ -715,19 +668,17 @@
         CGPoint anchor = KBCClampPointToRect(point, self.bounds);
         loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
-    
-    [loupe setHidden:NO animated:YES];
 }
 
-- (void)configureLoupe:(NKTLoupe *)loupe toMagnifyTextPosition:(NKTTextPosition *)textPosition
+- (void)configureLoupe:(NKTLoupe *)loupe toShowTextPosition:(NKTTextPosition *)textPosition
 {
-    CGPoint sourcePoint = [self.framesetter originForCharAtTextPosition:textPosition affinity:selectionAffinity_];
-    loupe.zoomCenter = [self convertPoint:sourcePoint toView:loupe.zoomedView];
-    // Anchor loupe to a point just on top of the text position, clamped to the bounds rect
-    CGPoint anchor = CGPointMake(sourcePoint.x, sourcePoint.y - (lineHeight_ * 0.8));
+    CGPoint framesetterPoint = [self.framesetter baselineOriginForCharAtTextPosition:textPosition];
+    CGPoint point = [self convertPointFromFramesetter:framesetterPoint];
+    loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];
+    // Anchor loupe to a point just on top of the text position
+    CGPoint anchor = CGPointMake(point.x, point.y - (lineHeight_ * 0.75));
     anchor = KBCClampPointToRect(anchor, self.bounds);
     loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
-    [loupe setHidden:NO animated:YES];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -738,6 +689,7 @@
 //
 - (BOOL)hasText
 {
+    KBCLogDebug(@"");
     return [text_ length] > 0;
 }
 
@@ -745,6 +697,8 @@
 //
 - (void)insertText:(NSString *)text
 {
+    KBCLogDebug(text);
+    
     if (markedTextRange_ == nil && selectedTextRange_ == nil)
     {
         KBCLogWarning(@"marked text range and selected text range are both nil, ignoring");
@@ -752,19 +706,17 @@
     }
     
     // Figure out the attributes that inserted text needs to have
-    
     NSDictionary *inputTextAttributes = self.inputTextAttributes;
-    NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
+    NKTTextRange *insertionTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
     NSDictionary *inheritedAttributes = nil;
     
-    // Get the inherited attributes
     if ([self hasText])
     {
-        NSUInteger inheritedAttributesIndex = replacementTextRange.start.location;
+        NSUInteger inheritedAttributesIndex = insertionTextRange.start.location;
         
         // If the replacement range is empty, inserted characters inherit the attributes of the
         // character preceding the range, if any.
-        if (replacementTextRange.empty && inheritedAttributesIndex > 0)
+        if (insertionTextRange.empty && inheritedAttributesIndex > 0)
         {
             inheritedAttributesIndex = inheritedAttributesIndex - 1;
         }
@@ -776,38 +728,42 @@
         inheritedAttributes = [text_ attributesAtIndex:inheritedAttributesIndex effectiveRange:NULL];
     }
     
-    // We can avoid creating a new range of attributed text if the attributes that would be
-    // inherited after insertion match the insertion attributes
+    // It is possible to avoid creating a new range of attributed text if the attributes that
+    // would be inherited from the string following insertion match the insertion attributes
     if ([inheritedAttributes isEqualToDictionary:inputTextAttributes])
     {
-        [text_ replaceCharactersInRange:replacementTextRange.range withString:text];
+        [text_ replaceCharactersInRange:insertionTextRange.range withString:text];
     }
     else
     {
         NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text
                                                                                attributes:inputTextAttributes];
-        [text_ replaceCharactersInRange:replacementTextRange.range withAttributedString:attributedString];
+        [text_ replaceCharactersInRange:insertionTextRange.range withAttributedString:attributedString];
         [attributedString release];
     }
     
-    [self regenerateContents];
+    // TODO: extract a method for this block
+    [self.framesetter textChangedFromTextPosition:insertionTextRange.start];
+    [self untileVisibleSections];
+    [self tileSections];
+    [self updateContentSize];
     
-    // Notify delegate
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
     {
         [self.delegate textViewDidChange:self];
     }
     
-    // Update selection
-    NKTTextPosition *textPosition = [replacementTextRange.start textPositionByApplyingOffset:[text length]];
+    NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
+    [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
     self.markedTextRange = nil;
-    [self setSelectedTextRange:[textPosition textRange] affinity:UITextStorageDirectionForward notifyInputDelegate:NO];
 }
 
 // UITextInput method
 //
 - (void)deleteBackward
 {
+    KBCLogDebug(@"");
+    
     if (markedTextRange_ == nil && selectedTextRange_ == nil)
     {
         KBCLogWarning(@"marked text range and selected text range are nil, ignoring");
@@ -827,19 +783,16 @@
     }
     
     [text_ deleteCharactersInRange:deletionTextRange.range];
-    [self regenerateContents];
+    // TODO: frameset intelligently
+    [self regenerateTextFrame];
     
-    // Notify delegate
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
     {
         [self.delegate textViewDidChange:self];
     }
     
-    // The marked text range no longer exists
+    [self setSelectedTextRange:[deletionTextRange.start textRange] notifyInputDelegate:NO];
     self.markedTextRange = nil;
-    [self setSelectedTextRange:[deletionTextRange.start textRange]
-                      affinity:UITextStorageDirectionForward
-           notifyInputDelegate:NO];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -850,8 +803,8 @@
 //
 - (NSString *)textInRange:(NKTTextRange *)textRange
 {
-//    KBCLogDebug(@"range: %@", NSStringFromRange(textRange.NSRange));
-    
+    KBCLogDebug(@"%@", textRange);
+    // TODO: optimization, return text_ if entire range requested
     return [[text_ string] substringWithRange:textRange.range];
 }
 
@@ -859,10 +812,10 @@
 //
 - (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText
 {
-    KBCLogDebug(@"range: %@ text: %@", NSStringFromRange(textRange.range), replacementText);
-    
+    KBCLogDebug(@"%@ : %@", textRange, replacementText);
     [text_ replaceCharactersInRange:textRange.range withString:replacementText];
-    [self regenerateContents];
+    // TODO: frameset intelligently
+    [self regenerateTextFrame];
     
     // The text range to be replaced lies fully before the selected text range
     if (textRange.end.location <= selectedTextRange_.start.location)
@@ -870,7 +823,7 @@
         NSInteger changeInLength = [replacementText length] - textRange.length;
         NSUInteger newStartIndex = selectedTextRange_.start.location + changeInLength;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLocation:newStartIndex];
-        [self setSelectedTextRange:newTextRange affinity:UITextStorageDirectionForward notifyInputDelegate:NO];
+        [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
     // The text range overlaps the selected text range
     else if ((textRange.start.location >= selectedTextRange_.start.location) &&
@@ -878,7 +831,7 @@
     {
         NSUInteger newLength = textRange.start.location - selectedTextRange_.start.location;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLength:newLength];
-        [self setSelectedTextRange:newTextRange affinity:UITextStorageDirectionForward notifyInputDelegate:NO];
+        [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
 }
 
@@ -886,37 +839,51 @@
 
 #pragma mark Managing Text Ranges
 
-- (NKTTextRange *)interimSelectedTextRange
+- (NKTTextRange *)gestureTextRange
 {
-    return interimSelectedTextRange_;
+    return gestureTextRange_;
 }
 
-- (void)setInterimSelectedTextRange:(NKTTextRange *)interimSelectedTextRange affinity:(UITextStorageDirection)affinity
+- (void)setGestureTextRange:(NKTTextRange *)textRange
 {
-    if (![interimSelectedTextRange_ isEqualToTextRange:interimSelectedTextRange])
+    if (![gestureTextRange_ isEqualToTextRange:textRange])
     {
-        [interimSelectedTextRange_ retain];
-        [interimSelectedTextRange_ release];
-        interimSelectedTextRange_ = interimSelectedTextRange_;
+        [gestureTextRange_ release];
+        gestureTextRange_ = [textRange copy];
     }
     
-    // The selection elements are updated because the caret might change even if the selected text
-    // range did not change
-    self.selectionAffinity = affinity;
-    [selectionDisplayController_ updateSelectionElements];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
-- (void)confirmInterimSelectedTextRange
+- (void)confirmGestureTextRange
 {
-    [self setSelectedTextRange:interimSelectedTextRange_ affinity:selectionAffinity_ notifyInputDelegate:YES];
-    [self setInterimSelectedTextRange:nil affinity:UITextStorageDirectionForward];
+    [self setSelectedTextRange:gestureTextRange_ notifyInputDelegate:YES];
+    self.gestureTextRange = nil;
 }
 
-- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange
-                    affinity:(UITextStorageDirection)affinity
-         notifyInputDelegate:(BOOL)notifyInputDelegate
+// UITextInput method
+//
+- (UITextRange *)selectedTextRange
 {
-    if (![selectedTextRange_ isEqualToTextRange:selectedTextRange])
+    return selectedTextRange_;
+}
+
+// UITextInput method
+//
+- (void)setSelectedTextRange:(NKTTextRange *)textRange
+{
+    // TODO/HACK/NOTE:
+    // Always notify the input delegate when this method is called. The UITextInput system seem
+    // to expect this method to notify the system when the selected text range is set. For
+    // example, the UITextInput autocorrection prompts do not dismiss when the keyboard navigates
+    // away from the text position (through this method) unless we notify the input delegate that
+    // the selected text range has changed.
+    [self setSelectedTextRange:textRange notifyInputDelegate:YES];
+}
+
+- (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate
+{
+    if (![selectedTextRange_ isEqualToTextRange:textRange])
     {
         if (notifyInputDelegate)
         {
@@ -924,7 +891,7 @@
         }
         
         [selectedTextRange_ release];
-        selectedTextRange_ = [selectedTextRange copy];
+        selectedTextRange_ = [textRange copy];
         
         // The input text attributes are cleared when the selected text range changes
         self.inputTextAttributes = nil;
@@ -940,75 +907,33 @@
         }
     }
     
-    // The selection elements are updated because the caret might change even if the selected text
-    // range did not change
-    self.selectionAffinity = affinity;
-    [selectionDisplayController_ updateSelectionElements];
-}
-
-// UITextInput method
-//
-- (UITextRange *)selectedTextRange
-{
-    return selectedTextRange_;
-}
-
-// UITextInput method
-//
-- (void)setSelectedTextRange:(NKTTextRange *)selectedTextRange
-{
-    [self setSelectedTextRange:selectedTextRange affinity:UITextStorageDirectionForward notifyInputDelegate:NO];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 // UITextInput method
 //
 - (UITextRange *)markedTextRange
 {
-//    KBCLogTrace();
-    
     return markedTextRange_;
 }
 
-// UITextInput method
-//
-- (NSDictionary *)markedTextStyle
+- (void)setMarkedTextRange:(NKTTextRange *)textRange
 {
-//    KBCLogTrace();
-    
-    return markedTextStyle_;
-}
-
-// UITextInput method
-//
-- (void)setMarkedTextStyle:(NSDictionary *)markedTextStyle
-{
-    KBCLogTrace();
-    
-    if (markedTextStyle_ == markedTextStyle)
+    if (![markedTextRange_  isEqualToTextRange:textRange])
     {
-        return;
+        [markedTextRange_ release];
+        markedTextRange_ = [textRange copy];
     }
     
-    [markedTextStyle_ release];
-    markedTextStyle_ = [markedTextStyle copy];
-}
-
-- (void)setMarkedTextRange:(NKTTextRange *)markedTextRange
-{
-    if (markedTextRange_ == markedTextRange)
-    {
-        return;
-    }
-    
-    [markedTextRange_ release];
-    markedTextRange_ = [markedTextRange copy];
-    [selectionDisplayController_ updateSelectionElements];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 // UITextInput method
 //
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)relativeSelectedRange
 {
+    KBCLogDebug(@"%@ : %@", markedText, NSStringFromRange(relativeSelectedRange));
+    // TODO: accessor for marked text property
     [markedText_ autorelease];
     markedText_ = [markedText copy];
     
@@ -1018,7 +943,6 @@
     }
     
     // Figure out the attributes that inserted text needs to have
-    
     NSDictionary *inputTextAttributes = self.inputTextAttributes;
     NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_
@@ -1026,15 +950,17 @@
     [text_ replaceCharactersInRange:replacementTextRange.range withAttributedString:attributedString];
     [attributedString release];
     
-    [self regenerateContents];
+    // TODO: frameset intelligently
+    [self regenerateTextFrame];
     
     NKTTextRange *textRange = [replacementTextRange textRangeByChangingLength:[markedText_ length]];
     self.markedTextRange = textRange;
     
     // Update the selected text range within the marked text
-    NSUInteger newIndex = markedTextRange_.start.location + relativeSelectedRange.location;
-    NKTTextRange *newTextRange = [NKTTextRange textRangeWithRange:NSMakeRange(newIndex, relativeSelectedRange.length)];
-    [self setSelectedTextRange:newTextRange affinity:UITextStorageDirectionForward notifyInputDelegate:NO];
+    NSRange range = NSMakeRange(markedTextRange_.start.location + relativeSelectedRange.location,
+                                relativeSelectedRange.length);
+    NKTTextRange *newTextRange = [NKTTextRange textRangeWithRange:range affinity:UITextStorageDirectionForward];
+    [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     
     // Input text attributes are reset when marked text is set
     self.inputTextAttributes = nil;
@@ -1052,15 +978,15 @@
 // UITextInput method
 //
 - (UITextStorageDirection)selectionAffinity
-{    
-    return selectionAffinity_;
+{
+    return (selectedTextRange_ != nil) ? selectedTextRange_.affinity : UITextStorageDirectionForward;
 }
 
 // UITextInput method
 //
-- (void)setSelectionAffinity:(UITextStorageDirection)selectionAffinity
+- (void)setSelectionAffinity:(UITextStorageDirection)direction
 {
-    selectionAffinity_ = selectionAffinity;
+    KBCLogWarning(@"unexpected method call");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1071,32 +997,30 @@
 //
 - (UITextRange *)textRangeFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
 {
-//    KBCLogDebug(@"%d : %d", fromPosition.index, toPosition.index);
-    
-    return [fromPosition textRangeWithTextPosition:toPosition];
+    KBCLogDebug(@"%@ : %@", fromPosition, toPosition);    
+    return [NKTTextRange textRangeWithTextPosition:fromPosition textPosition:toPosition];
 }
 
 // UITextInput method
 //
 - (UITextPosition *)positionFromPosition:(NKTTextPosition *)textPosition offset:(NSInteger)offset
 {
-//    KBCLogDebug(@"%d : %d", textPosition.index, offset);
+    KBCLogDebug(@"%@ : %d", textPosition, offset);    
+    NSInteger location = (NSInteger)textPosition.location + offset;
     
-    NSInteger index = (NSInteger)textPosition.location + offset;
-    
-    if (index < 0)
+    if (location < 0)
     {
-        return [NKTTextPosition textPositionWithLocation:0];
+        return [NKTTextPosition textPositionWithLocation:0 affinity:UITextStorageDirectionForward];
     }
-    else if (index > [text_ length])
+    else if (location > [text_ length])
     {
-        return [NKTTextPosition textPositionWithLocation:[text_ length]];
+        return [NKTTextPosition textPositionWithLocation:[text_ length] affinity:UITextStorageDirectionForward];
     }
-    
-    return [NKTTextPosition textPositionWithLocation:index];
+    else
+    {
+        return [NKTTextPosition textPositionWithLocation:(NSUInteger)location affinity:UITextStorageDirectionForward];
+    }
 }
-
-//--------------------------------------------------------------------------------------------------
 
 // UITextInput method
 //
@@ -1104,29 +1028,22 @@
                              inDirection:(UITextLayoutDirection)direction
                                   offset:(NSInteger)offset
 {
-//    KBCLogDebug(@"%d : %@ : %d", textPosition.index, KBTStringFromUITextDirection(direction), offset);
-    
-    NKTTextPosition *offsetTextPosition = nil;
+    KBCLogDebug(@"%@ : %@ : %d", textPosition, KBTStringFromUITextDirection(direction), offset);    
     
     switch (direction)
     {
         case UITextLayoutDirectionRight:
         {
-            offsetTextPosition = (NKTTextPosition *)[self positionFromPosition:textPosition offset:offset];
-            break;
+            return [self positionFromPosition:textPosition offset:offset];
         }
         case UITextLayoutDirectionLeft:
         {
-            offsetTextPosition = (NKTTextPosition *)[self positionFromPosition:textPosition offset:-offset];
-            break;
+            return [self positionFromPosition:textPosition offset:-offset];
         }
         case UITextLayoutDirectionUp:
         {
-            // TODO: affinity affects this! Things change if we are at end of line or start of line ...
+            NKTLine *initialLine = [self.framesetter lineForCaretAtTextPosition:textPosition];
             
-            NKTLine *initialLine = [self.framesetter lineContainingTextPosition:textPosition];
-            
-            // Return the beginning of document if offset puts the position above the first line
             if (offset > initialLine.index)
             {
                 return [self beginningOfDocument];
@@ -1134,13 +1051,12 @@
             
             NSUInteger targetLineIndex = initialLine.index - offset;
             NKTLine *targetLine = [self.framesetter lineAtIndex:targetLineIndex];
-            CGPoint point = [self.framesetter originForCharAtTextPosition:textPosition affinity:selectionAffinity_];            
-            CGPoint targetLinePoint = [self.framesetter convertPoint:point toLine:targetLine];
-            return [targetLine closestTextPositionToPoint:targetLinePoint];
+            CGPoint framesetterPoint = [self.framesetter baselineOriginForCharAtTextPosition:textPosition];
+            return [targetLine closestTextPositionToFramesetterPoint:framesetterPoint];
         }
         case UITextLayoutDirectionDown:
         {
-            NKTLine *initialLine = [self.framesetter lineContainingTextPosition:textPosition];
+            NKTLine *initialLine = [self.framesetter lineForCaretAtTextPosition:textPosition];
             NSUInteger targetLineIndex = initialLine.index + offset;
             
             if (targetLineIndex >= self.framesetter.numberOfLines)
@@ -1149,13 +1065,13 @@
             }
             
             NKTLine *targetLine = [self.framesetter lineAtIndex:targetLineIndex];
-            CGPoint point = [self.framesetter originForCharAtTextPosition:textPosition affinity:selectionAffinity_];
-            CGPoint targetLinePoint = [self.framesetter convertPoint:point toLine:targetLine];
-            return [targetLine closestTextPositionToPoint:targetLinePoint];
+            CGPoint framesetterPoint = [self.framesetter baselineOriginForCharAtTextPosition:textPosition];
+            return [targetLine closestTextPositionToFramesetterPoint:framesetterPoint];
         }
     }
     
-    return offsetTextPosition;
+    KBCLogWarning(@"unknown direction, returning nil");
+    return nil;
 }
 
 // UITextInput method
@@ -1164,7 +1080,7 @@
 {
 //    KBCLogTrace();
     
-    return [NKTTextPosition textPositionWithLocation:0];
+    return [NKTTextPosition textPositionWithLocation:0 affinity:UITextStorageDirectionForward];
 }
 
 // UITextInput method
@@ -1172,7 +1088,7 @@
 {
 //    KBCLogTrace();
     
-    return [NKTTextPosition textPositionWithLocation:[text_ length]];
+    return [NKTTextPosition textPositionWithLocation:[text_ length] affinity:UITextStorageDirectionForward];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1183,7 +1099,7 @@
 //
 - (NSComparisonResult)comparePosition:(NKTTextPosition *)textPosition toPosition:(NKTTextPosition *)otherTextPosition
 {
-//    KBCLogDebug(@"position: %d position: %d", textPosition.index, otherTextPosition.index);
+    KBCLogDebug(@"%@ : %@", textPosition, otherTextPosition);
     
     if (textPosition.location < otherTextPosition.location)
     {
@@ -1194,7 +1110,7 @@
         return NSOrderedDescending;
     }
     else
-    {
+    {        
         return NSOrderedSame;
     }
 }
@@ -1203,8 +1119,7 @@
 //
 - (NSInteger)offsetFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
 {
-//    KBCLogDebug(@"position: %d position: %d", fromPosition.index, toPosition.index);
-    
+    KBCLogDebug(@"%@ : %@", fromPosition, toPosition);
     return (toPosition.location - fromPosition.location);
 }
 
@@ -1216,8 +1131,7 @@
 //
 - (UITextPosition *)positionWithinRange:(NKTTextRange *)textRange farthestInDirection:(UITextLayoutDirection)direction
 {
-    KBCLogDebug(@"range: %@ direction: %d", textRange.range, direction);
-    
+    KBCLogDebug(@"%@ : %@", textRange, KBTStringFromUITextDirection(direction));
     NKTTextPosition *textPosition = nil;
     
     switch (direction)
@@ -1252,27 +1166,29 @@
 - (UITextRange *)characterRangeByExtendingPosition:(NKTTextPosition *)textPosition
                                        inDirection:(UITextLayoutDirection)direction
 {
-    KBCLogDebug(@"position: %d direction: %d", textPosition.location, direction);
+    KBCLogDebug(@"%@ : %@", textPosition, KBTStringFromUITextDirection(direction));
     
     switch (direction)
     {
         case UITextLayoutDirectionRight:
         {
-            NKTLine *line = [self.framesetter lineContainingTextPosition:textPosition];
+            NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
             return [line.textRange textRangeByClippingUntilTextPosition:textPosition];
         }
         case UITextLayoutDirectionLeft:
         {
-            NKTLine *line = [self.framesetter lineContainingTextPosition:textPosition];
+            NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
             return [line.textRange textRangeByClippingFromTextPosition:textPosition];
         }
         case UITextLayoutDirectionUp:
         {
-            return [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self beginningOfDocument]];
+            return [NKTTextRange textRangeWithTextPosition:textPosition
+                                              textPosition:(NKTTextPosition *)[self beginningOfDocument]];
         }
         case UITextLayoutDirectionDown:
         {
-            return [textPosition textRangeWithTextPosition:(NKTTextPosition *)[self endOfDocument]];
+            return [NKTTextRange textRangeWithTextPosition:textPosition
+                                              textPosition:(NKTTextPosition *)[self endOfDocument]];
         }
     }
     
@@ -1283,19 +1199,28 @@
 - (UITextWritingDirection)baseWritingDirectionForPosition:(NKTTextPosition *)textPosition
                                               inDirection:(UITextStorageDirection)direction
 {
-    KBCLogDebug(@"position: %d direction: %d", textPosition.location, direction);
-
+    KBCLogDebug(@"%@ : %@", textPosition, KBTStringFromUITextDirection(direction));
     return UITextWritingDirectionNatural;
 }
 
-- (void)setBaseWritingDirection:(UITextWritingDirection)writingDirection forRange:(NKTTextRange *)textRange
+- (void)setBaseWritingDirection:(UITextWritingDirection)direction forRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"direction: %d range: %@", writingDirection, NSStringFromRange(textRange.range));
+    KBCLogDebug(@"%@ : %@", KBTStringFromUITextDirection(direction), textRange);
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Geometry and Hit-Testing
+
+- (CGAffineTransform)viewToFramesetterTransform
+{
+    return CGAffineTransformMakeTranslation(-margins_.left, -margins_.top);    
+}
+
+- (CGAffineTransform)framesetterToViewTransform
+{
+    return CGAffineTransformMakeTranslation(margins_.left, margins_.top);
+}
 
 // If the end of the text range is the end of the text and ends in a line break, the last rect
 // returned will span the end of the rect for the last line to take into account the presence
@@ -1303,15 +1228,14 @@
 //
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange
 {
-    return [self.framesetter rectsForTextRange:textRange];
+    return [self.framesetter rectsForTextRange:textRange transform:[self framesetterToViewTransform]];
 }
 
 // UITextInput method
 //
 - (CGRect)firstRectForRange:(NKTTextRange *)textRange
 {
-//    KBCLogDebug(@"range: %@", NSStringFromRange(textRange.NSRange));
-    
+    KBCLogDebug(@"%@", textRange);
     NSArray *rects = [self rectsForTextRange:textRange];
     
     if (rects != nil)
@@ -1336,10 +1260,10 @@
     return caretFrame;
 }
 
-- (CGRect)caretRectForTextPosition:(NKTTextPosition *)textPosition
-          applyInputTextAttributes:(BOOL)applyInputTextAttributes
+- (CGRect)caretRectForTextPosition:(NKTTextPosition *)textPosition applyInputTextAttributes:(BOOL)applyInputTextAttributes
 {
-    CGPoint charOrigin = [self.framesetter originForCharAtTextPosition:textPosition affinity:selectionAffinity_];
+    CGPoint framesetterPoint = [self.framesetter baselineOriginForCharAtTextPosition:textPosition];
+    CGPoint charOrigin = [self convertPointFromFramesetter:framesetterPoint];
     UIFont *font = nil;
     
     if (applyInputTextAttributes)
@@ -1368,8 +1292,8 @@
 //
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point
 {
-//    KBCLogDebug(@"point: %@", NSStringFromCGPoint(point));
-    return [self.framesetter closestLogicalTextPositionToPoint:point affinity:NULL];
+    KBCLogDebug(@"%@", NSStringFromCGPoint(point));
+    return [self.framesetter closestTextPositionToPoint:point];
 }
 
 // UITextInput method
@@ -1378,15 +1302,14 @@
 //
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"******* point: %@ range: %@ *******", NSStringFromCGPoint(point), NSStringFromRange(textRange.range));
+    KBCLogDebug(@"%@ : %@", NSStringFromCGPoint(point), textRange);
     return nil;
 }
 
 // UITextInput method
 - (UITextRange *)characterRangeAtPoint:(CGPoint)point
 {
-    KBCLogDebug(@"point: %@", NSStringFromCGPoint(point));
-    
+    KBCLogDebug(@"%@", NSStringFromCGPoint(point));    
     NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:point];
     return [textPosition textRange];
 }
@@ -1412,9 +1335,7 @@
 // UITextInput method
 //
 - (NSDictionary *)textStylingAtPosition:(NKTTextPosition *)textPosition inDirection:(UITextStorageDirection)direction
-{
-    KBCLogDebug(@"position: %d direction: %d", textPosition.location, direction);
-    
+{ 
     UIFont *font = [self fontAtTextPosition:textPosition inDirection:direction];
     UIColor *color = [UIColor blackColor];
     UIColor *backgroundColor = self.backgroundColor;
@@ -1434,12 +1355,12 @@
         return;
     }
     
-    NSUInteger index = textRange.start.location;
+    NSUInteger currentLocation = textRange.start.location;
     
-    while (index < textRange.end.location)
+    while (currentLocation < textRange.end.location)
     {
         NSRange longestEffectiveRange;
-        NSDictionary *attributes = [text_ attributesAtIndex:index
+        NSDictionary *attributes = [text_ attributesAtIndex:currentLocation
                                       longestEffectiveRange:&longestEffectiveRange
                                                     inRange:selectedTextRange_.range];
         NSDictionary *newAttributes = [target performSelector:selector withObject:attributes];
@@ -1449,10 +1370,10 @@
             [text_ setAttributes:newAttributes range:longestEffectiveRange];
         }
         
-        index = longestEffectiveRange.location + longestEffectiveRange.length;
+        currentLocation = longestEffectiveRange.location + longestEffectiveRange.length;
     }
     
-    [self regenerateContents];
+    [self regenerateTextFrame];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1495,7 +1416,7 @@
     else if ((textPosition.location < [self.text length]) &&
              [self.tokenizer isPosition:textPosition
                              atBoundary:UITextGranularityParagraph
-                            inDirection:UITextStorageDirectionForward])
+                            inDirection:UITextStorageDirectionBackward])
     {
         return [self.text attributesAtIndex:textPosition.location effectiveRange:NULL];
     }
@@ -1523,7 +1444,7 @@
     
     [inputTextAttributes_ release];
     inputTextAttributes_ = [inputTextAttributes copy];
-    [selectionDisplayController_ updateSelectionElements];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1607,7 +1528,7 @@
 
 - (NKTTextRange *)textRangeForLineContainingTextPosition:(NKTTextPosition *)textPosition
 {
-    NKTLine *line = [self.framesetter lineContainingTextPosition:textPosition];
+    NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
     return line.textRange;
 }
 

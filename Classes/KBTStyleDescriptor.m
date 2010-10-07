@@ -161,6 +161,11 @@
     return self.fontFamilyDescriptor.supportsItalicTrait;
 }
 
+- (BOOL)fontFamilySupportsBoldItalicTrait
+{
+    return self.fontFamilyDescriptor.supportsBoldItalicTrait;
+}
+
 - (BOOL)fontIsBold
 {
     NSDictionary *attributes = self.attributes;
@@ -238,11 +243,11 @@
 }
 
 - (KBTStyleDescriptor *)styleDescriptorByEnablingBoldTrait
-{
+{    
     return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
                                                   fontSize:self.fontSize
                                                       bold:YES
-                                                    italic:self.fontIsItalic
+                                                    italic:self.fontIsItalic && self.fontFamilySupportsBoldItalicTrait
                                                 underlined:self.textIsUnderlined];
 }
 
@@ -259,7 +264,7 @@
 {
     return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
                                                   fontSize:self.fontSize
-                                                      bold:self.fontIsBold
+                                                      bold:self.fontIsBold && self.fontFamilySupportsBoldItalicTrait
                                                     italic:YES
                                                 underlined:self.textIsUnderlined];
 }

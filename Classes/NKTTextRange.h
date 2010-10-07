@@ -6,22 +6,25 @@
 
 @class NKTTextPosition;
 
-//--------------------------------------------------------------------------------------------------
 // NKTTextRange is a subclass of UITextRange that represents text position with instances of
 // NKTTextPosition.
-//--------------------------------------------------------------------------------------------------
-
+//
 @interface NKTTextRange : UITextRange
 {
 @private
     NSRange range_;
+    UITextStorageDirection affinity_;
 }
 
 #pragma mark Initializing
 
-- (id)initWithRange:(NSRange)range;
+//- (id)initWithRange:(NSRange)range;
+- (id)initWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity;
 
-+ (id)textRangeWithRange:(NSRange)range;
+//+ (id)textRangeWithRange:(NSRange)range;
++ (id)textRangeWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity;
++ (id)textRangeWithTextPosition:(NKTTextPosition *)firstTextPosition
+                   textPosition:(NKTTextPosition *)secondTextPosition;
 
 #pragma mark Accessing the Range
 
@@ -29,15 +32,13 @@
 @property (nonatomic, readonly) NSUInteger location;
 @property (nonatomic, readonly) NSUInteger length;
 
+#pragma mark Accessing the Affinity
+
+@property (nonatomic, readonly) UITextStorageDirection affinity;
+
 #pragma mark Checking for Text Position Containment
 
-- (BOOL)containsTextPosition:(NKTTextPosition *)textPosition;
-- (BOOL)containsOrIsEqualToTextPosition:(NKTTextPosition *)textPosition;
-
-#pragma mark Comparing Text Ranges
-
-- (BOOL)isEqualToTextRange:(NKTTextRange *)textRange;
-- (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition;
+- (BOOL)enclosesTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Creating Text Ranges
 
@@ -47,6 +48,11 @@
 - (NKTTextRange *)textRangeByChangingLength:(NSUInteger)length;
 - (NKTTextRange *)textRangeByClippingUntilTextPosition:(NKTTextPosition *)textPosition;
 - (NKTTextRange *)textRangeByClippingFromTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark Comparing Text Ranges
+
+- (BOOL)isEqualToTextRange:(NKTTextRange *)textRange;
+- (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition;
 
 @end
 

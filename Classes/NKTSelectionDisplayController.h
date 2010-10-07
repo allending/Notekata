@@ -12,13 +12,11 @@
 
 @protocol NKTSelectionDisplayControllerDelegate;
 
-//--------------------------------------------------------------------------------------------------
 // NKTSelectionDisplayController manages the display of text selection elements within a view. It
 // supports input carets, selected text ranges, marked text ranges, and provisional text ranges.
 // The receiver's delegate provides the controller information about text ranges and text range
 // geometry.
-//--------------------------------------------------------------------------------------------------
-
+//
 @interface NKTSelectionDisplayController : NSObject
 {
 @private
@@ -46,21 +44,20 @@
 // Updates the selection elements. This should be called whenever the layout of the text or any
 // relevant text ranges change.
 //
-- (void)updateSelectionElements;
+- (void)updateSelectionDisplay;
 
 @end
 
 #pragma mark -
 
-//--------------------------------------------------------------------------------------------------
-// NKTSelectionDisplayControllerDelegate
-//--------------------------------------------------------------------------------------------------
 
+// NKTSelectionDisplayControllerDelegate
+//
 @protocol NKTSelectionDisplayControllerDelegate
 
 #pragma mark Getting Text Ranges
 
-@property (nonatomic, readonly) NKTTextRange *interimSelectedTextRange;
+@property (nonatomic, readonly) NKTTextRange *gestureTextRange;
 @property (nonatomic, readonly) NKTTextRange *selectedTextRange;
 @property (nonatomic, readonly) NKTTextRange *markedTextRange;
 

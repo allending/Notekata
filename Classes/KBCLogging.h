@@ -12,7 +12,7 @@ void KBCLog(const char *functionName, NSString *fmt, ...);
 
 #define KBCLogTrace() KBCLog(__PRETTY_FUNCTION__, nil)
 
-#if !KBC_LOGGING_STRIP_DEBUG
+#if !KBC_LOGGING_DISABLE_DEBUG_OUTPUT
 
 #define KBCLogDebug(...) KBCLog(__PRETTY_FUNCTION__, __VA_ARGS__)
 

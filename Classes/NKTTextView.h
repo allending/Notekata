@@ -13,16 +13,13 @@
 @class NKTTextViewGestureRecognizerDelegate;
 @class NKTTextViewTokenizer;
 
-//--------------------------------------------------------------------------------------------------
-// NKTTextView implements the behavior for a view with support for text styling and printed-page
-// look styling.
-//--------------------------------------------------------------------------------------------------
-
+// NKTTextView implements the behavior for a view with support for text and page styling.
+//
 @interface NKTTextView : UIScrollView <UITextInput, UIGestureRecognizerDelegate, NKTSelectionDisplayControllerDelegate>
 {
 @private
+    // Text Storage
     NSMutableAttributedString *text_;
-    NKTFramesetter *framesetter_;
     
     // Styling
     UIEdgeInsets margins_;
@@ -34,53 +31,53 @@
     UIColor *verticalMarginColor_;
     CGFloat verticalMarginInset_;
     
-    // Input
-    NSDictionary *inputTextAttributes_;
+    // Framesetting
+    NKTFramesetter *framesetter_;
     
-    // Subview Tiling
+    // Tiling
     NSMutableSet *visibleSections_;
     NSMutableSet *reusableSections_;
     
-    // View Management
+    // Selection Display
     NSMutableSet *underlayViews_;
     NSMutableSet *overlayViews;
     NKTSelectionDisplayController *selectionDisplayController_;
-    NKTLoupe *bandLoupe_;
-    NKTLoupe *roundLoupe_;
+    NKTLoupe *textRangeLoupe_;
+    NKTLoupe *caretLoupe_;
     
-    // Selections
-    UITextStorageDirection selectionAffinity_;
-    NKTTextRange *interimSelectedTextRange_;
+    // Text Ranges
+    NKTTextRange *gestureTextRange_;
     NKTTextRange *selectedTextRange_;
     NKTTextRange *markedTextRange_;
     NSDictionary *markedTextStyle_;
     NSString *markedText_;
-
-    // Input delegate provided by UITextInput
+    
+    // Input Attributes
+    NSDictionary *inputTextAttributes_;
+    
+    // Input Delegate
     id <UITextInputDelegate> inputDelegate_;
     
     // Tokenization
     NKTTextViewTokenizer *tokenizer_;
     
-    // TODO: pull out into own policy delegate
-    // Gesture recognizers
+    // Gesture Recognizers
     NKTTextViewGestureRecognizerDelegate *gestureRecognizerDelegate_;
     UITapGestureRecognizer *nonEditTapGestureRecognizer_;
     UITapGestureRecognizer *tapGestureRecognizer_;
     UILongPressGestureRecognizer *longPressGestureRecognizer_;
     NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer_;
-    NKTTextPosition *doubleTapStartTextPosition_;
+    NKTTextPosition *initialDoubleTapTextPosition_;
 }
 
 #pragma mark Accessing the Text
 
-@property (nonatomic, retain) NSMutableAttributedString *text;
+@property (nonatomic, copy) NSAttributedString *text;
 
 #pragma mark Configuring Text Layout and Style
 
 @property (nonatomic, readwrite) UIEdgeInsets margins;
 @property (nonatomic, readwrite) CGFloat lineHeight;
-
 @property (nonatomic, getter = areHorizontalRulesEnabled) BOOL horizontalRulesEnabled;
 @property (nonatomic, retain) UIColor *horizontalRuleColor;
 @property (nonatomic) CGFloat horizontalRuleOffset;
@@ -88,13 +85,13 @@
 @property (nonatomic, retain) UIColor *verticalMarginColor;
 @property (nonatomic) CGFloat verticalMarginInset;
 
+#pragma mark Setting Input Text Attributes
+
+@property (nonatomic, copy) NSDictionary *inputTextAttributes;
+
 #pragma mark Styling Text Ranges
 
 - (void)styleTextRange:(UITextRange *)textRange withTarget:(id)target selector:(SEL)selector;
-
-#pragma mark Managing Text Attributes
-
-@property (nonatomic, copy) NSDictionary *inputTextAttributes;
 
 #pragma mark Accessing Gesture Recognizers
 
@@ -112,9 +109,9 @@
 #pragma mark -
 
 //--------------------------------------------------------------------------------------------------
-// NKTTextViewDelegate
-//--------------------------------------------------------------------------------------------------
 
+// NKTTextViewDelegate declares methods that allow clients to respond to messages from NKTTextView.
+//
 @protocol NKTTextViewDelegate <UIScrollViewDelegate>
 
 @optional
@@ -150,8 +147,5 @@
 @interface NKTTextView(PropertyRedeclarations)
 
 @property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
-
-//@property (nonatomic, readwrite, copy) NKTTextRange *selectedTextRange;
-//@property (nonatomic, readonly, copy) NKTTextRange *markedTextRange;
 
 @end

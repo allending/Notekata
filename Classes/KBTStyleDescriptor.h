@@ -48,6 +48,7 @@
 @property (nonatomic, readonly) CGFloat fontSize;
 @property (nonatomic, readonly) BOOL fontFamilySupportsBoldTrait;
 @property (nonatomic, readonly) BOOL fontFamilySupportsItalicTrait;
+@property (nonatomic, readonly) BOOL fontFamilySupportsBoldItalicTrait;
 @property (nonatomic, readonly) BOOL fontIsBold;
 @property (nonatomic, readonly) BOOL fontIsItalic;
 

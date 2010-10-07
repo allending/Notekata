@@ -108,9 +108,7 @@
 #pragma mark Drawing
 
 - (void)drawRect:(CGRect)rect
-{
-    KBCLogDebug(@"%@ rect:%@", self, NSStringFromCGRect(rect));
-    
+{    
     CGContextRef context = UIGraphicsGetCurrentContext();
     [self drawHorizontalRulesInContext:context];
     [self drawVerticalMarginInContext:context];

@@ -2,6 +2,8 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
+#define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
+
 #import "NKTLine.h"
 #import "NKTTextPosition.h"
 #import "NKTTextRange.h"
@@ -22,7 +24,7 @@
 
 @synthesize index = index_;
 @synthesize range = range_;
-@synthesize origin = origin_;
+@synthesize baselineOrigin = baselineOrigin_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -30,8 +32,9 @@
 
 - (id)initWithDelegate:(id <NKTLineDelegate>)delegate
                  index:(NSUInteger)index
+                  text:(NSAttributedString *)text
                  range:(NSRange)range
-                origin:(CGPoint)origin
+                baselineOrigin:(CGPoint)origin
                  width:(CGFloat)width
                 height:(CGFloat)height
 {
@@ -39,8 +42,9 @@
     {
         delegate_ = delegate;
         index_ = index;
+        text_ = text;
         range_ = range;
-        origin_ = origin;
+        baselineOrigin_ = origin;
         width_ = width;
         height_ = height;
     }
@@ -66,9 +70,9 @@
 {
     if (line_ == NULL && (range_.length != 0))
     {
+        KBCLogDebug(@"core text line for %@ created", self);
         CTTypesetterRef typesetter = [delegate_ typesetter];
         line_ = CTTypesetterCreateLine(typesetter, CFRangeFromNSRange(range_));
-        KBCLogDebug(@"%@ typeset", self);
     }
     
     return line_;
@@ -80,7 +84,7 @@
 
 - (NKTTextRange *)textRange
 {
-    return [NKTTextRange textRangeWithRange:range_];
+    return [NKTTextRange textRangeWithRange:range_ affinity:UITextStorageDirectionForward];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -89,7 +93,12 @@
 
 - (CGRect)rect
 {
-    return CGRectMake(origin_.x, origin_.y, width_, height_);
+    if (self.textRange.empty)
+    {
+        return CGRectNull;
+    }
+    
+    return CGRectMake(baselineOrigin_.x, baselineOrigin_.y - self.ascent, width_, self.ascent + self.descent);
 }
 
 - (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition
@@ -98,7 +107,7 @@
     CGFloat fromCharOffset = [self offsetForCharAtTextPosition:fromTextPosition];
     CGFloat toCharOffset = [self offsetForCharAtTextPosition:toTextPosition];
     rect.origin.x += fromCharOffset;
-    rect.size.width -= (fromCharOffset + toCharOffset);
+    rect.size.width = toCharOffset - fromCharOffset;
     return rect;
 }
 
@@ -115,7 +124,7 @@
 {
     CGRect rect = self.rect;
     CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
-    rect.size.width -= charOffset;
+    rect.size.width = charOffset;
     return rect;
 }
 
@@ -150,12 +159,6 @@
 
 - (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
-    if (![self.textRange containsOrIsEqualToTextPosition:textPosition])
-    {
-        KBCLogWarning(@"text position %@ is not located on %@, returning 0.0", textPosition, self);
-        return 0.0;
-    }
-    
     if (range_.length == 0)
     {
         return 0.0;
@@ -169,15 +172,36 @@
 
 #pragma mark Hit-Testing
 
-- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point
+// TODO: rename this to for caret
+// add affinity output
+- (NKTTextPosition *)closestTextPositionToFramesetterPoint:(CGPoint)framesetterPoint
 {
     if (range_.length == 0)
     {
-        return [NKTTextPosition textPositionWithLocation:range_.location];
+        return [NKTTextPosition textPositionWithLocation:range_.location affinity:UITextStorageDirectionForward];
     }
     
-    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(self.line, point);
-    return [NKTTextPosition textPositionWithLocation:charIndex];
+    CGPoint localPoint = CGPointMake(framesetterPoint.x - baselineOrigin_.x, framesetterPoint.y - baselineOrigin_.y);
+    NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(self.line, localPoint);
+    UITextStorageDirection affinity = UITextStorageDirectionForward;
+    
+    // When the line ends with a newline, the caret should be placed before the newline character
+    if (charIndex == NSMaxRange(range_))
+    {
+        unichar lastChar = [[text_ string] characterAtIndex:charIndex - 1];
+        NSCharacterSet *newlines = [NSCharacterSet newlineCharacterSet];
+        
+        if ([newlines characterIsMember:lastChar])
+        {
+            charIndex = charIndex - 1;
+        }
+        else
+        {
+            affinity = UITextStorageDirectionBackward;
+        }
+    }
+    
+    return [NKTTextPosition textPositionWithLocation:charIndex affinity:affinity];
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -6,26 +6,31 @@
 
 @class NKTTextRange;
 
-//--------------------------------------------------------------------------------------------------
 // NKTTextPosition is a subclass of UITextPosition. It represents an indexed position into the 
 // backing string of a text view.
-//--------------------------------------------------------------------------------------------------
-
+//
 @interface NKTTextPosition : UITextPosition
 {
 @private
     NSUInteger location_;
+    UITextStorageDirection affinity_;
 }
 
 #pragma mark Initializing
 
-- (id)initWithLocation:(NSUInteger)location;
+//- (id)initWithLocation:(NSUInteger)location;
+- (id)initWithLocation:(NSUInteger)location affinity:(UITextStorageDirection)affinity;
 
-+ (id)textPositionWithLocation:(NSUInteger)location;
+//+ (id)textPositionWithLocation:(NSUInteger)location;
++ (id)textPositionWithLocation:(NSUInteger)location affinity:(UITextStorageDirection)affinity;
 
 #pragma mark Accessing the Location
 
 @property (nonatomic, readonly) NSUInteger location;
+
+#pragma mark Accessing the Affinity
+
+@property (nonatomic, readonly) UITextStorageDirection affinity;
 
 #pragma mark Creating Text Positions
 
@@ -36,7 +41,6 @@
 #pragma mark Creating Text Ranges
 
 - (NKTTextRange *)textRange;
-- (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Comparing Text Posiitons
 

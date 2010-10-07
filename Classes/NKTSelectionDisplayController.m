@@ -34,6 +34,8 @@
 @synthesize selectedTextRegionVisible = selectedTextRegionVisible_;
 @synthesize markedTextRegionVisible = markedTextRegionVisible_;
 
+//--------------------------------------------------------------------------------------------------
+
 #pragma mark Initializing
 
 - (id)init
@@ -63,7 +65,7 @@
 - (void)setDelegate:(id <NKTSelectionDisplayControllerDelegate>)delegate
 {
     delegate_ = delegate;
-    [self updateSelectionElements];
+    [self updateSelectionDisplay];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -150,7 +152,7 @@
 
 #pragma mark Updating Selection Elements
 
-- (void)updateSelectionElements
+- (void)updateSelectionDisplay
 {
     [self updateCaret];
     [self updateSelectedTextRegion];
@@ -158,71 +160,63 @@
 }
 
 - (void)updateCaret
-{
-    if (!caretVisible_)
-    {
-        self.caret.hidden = YES;
-        return;
-    }
-    
-    NKTTextRange *interimSelectedTextRange = delegate_.interimSelectedTextRange;
+{    
+    NKTTextRange *gestureTextRange = delegate_.gestureTextRange;
     NKTTextRange *selectedTextRange = delegate_.selectedTextRange;
     
-    if (interimSelectedTextRange != nil && interimSelectedTextRange.empty)
+    if (caretVisible_ && gestureTextRange != nil && gestureTextRange.empty)
     {
-        self.caret.frame = [delegate_ caretRectForTextPosition:interimSelectedTextRange.start
+        self.caret.frame = [delegate_ caretRectForTextPosition:gestureTextRange.start
                                       applyInputTextAttributes:YES];
         self.caret.blinkingEnabled = NO;
         self.caret.hidden = NO;
-        return;
     }
-    else if (selectedTextRange != nil && selectedTextRange.empty)
+    else if (caretVisible_ && gestureTextRange == nil && selectedTextRange != nil && selectedTextRange.empty)
     {
         self.caret.frame = [delegate_ caretRectForTextPosition:selectedTextRange.start applyInputTextAttributes:NO];
         self.caret.blinkingEnabled = YES;
         [self.caret restartBlinking];
         self.caret.hidden = NO;
-        return;
+    }
+    else
+    {
+        self.caret.hidden = YES;
     }
 }
 
 - (void)updateSelectedTextRegion
 {
-    if (!selectedTextRegionVisible_)
-    {
-        self.selectedTextRegion.hidden = YES;
-        return;
-    }
-    
-    NKTTextRange *interimSelectedTextRange = delegate_.interimSelectedTextRange;
+    NKTTextRange *gestureTextRange = delegate_.gestureTextRange;
     NKTTextRange *selectedTextRange = delegate_.selectedTextRange;
     
-    if (interimSelectedTextRange != nil && !interimSelectedTextRange.empty)
+    if (selectedTextRegionVisible_ && gestureTextRange != nil && !gestureTextRange.empty)
     {
-        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:interimSelectedTextRange];
+        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:gestureTextRange];
         self.selectedTextRegion.hidden = NO;
     }
-    else if (selectedTextRange != nil && !selectedTextRange.empty)
+    else if (selectedTextRegionVisible_ && gestureTextRange == nil && selectedTextRange != nil && !selectedTextRange.empty)
     {
         self.selectedTextRegion.rects = [delegate_ rectsForTextRange:selectedTextRange];
         self.selectedTextRegion.hidden = NO;
+    }
+    else
+    {
+        self.selectedTextRegion.hidden = YES;
     }
 }
 
 - (void)updateMarkedTextRegion
 {
-    if (!markedTextRegionVisible_)
-    {
-        self.markedTextRegion.hidden = YES;
-        return;
-    }
-    
     UITextRange *markedTextRange = delegate_.markedTextRange;
     
     if (markedTextRange != nil && !markedTextRange.empty)
     {
         self.markedTextRegion.rects = [delegate_ rectsForTextRange:markedTextRange];
         self.markedTextRegion.hidden = NO;
+    }
+    else
+    {
+        self.markedTextRegion.hidden = YES;
     }
 }
 

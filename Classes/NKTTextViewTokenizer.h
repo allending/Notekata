@@ -6,11 +6,9 @@
 
 @class NKTTextView;
 
-//--------------------------------------------------------------------------------------------------
 // NKTTextViewTokenizer is the tokenizer used by NKTTextView's implementation of the UITextInput
 // protocol.
-//--------------------------------------------------------------------------------------------------
-
+//
 @interface NKTTextViewTokenizer : UITextInputStringTokenizer 
 {
 @private

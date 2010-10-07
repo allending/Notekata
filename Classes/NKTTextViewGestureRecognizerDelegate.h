@@ -6,12 +6,10 @@
 
 @class NKTTextView;
 
-//--------------------------------------------------------------------------------------------------
 // Internal class used by NKTTextView as the delegate for the gesture recognizers it creates. The
 // reason this class exists is because implementing the UIGestureRecognizerDelegate protocol
 // directly NKTTextView conflicts with UIScrollView's behavior.
-//--------------------------------------------------------------------------------------------------
-
+//
 @interface NKTTextViewGestureRecognizerDelegate : NSObject <UIGestureRecognizerDelegate>
 {
 @private

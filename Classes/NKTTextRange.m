@@ -3,11 +3,13 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextRange.h"
+#import "KobaText.h"
 #import "NKTTextPosition.h"
 
 @implementation NKTTextRange
 
 @synthesize range = range_;
+@synthesize affinity = affinity_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -15,9 +17,22 @@
 
 - (id)initWithRange:(NSRange)range
 {
+    return [self initWithRange:range affinity:UITextStorageDirectionForward];
+}
+
+- (id)initWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity
+{
     if ((self = [super init]))
     {
+        if (range.location == NSNotFound)
+        {
+            KBCLogWarning(@"location is NSNotFound, returning nil");
+            [self release];
+            return nil;
+        }
+        
         range_ = range;
+        affinity_ = affinity;
     }
     
     return self;
@@ -26,6 +41,28 @@
 + (id)textRangeWithRange:(NSRange)range
 {
     return [[[self alloc] initWithRange:range] autorelease];
+}
+
++ (id)textRangeWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity
+{
+    return [[[self alloc] initWithRange:range affinity:affinity] autorelease];
+}
+
++ (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)firstTextPosition
+                               textPosition:(NKTTextPosition *)secondTextPosition
+{
+    if (firstTextPosition.location < secondTextPosition.location)
+    {
+        NSRange range = NSMakeRange(firstTextPosition.location,
+                                    secondTextPosition.location - firstTextPosition.location);
+        return [NKTTextRange textRangeWithRange:range affinity:firstTextPosition.affinity];
+    }
+    else
+    {
+        NSRange range = NSMakeRange(secondTextPosition.location,
+                                    firstTextPosition.location - secondTextPosition.location);
+        return [NKTTextRange textRangeWithRange:range affinity:secondTextPosition.affinity];
+    }
 }
 
 - (void)dealloc
@@ -62,12 +99,12 @@
 
 - (NKTTextPosition *)start
 {
-    return [NKTTextPosition textPositionWithLocation:range_.location];
+    return [NKTTextPosition textPositionWithLocation:range_.location affinity:affinity_];
 }
 
 - (NKTTextPosition *)end
 {
-    return [NKTTextPosition textPositionWithLocation:NSMaxRange(range_)];
+    return [NKTTextPosition textPositionWithLocation:NSMaxRange(range_) affinity:affinity_];
 }
 
 - (BOOL)isEmpty
@@ -79,14 +116,16 @@
 
 #pragma mark Checking for Text Position Containment
 
-- (BOOL)containsTextPosition:(NKTTextPosition *)textPosition
+- (BOOL)enclosesTextPosition:(NKTTextPosition *)textPosition
 {
-    return NSLocationInRange(textPosition.location, range_);
-}
-
-- (BOOL)containsOrIsEqualToTextPosition:(NKTTextPosition *)textPosition
-{
-    return [self containsTextPosition:textPosition] || [self isEqualToTextPosition:textPosition];
+    if (textPosition.affinity == UITextStorageDirectionForward)
+    {
+        return NSLocationInRange(textPosition.location, range_);
+    }
+    else
+    {
+        return NSLocationInRange(textPosition.location, range_) || (textPosition.location == NSMaxRange(range_));
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -162,6 +201,8 @@
 
 #pragma mark Comparing Text Ranges
 
+// TODO: take affinity into account
+
 - (BOOL)isEqual:(id)object
 {
     if ([object isKindOfClass:[NKTTextRange class]])
@@ -204,7 +245,10 @@
 
 - (NSString *)description
 {
-    return NSStringFromRange(range_);
+    return [NSString stringWithFormat:@"%@ (%@, %@)",
+                                       [self class],
+                                       NSStringFromRange(range_),
+                                       KBTStringFromUITextDirection(affinity_)];
 }
 
 @end

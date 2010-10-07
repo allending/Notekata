@@ -41,20 +41,14 @@
 - (NKTLine *)firstLine;
 - (NKTLine *)lastLine;
 
-#pragma mark Converting Coordinates
-
-- (CGPoint)convertPoint:(CGPoint)point toLine:(NKTLine *)line;
-
 #pragma mark Hit-Testing and Geometry
 
 - (NKTLine *)lineClosestToPoint:(CGPoint)point;
-- (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition;
-- (NKTLine *)lineContainingTextPosition:(NKTTextPosition *)textPosition affinity:(UITextStorageDirection)affinity;
+- (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition; // TODO: add transform
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange;
-
-- (CGPoint)originForCharAtTextPosition:(NKTTextPosition *)textPosition affinity:(UITextStorageDirection)affinity;
-- (NKTTextPosition *)closestLogicalTextPositionToPoint:(CGPoint)point affinity:(UITextStorageDirection *)affinity;
-- (NKTTextPosition *)closestGeometricTextPositionToPoint:(CGPoint)point affinity:(UITextStorageDirection *)affinity;
+- (NSArray *)rectsForTextRange:(NKTTextRange *)textRange transform:(CGAffineTransform)transform;
+- (CGPoint)baselineOriginForCharAtTextPosition:(NKTTextPosition *)textPosition;
+- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
 
 #pragma mark Drawing
 

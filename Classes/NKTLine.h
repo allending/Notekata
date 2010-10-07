@@ -17,8 +17,9 @@
 @private
     id <NKTLineDelegate> delegate_;
     NSUInteger index_;
+    NSAttributedString *text_;
     NSRange range_;
-    CGPoint origin_;
+    CGPoint baselineOrigin_;
     CGFloat width_;
     CGFloat height_;
     CTLineRef line_;
@@ -28,8 +29,9 @@
 
 - (id)initWithDelegate:(id <NKTLineDelegate>)delegate
                  index:(NSUInteger)index
+                  text:(NSAttributedString *)text
                  range:(NSRange)range
-                origin:(CGPoint)origin
+        baselineOrigin:(CGPoint)origin
                  width:(CGFloat)width
                 height:(CGFloat)height;
 
@@ -44,7 +46,8 @@
 
 #pragma mark Line Geometry
 
-@property (nonatomic, readonly) CGPoint origin;
+@property (nonatomic, readonly) CGPoint baselineOrigin;
+
 @property (nonatomic, readonly) CGRect rect;
 
 - (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition;
@@ -63,7 +66,7 @@
 
 #pragma mark Hit-Testing
 
-- (NKTTextPosition *)closestTextPositionToPoint:(CGPoint)point;
+- (NKTTextPosition *)closestTextPositionToFramesetterPoint:(CGPoint)point;;
 
 #pragma mark Drawing
 

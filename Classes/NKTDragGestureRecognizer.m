@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#define KBC_LOGGING_STRIP_DEBUG 1
+#define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
 
 #import "NKTDragGestureRecognizer.h"
 #import <UIKit/UIGestureRecognizerSubclass.h>

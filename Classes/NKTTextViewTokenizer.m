@@ -2,7 +2,7 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
-#define KBC_LOGGING_STRIP_DEBUG 1
+#define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
 
 #import "NKTTextViewTokenizer.h"
 #import "KobaText.h"
@@ -486,7 +486,7 @@
             }
         }
         
-        return [NKTTextPosition textPositionWithLocation:currentIndex];
+        return [NKTTextPosition textPositionWithLocation:currentIndex affinity:UITextStorageDirectionForward];
     }
     else
     {
@@ -512,17 +512,17 @@
             }
         }
         
-        return [NKTTextPosition textPositionWithLocation:currentIndex];
+        return [NKTTextPosition textPositionWithLocation:currentIndex affinity:UITextStorageDirectionForward];
     }
 }
 
-// If the text position is one before the end of a line's text range, the next line boundary in
-// the forward direction is the end of the line's text range. Otherwise, the next line boundary
-// in the forward direction is one before the end of the line's text range.
+// If the text position is one before the end of a line's text range, it is already at the
+// boundary. Otherwise, the next line boundary in the forward direction is one before the
+// end of the line's text range.
 //
-// If the text position is the start of a line's text range, the next line boundary in the
-// the backward direction is one before the start of the line's text range. Otherwise, the next
-// line boundary in the backward direction is the start of the line's text range.
+// If the text position is the start of a line's text range, it is already at the boundary.
+// Otherwise, the next line boundary in the backward direction is the start of the line's text
+// range.
 //
 - (UITextPosition *)positionFromTextPosition:(NKTTextPosition *)textPosition 
                    toLineBoundaryInDirection:(UITextDirection)direction
@@ -539,17 +539,18 @@
         direction == UITextLayoutDirectionRight ||
         direction == UITextLayoutDirectionDown)
     {
-        // No boundary position after the end index
+        // No boundary position after the end index TODO:?
         if (textPosition.location == [string length])
         {
-            return nil;
+            return textPosition;
         }
         
         NKTTextPosition *oneBeforeEnd = [lineTextRange.end previousTextPosition];
         
         if ([textPosition isEqualToTextPosition:oneBeforeEnd])
         {
-            return lineTextRange.end;
+            // HACK: make sure that UITextInput does not 'skip' over a line
+            return textPosition;
         }
         else
         {
@@ -561,12 +562,13 @@
         // No boundary position before the start index
         if (textPosition.location == 0)
         {
-            return nil;
+            return textPosition;
         }
         
         if ([textPosition isEqualToTextPosition:lineTextRange.start])
         {
-            return [lineTextRange.start previousTextPosition];
+            // HACK: make sure that UITextInput does not 'skip' over a line
+            return textPosition;
         }
         else
         {
@@ -618,7 +620,7 @@
                 }
             }
             
-            return [NKTTextPosition textPositionWithLocation:currentIndex];
+            return [NKTTextPosition textPositionWithLocation:currentIndex affinity:UITextStorageDirectionForward];
         }
     }
     else
@@ -649,7 +651,7 @@
                 }
             }
             
-            return [NKTTextPosition textPositionWithLocation:currentIndex];
+            return [NKTTextPosition textPositionWithLocation:currentIndex affinity:UITextStorageDirectionForward];
         }
     }
 }
@@ -673,18 +675,18 @@
     if (granularity == UITextGranularityLine)
     {
         // TODO: it looks like this is never used, so leave it unimplemented for now
-        return nil;
+        result = nil;
     }
     else
     {
         result = [super rangeEnclosingPosition:position withGranularity:granularity inDirection:direction];
     }
     
-    KBCLogDebug(@"%d : %@ : %@",
+    KBCLogDebug(@"%d : %@ : %@ : %@",
                 position.location,
                 KBTStringFromUITextGranularity(granularity),
                 KBTStringFromUITextDirection(direction),
-                NSStringFromRange(((NKTTextRange *)result).range));
+                result);
     
     return result;
 }

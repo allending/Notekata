@@ -3,17 +3,24 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "NKTTextPosition.h"
+#import "KobaText.h"
 #import "NKTTextRange.h"
 
 @implementation NKTTextPosition
 
 @synthesize location = location_;
+@synthesize affinity = affinity_;
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Initializing
 
 - (id)initWithLocation:(NSUInteger)location
+{
+    return [self initWithLocation:location affinity:UITextStorageDirectionForward];
+}
+
+- (id)initWithLocation:(NSUInteger)location affinity:(UITextStorageDirection)affinity
 {
     if ((self = [super init]))
     {
@@ -25,6 +32,7 @@
         }
         
         location_ = location;
+        affinity_ = affinity;
     }
     
     return self;
@@ -33,6 +41,11 @@
 + (id)textPositionWithLocation:(NSUInteger)location
 {
     return [[[self alloc] initWithLocation:location] autorelease];
+}
+
++ (id)textPositionWithLocation:(NSUInteger)location affinity:(UITextStorageDirection)affinity
+{
+    return [[[self alloc] initWithLocation:location affinity:affinity] autorelease];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -76,25 +89,24 @@
 
 - (NKTTextRange *)textRange
 {
-    return [NKTTextRange textRangeWithRange:NSMakeRange(location_, 0)];
-}
-
-- (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)textPosition
-{
-    if (location_ < textPosition.location)
-    {
-        return [NKTTextRange textRangeWithRange:NSMakeRange(location_, textPosition.location - location_)];
-    }
-    else
-    {
-        return [NKTTextRange textRangeWithRange:NSMakeRange(textPosition.location,
-                                                              location_ - textPosition.location)];
-    }
+    return [NKTTextRange textRangeWithRange:NSMakeRange(location_, 0) affinity:affinity_];
 }
 
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Comparing Text Posiitons
+
+// TODO: take affinity into account
+
+- (BOOL)isEqual:(id)object
+{
+    if ([object isKindOfClass:[NKTTextPosition class]])
+    {
+        return [self isEqualToTextPosition:object];
+    }
+    
+    return NO;
+}
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
 {
@@ -112,7 +124,10 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%d", location_];
+    return [NSString stringWithFormat:@"%@ (%d, %@)",
+                                       [self class],
+                                       location_,
+                                       KBTStringFromUITextDirection(affinity_)];
 }
 
 @end
