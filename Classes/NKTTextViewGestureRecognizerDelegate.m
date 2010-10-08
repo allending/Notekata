@@ -2,6 +2,8 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //--------------------------------------------------------------------------------------------------
 
+#define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
+
 #import "NKTTextViewGestureRecognizerDelegate.h"
 #import "NKTDragGestureRecognizer.h"
 #import "NKTTextRange.h"
@@ -34,6 +36,7 @@
     // view is the hit view (not its subviews e.g. the UITextInput autocorrection prompt)
     if (hitView != textView_)
     {
+        KBCLogDebug(@"preventing %@ from beginning", [gestureRecognizer class]);
         return NO;
     }
     else if (gestureRecognizer == textView_.tapGestureRecognizer)

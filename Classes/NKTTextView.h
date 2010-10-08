@@ -66,7 +66,7 @@
     UITapGestureRecognizer *tapGestureRecognizer_;
     UILongPressGestureRecognizer *longPressGestureRecognizer_;
     NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer_;
-    NKTTextPosition *initialDoubleTapTextPosition_;
+    NKTTextRange *initialDoubleTapTextRange_;
 }
 
 #pragma mark Accessing the Text
@@ -133,15 +133,5 @@
 
 - (UIColor *)loupeFillColor;
 - (UIView *)addLoupe:(UIView *)view;
-
-@end
-
-#pragma mark -
-
-//--------------------------------------------------------------------------------------------------
-
-@interface NKTTextView(PropertyRedeclarations)
-
-@property (nonatomic, assign) id <NKTTextViewDelegate> delegate;
 
 @end

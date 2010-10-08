@@ -4,6 +4,7 @@
 
 #import "NKTSelectionDisplayController.h"
 #import "NKTCaret.h"
+#import "NKTHandle.h"
 #import "NKTHighlightRegion.h"
 #import "NKTTextRange.h"
 
@@ -111,6 +112,42 @@
     return markedTextRegion_;
 }
 
+- (NKTHandle *)backwardHandle
+{
+    if (backwardHandle_ == nil)
+    {
+        backwardHandle_ = [[NKTHandle alloc] initWithStyle:NKTHandleStyleTopTip];
+        backwardHandle_.hidden = !selectedTextRegionVisible_;
+        [delegate_ addOverlayView:backwardHandle_];
+    }
+    
+    return backwardHandle_;
+}
+
+- (NKTHandle *)forwardHandle
+{
+    if (forwardHandle_ == nil)
+    {
+        forwardHandle_ = [[NKTHandle alloc] initWithStyle:NKTHandleStyleBottomTip];
+        forwardHandle_.hidden = !selectedTextRegionVisible_;
+        [delegate_ addOverlayView:forwardHandle_];
+    }
+    
+    return forwardHandle_;
+}
+
+- (void)handleBackwardHandleDragged:(UIGestureRecognizer *)gestureRecognizer
+{
+    
+    
+    // [delegate backOfTextRangeMovedToPoint:point]
+}
+
+- (void)handleForwardHandleDragged:(UIGestureRecognizer *)gestureRecognizer
+{
+    // [delegate frontOfTextRangeMovedToPoint:point]
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Controlling Selection Element Display
@@ -190,17 +227,55 @@
     
     if (selectedTextRegionVisible_ && gestureTextRange != nil && !gestureTextRange.empty)
     {
-        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:gestureTextRange];
+        NSArray *rects = [delegate_ rectsForTextRange:gestureTextRange];
+        self.selectedTextRegion.rects = rects;
         self.selectedTextRegion.hidden = NO;
+        
+        // TODO: Cleanup
+        if ([rects count] > 0)
+        {
+            CGRect backwardHandleRect = [[rects objectAtIndex:0] CGRectValue];
+            backwardHandleRect.origin.x -= 2.0;
+            backwardHandleRect.size.width = 2.0;
+            self.backwardHandle.frame = backwardHandleRect;
+            self.backwardHandle.hidden = NO;
+            
+            CGRect forwardHandleRect = [[rects objectAtIndex:[rects count] - 1] CGRectValue];
+            forwardHandleRect.origin.x = CGRectGetMaxX(forwardHandleRect) - 3.0;
+            forwardHandleRect.origin.x += 2.0;
+            forwardHandleRect.size.width = 2.0;
+            self.forwardHandle.frame = forwardHandleRect;
+            self.forwardHandle.hidden = NO;
+        }
     }
     else if (selectedTextRegionVisible_ && gestureTextRange == nil && selectedTextRange != nil && !selectedTextRange.empty)
     {
-        self.selectedTextRegion.rects = [delegate_ rectsForTextRange:selectedTextRange];
+        NSArray *rects = [delegate_ rectsForTextRange:selectedTextRange];
+        self.selectedTextRegion.rects = rects;
         self.selectedTextRegion.hidden = NO;
+        
+        // TODO: cleanup
+        if ([rects count] > 0)
+        {
+            CGRect backwardHandleRect = [[rects objectAtIndex:0] CGRectValue];
+            backwardHandleRect.origin.x -= 2.0;
+            backwardHandleRect.size.width = 2.0;
+            self.backwardHandle.frame = backwardHandleRect;
+            self.backwardHandle.hidden = NO;
+            
+            CGRect forwardHandleRect = [[rects objectAtIndex:[rects count] - 1] CGRectValue];
+            forwardHandleRect.origin.x = CGRectGetMaxX(forwardHandleRect) - 3.0;
+            forwardHandleRect.origin.x += 2.0;
+            forwardHandleRect.size.width = 2.0;
+            self.forwardHandle.frame = forwardHandleRect;
+            self.forwardHandle.hidden = NO;
+        }
     }
     else
     {
         self.selectedTextRegion.hidden = YES;
+        self.backwardHandle.hidden = YES;
+        self.forwardHandle.hidden = YES;
     }
 }
 

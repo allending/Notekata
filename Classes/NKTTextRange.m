@@ -51,7 +51,7 @@
 + (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)firstTextPosition
                                textPosition:(NKTTextPosition *)secondTextPosition
 {
-    if (firstTextPosition.location < secondTextPosition.location)
+    if ([firstTextPosition compare:secondTextPosition] == NSOrderedAscending)
     {
         NSRange range = NSMakeRange(firstTextPosition.location,
                                     secondTextPosition.location - firstTextPosition.location);
@@ -200,6 +200,23 @@
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark Comparing Text Ranges
+
+- (NKTTextRangeRelation)relationToTextRange:(NKTTextRange *)textRange
+{
+    if (NSMaxRange(range_) <= textRange.start.location)
+    {
+        return NKTTextRangeRelationBefore;
+    }
+    else if (range_.location >= textRange.start.location &&
+             range_.location < textRange.end.location)
+    {
+        return NKTTextRangeRelationOverlapping;
+    }
+    else
+    {
+        return NKTTextRangeRelationAfter;
+    }
+}
 
 // TODO: take affinity into account?
 

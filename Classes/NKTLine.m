@@ -106,6 +106,12 @@
     CGRect rect = self.rect;
     CGFloat fromCharOffset = [self offsetForCharAtTextPosition:fromTextPosition];
     CGFloat toCharOffset = [self offsetForCharAtTextPosition:toTextPosition];
+    
+    if (toCharOffset == 0.0)
+    {
+        return CGRectNull;
+    }
+    
     rect.origin.x += fromCharOffset;
     rect.size.width = toCharOffset - fromCharOffset;
     return rect;
@@ -124,6 +130,12 @@
 {
     CGRect rect = self.rect;
     CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
+    
+    if (charOffset == 0.0)
+    {
+        return CGRectNull;
+    }
+    
     rect.size.width = charOffset;
     return rect;
 }

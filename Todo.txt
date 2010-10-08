@@ -14,16 +14,14 @@ Controller
 
 Text View
 ---------
-[ ] Feature: Scrolling behavior while editing
-[ ] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
-[ ] Feature: Selection handles
-[ ] Feature: Cut copy paste
+[ ] Issue: Handles - Use a gesture recognizer that recognizes immediately if hit, not just when moved
 [ ] Feature: Context menus w/ selection
+[ ] Feature: Cut copy paste
+[ ] Feature: Scrolling behavior while editing
+[ ] Feature: Undo/Redo support
 [ ] Issue: Test keyboard movement on actual hardware
 [ ] Issue: An issue with weird hardware keyboard movement during text input? Beat on test cases more
-[ ] Feature: Undo/Redo support
 [ ] Design: Cancel double tap and press if duration too long or distance too short?
-[ ] Design: follow UITextView conventions on ownership and follow conventions more closely
 [ ] Optimization: Don't need skirt lines - can use typographic bounds
 [ ] Optimization: Low memory - purge recycled sections
 [ ] Issue: Drawing underlines - not pixel perfect :(
@@ -31,27 +29,12 @@ Text View
 
 Done
 ----
-[x] Issue: Changing style should update caret
-[x] Issue: End of 'West!' -> Down -> Wonky
-[x] Issue: Integrate affinity into positions and ranges?
-[x] Optimization: Use a dirty marker for typesetting e.g.: [self setLineWidthDirty];
-[x] Optimization: Typeset at line granularity lazily
-[x] Issue: Line hit testing should be tuned for user touch line navigating experience
-[x] Issue: Sample text -> tap end of first line -> font incorrect? - examine further
-[x] Issue: Range loupe not working on last line
-[x] Issue: Empty/partial last line highlight not totally right
-[x] Issue: Setting text to nil fine
-[x] Issue: When there is marked text, any tap/press removes its provisional status
-[x] Issue: Disallow movement when there is a marked text range - UITextInput prevents it anyway
-[x] Issue: Tap out of bounds latches to x coordinate
-[x] Issue: Keyboard input mostly works
-[x] Issue: Select all when text doesn't end with newline
-[x] Issue: Refactor tokenizer
-[x] Issue: Use newline char set instead of \n
-[x] Issue: Non empty last line and click out of bounds
-[x] Issue: Delete from end doesn't quite work
-[x] Design: Should controller modify text directly and let view know? - No
-
+[x] Feature: Selection handles
+[x] Issue: Selection handle may show up on wrong line when multiline text range selected
+[x] Issue: Selection handles don't resize as needed (orientation and change of input text attributes)
+[x] Issue: Selection is screwed up when selection goes backward above top bounds
+[x] Issue: Read UI guidelines for hit testing region tips - adjust handle hit test region as needed
+[x] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
 
 Deferred
 --------

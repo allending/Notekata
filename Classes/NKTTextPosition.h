@@ -43,6 +43,9 @@
 
 #pragma mark Comparing Text Posiitons
 
+- (NSComparisonResult)compare:(NKTTextPosition *)textPosition;
+- (BOOL)isBeforeTextPosition:(NKTTextPosition *)textPosition;
+- (BOOL)isAfterTextPosition:(NKTTextPosition *)textPosition;
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition;
 
 @end

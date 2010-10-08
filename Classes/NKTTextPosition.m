@@ -96,6 +96,32 @@
 
 #pragma mark Comparing Text Posiitons
 
+- (NSComparisonResult)compare:(NKTTextPosition *)textPosition
+{
+    if (location_ < textPosition.location)
+    {
+        return NSOrderedAscending;
+    }
+    else if (location_ > textPosition.location)
+    {
+        return NSOrderedDescending;
+    }
+    else
+    {
+        return NSOrderedSame;
+    }
+}
+
+- (BOOL)isBeforeTextPosition:(NKTTextPosition *)textPosition
+{
+    return [self compare:textPosition] == NSOrderedAscending;
+}
+
+- (BOOL)isAfterTextPosition:(NKTTextPosition *)textPosition
+{
+    return [self compare:textPosition] == NSOrderedDescending;
+}
+
 // TODO: take affinity into account?
 
 - (BOOL)isEqual:(id)object
@@ -109,13 +135,8 @@
 }
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
-{
-    if (textPosition == nil)
-    {
-        return NO;
-    }
-    
-    return location_ == textPosition.location;
+{    
+    return [self compare:textPosition] == NSOrderedSame;
 }
 
 //--------------------------------------------------------------------------------------------------

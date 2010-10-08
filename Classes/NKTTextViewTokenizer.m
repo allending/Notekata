@@ -92,6 +92,11 @@
 - (UITextPosition *)positionFromTextPosition:(NKTTextPosition *)textPosition 
               toParagraphBoundaryInDirection:(UITextDirection)direction;
 
+#pragma mark Getting Ranges of Specific Text Units
+
+- (UITextRange *)textRangeForWordEnclosingTextPosition:(NKTTextPosition *)textPosition
+                                           inDirection:(UITextDirection)direction;
+
 @end
 
 #pragma mark -
@@ -656,29 +661,106 @@
 // enclosed within a text unit of the given granularity, it is considered enclosed. If the text
 // position is at a text-unit boundary, it is considered enclosed only if the next position in
 // the given direction is entirely enclosed.
-- (UITextRange *)rangeEnclosingPosition:(NKTTextPosition *)position
+- (UITextRange *)rangeEnclosingPosition:(NKTTextPosition *)textPosition
                         withGranularity:(UITextGranularity)granularity
                             inDirection:(UITextDirection)direction
 {
     UITextRange *result = nil;
     
-    if (granularity == UITextGranularityLine)
-    {
-        // TODO: it looks like this is never used, so leave it unimplemented for now
-        result = nil;
-    }
-    else
-    {
-        result = [super rangeEnclosingPosition:position withGranularity:granularity inDirection:direction];
-    }
+//    if (granularity == UITextGranularityWord)
+//    {
+//        result = [self textRangeForWordEnclosingTextPosition:textPosition inDirection:direction];
+//    }
+//    else if (granularity == UITextGranularityLine)
+//    {
+//        // TODO: it looks like this is never used, so leave it unimplemented for now
+//        result = nil;
+//    }
+//    else
+//    {
+        result = [super rangeEnclosingPosition:textPosition withGranularity:granularity inDirection:direction];
+//    }
     
     KBCLogDebug(@"%d : %@ : %@ : %@",
-                position.location,
+                textPosition.location,
                 KBTStringFromUITextGranularity(granularity),
                 KBTStringFromUITextDirection(direction),
                 result);
     
     return result;
+}
+
+- (UITextRange *)textRangeForWordEnclosingTextPosition:(NKTTextPosition *)textPosition
+                                           inDirection:(UITextDirection)direction
+{    
+    if (direction == UITextStorageDirectionForward ||
+        direction == UITextLayoutDirectionRight ||
+        direction == UITextLayoutDirectionDown)
+    {
+        if (![self isTextPosition:textPosition withinWordInDirection:UITextStorageDirectionForward])
+        {
+            return nil;
+        }
+        
+        NKTTextPosition *backwardBoundary = nil;
+        
+        if ([self isTextPosition:textPosition atWordBoundaryInDirection:UITextStorageDirectionBackward])
+        {
+            backwardBoundary = textPosition;
+        }
+        else
+        {
+            backwardBoundary = (NKTTextPosition *)[self positionFromTextPosition:textPosition
+                                                       toWordBoundaryInDirection:UITextStorageDirectionBackward];
+        }
+        
+        NKTTextPosition *forwardBoundary = nil;
+
+        if ([self isTextPosition:textPosition atWordBoundaryInDirection:UITextStorageDirectionForward])
+        {
+            forwardBoundary = textPosition;
+        }
+        else
+        {
+            forwardBoundary = (NKTTextPosition *)[self positionFromTextPosition:textPosition
+                                                      toWordBoundaryInDirection:UITextStorageDirectionForward];
+        }
+        
+        return [NKTTextRange textRangeWithTextPosition:backwardBoundary textPosition:forwardBoundary];
+    }
+    else
+    {
+        if (![self isTextPosition:textPosition withinWordInDirection:UITextStorageDirectionBackward])
+        {
+            return nil;
+        }
+        
+        NKTTextPosition *backwardBoundary = nil;
+        
+        if ([self isTextPosition:textPosition atWordBoundaryInDirection:UITextStorageDirectionBackward])
+        {
+            backwardBoundary = textPosition;
+        }
+        else
+        {
+            backwardBoundary = (NKTTextPosition *)[self positionFromTextPosition:textPosition
+                                                       toWordBoundaryInDirection:UITextStorageDirectionBackward];
+        }
+        
+        NKTTextPosition *forwardBoundary = nil;
+        
+        if ([self isTextPosition:textPosition atWordBoundaryInDirection:UITextStorageDirectionForward])
+        {
+            forwardBoundary = textPosition;
+        }
+        else
+        {
+            forwardBoundary = (NKTTextPosition *)[self positionFromTextPosition:textPosition
+                                                      toWordBoundaryInDirection:UITextStorageDirectionForward];
+        }
+        
+        return [NKTTextRange textRangeWithTextPosition:backwardBoundary textPosition:forwardBoundary];
+    }
 }
 
 @end

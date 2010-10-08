@@ -5,6 +5,7 @@
 #import "KobaUI.h"
 
 @class NKTCaret;
+@class NKTHandle;
 @class NKTHighlightRegion;
 @class NKTLine;
 @class NKTTextPosition;
@@ -26,11 +27,18 @@
     NKTCaret *caret_;
     NKTHighlightRegion *selectedTextRegion_;
     NKTHighlightRegion *markedTextRegion_;
+    NKTHandle *backwardHandle_;
+    NKTHandle *forwardHandle_;
 }
 
 #pragma mark Setting the Delegate
 
 @property (nonatomic, readwrite, assign) id <NKTSelectionDisplayControllerDelegate> delegate;
+
+#pragma mark Accessing Handles
+
+@property (nonatomic, readonly) NKTHandle *backwardHandle;
+@property (nonatomic, readonly) NKTHandle *forwardHandle;
 
 #pragma mark Configuring Selection Elements
 
@@ -51,7 +59,7 @@
 //--------------------------------------------------------------------------------------------------
 
 // NKTSelectionDisplayControllerDelegate
-@protocol NKTSelectionDisplayControllerDelegate
+@protocol NKTSelectionDisplayControllerDelegate <NSObject>
 
 #pragma mark Getting Text Ranges
 

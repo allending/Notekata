@@ -43,6 +43,7 @@
 		9FC347681238EEEC001AFF98 /* KBCMath.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC347671238EEEC001AFF98 /* KBCMath.m */; };
 		9FCBC16B1248AD6D008A0A1F /* NKTFontPickerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FCBC1691248AD6D008A0A1F /* NKTFontPickerViewController.m */; };
 		9FCBC20A1248BC30008A0A1F /* NKTFontPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FCBC2091248BC30008A0A1F /* NKTFontPickerView.m */; };
+		9FD542E8125F0C5000B240BB /* NKTHandle.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FD542E7125F0C5000B240BB /* NKTHandle.m */; };
 		9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */; };
 		9FDDDDC412291912009BFCED /* KBCGestures.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDDC312291912009BFCED /* KBCGestures.m */; };
 		9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* KBCLogging.m */; };
@@ -125,6 +126,8 @@
 		9FCBC1691248AD6D008A0A1F /* NKTFontPickerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFontPickerViewController.m; sourceTree = "<group>"; };
 		9FCBC2081248BC30008A0A1F /* NKTFontPickerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFontPickerView.h; sourceTree = "<group>"; };
 		9FCBC2091248BC30008A0A1F /* NKTFontPickerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFontPickerView.m; sourceTree = "<group>"; };
+		9FD542E6125F0C5000B240BB /* NKTHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTHandle.h; sourceTree = "<group>"; };
+		9FD542E7125F0C5000B240BB /* NKTHandle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTHandle.m; sourceTree = "<group>"; };
 		9FDDDC7C1228F34E009BFCED /* NKTDragGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTDragGestureRecognizer.h; sourceTree = "<group>"; };
 		9FDDDC7D1228F34E009BFCED /* NKTDragGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTDragGestureRecognizer.m; sourceTree = "<group>"; };
 		9FDDDDC212291912009BFCED /* KBCGestures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCGestures.h; sourceTree = "<group>"; };
@@ -337,6 +340,8 @@
 				9FCBC2091248BC30008A0A1F /* NKTFontPickerView.m */,
 				9F7D2BA212585738006D23DD /* NKTFramesetter.h */,
 				9F7D2BA312585738006D23DD /* NKTFramesetter.m */,
+				9FD542E6125F0C5000B240BB /* NKTHandle.h */,
+				9FD542E7125F0C5000B240BB /* NKTHandle.m */,
 				9FC2B785123776A8002FD8BA /* NKTHighlightRegion.h */,
 				9FC2B786123776A8002FD8BA /* NKTHighlightRegion.m */,
 				F5D12A9E11F2ECA20049C2CE /* NKTLine.h */,
@@ -472,6 +477,7 @@
 				9F7D2BA412585738006D23DD /* NKTFramesetter.m in Sources */,
 				9F6E4E4E1258E342005721FB /* KobaCore.m in Sources */,
 				9F327E6E125951A50026DCA7 /* NSString+KobaAdditions.m in Sources */,
+				9FD542E8125F0C5000B240BB /* NKTHandle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

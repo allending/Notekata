@@ -6,6 +6,13 @@
 
 @class NKTTextPosition;
 
+typedef enum
+{
+    NKTTextRangeRelationBefore,
+    NKTTextRangeRelationOverlapping,
+    NKTTextRangeRelationAfter
+} NKTTextRangeRelation;
+
 // NKTTextRange is a subclass of UITextRange that represents text position with instances of
 // NKTTextPosition.
 @interface NKTTextRange : UITextRange
@@ -49,6 +56,8 @@
 - (NKTTextRange *)textRangeByClippingFromTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Comparing Text Ranges
+
+- (NKTTextRangeRelation)relationToTextRange:(NKTTextRange *)textRange;
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange;
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition;

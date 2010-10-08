@@ -46,11 +46,15 @@
 
 #pragma mark Responding to Gestures
 
-@property (nonatomic, retain) NKTTextPosition *initialDoubleTapTextPosition;
+@property (nonatomic, retain) NKTTextRange *initialDoubleTapTextRange;
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer;
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer;
+- (void)handleBackwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer;
+- (void)handleForwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer;
+
+- (NKTTextRange *)gesturedWordRangeAtTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Managing Loupes
 
@@ -106,7 +110,7 @@
 @synthesize tapGestureRecognizer = tapGestureRecognizer_;
 @synthesize longPressGestureRecognizer = longPressGestureRecognizer_;
 @synthesize doubleTapAndDragGestureRecognizer = doubleTapAndDragGestureRecognizer_;
-@synthesize initialDoubleTapTextPosition = initialDoubleTapTextPosition_;
+@synthesize initialDoubleTapTextRange = initialDoubleTapTextRange_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -170,6 +174,17 @@
     [self addGestureRecognizer:nonEditTapGestureRecognizer_];
     [self addGestureRecognizer:longPressGestureRecognizer_];
     [self addGestureRecognizer:doubleTapAndDragGestureRecognizer_];
+    
+    // Add drag gesture recognizers to the selection display controller managed handles
+    UIPanGestureRecognizer *backwardHandleGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                                                                                      action:@selector(handleBackwardHandleDrag:)];
+    [selectionDisplayController_.backwardHandle addGestureRecognizer:backwardHandleGestureRecognizer];
+    [backwardHandleGestureRecognizer release];    
+
+    UIPanGestureRecognizer *forwardHandleGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                                                                                     action:@selector(handleForwardHandleDrag:)];
+    [selectionDisplayController_.forwardHandle addGestureRecognizer:forwardHandleGestureRecognizer];
+    [forwardHandleGestureRecognizer release];    
 }
 
 - (void)dealloc
@@ -205,7 +220,7 @@
     [tapGestureRecognizer_ release];
     [longPressGestureRecognizer_ release];
     [doubleTapAndDragGestureRecognizer_ release];
-    [initialDoubleTapTextPosition_ release];
+    [initialDoubleTapTextRange_ release];
     
     [super dealloc];
 }
@@ -239,7 +254,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-#pragma mark Laying out Views
+#pragma mark Laying Out Views
 
 // Called when scrolling occurs (behavior inherited from UIScrollView). We tile the sections as
 // neccesary whenever scrolling occurs.
@@ -512,7 +527,7 @@
     
     if ([self.delegate respondsToSelector:@selector(textViewDidEndEditing:)])
     {
-        [self.delegate textViewDidEndEditing:self];
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidEndEditing:self];
     }
     
     return YES;
@@ -547,7 +562,7 @@
     
     if (becameFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
     {
-        [self.delegate textViewDidBeginEditing:self];
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidBeginEditing:self];
     }
 }
 
@@ -581,23 +596,145 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
-        self.initialDoubleTapTextPosition = textPosition;
-        self.gestureTextRange = [textPosition textRange];
+        NKTTextRange *gesturedWordRange = [self gesturedWordRangeAtTextPosition:textPosition];
+        self.initialDoubleTapTextRange = gesturedWordRange;
+        self.gestureTextRange = gesturedWordRange;
         self.markedTextRange = nil;
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:self.initialDoubleTapTextPosition
-                                                           textPosition:textPosition];
+        if (initialDoubleTapTextRange_ == nil)
+        {
+            return;
+        }
+        
+        if ([textPosition compare:initialDoubleTapTextRange_.start] == NSOrderedAscending)
+        {
+            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
+                                                               textPosition:initialDoubleTapTextRange_.end];
+        }
+        else if ([textPosition compare:initialDoubleTapTextRange_.end] == NSOrderedDescending)
+        {
+            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:initialDoubleTapTextRange_.start
+                                                               textPosition:textPosition];
+        }
+        else
+        {
+            self.gestureTextRange = initialDoubleTapTextRange_;
+        }
+        
         [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
         [self.textRangeLoupe setHidden:NO animated:YES];
     }
     else
     {
-        self.initialDoubleTapTextPosition = nil;
+        if (initialDoubleTapTextRange_ == nil)
+        {
+            return;
+        }
+        
+        self.initialDoubleTapTextRange = nil;
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
     }
+}
+
+- (void)handleBackwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer
+{    
+    CGPoint point = [gestureRecognizer locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan ||
+        gestureRecognizer.state == UIGestureRecognizerStateChanged)
+    {
+        if ([textPosition compare:selectedTextRange_.end] == NSOrderedAscending)
+        {
+            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
+                                                               textPosition:selectedTextRange_.end];
+            self.markedTextRange = nil;
+        }
+        
+        [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
+        [self.textRangeLoupe setHidden:NO animated:YES];
+    }
+    else
+    {
+        [self confirmGestureTextRange];
+        [self.textRangeLoupe setHidden:YES animated:YES];
+    }
+}
+
+- (void)handleForwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer
+{
+    CGPoint point = [gestureRecognizer locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan ||
+        gestureRecognizer.state == UIGestureRecognizerStateChanged)
+    {
+        if ([textPosition compare:selectedTextRange_.start] == NSOrderedDescending)
+        {
+            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start
+                                                               textPosition:textPosition];
+            self.markedTextRange = nil;
+        }
+        
+        [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
+        [self.textRangeLoupe setHidden:NO animated:YES];
+    }
+    else
+    {
+        [self confirmGestureTextRange];
+        [self.textRangeLoupe setHidden:YES animated:YES];
+    }
+}
+
+// Searches for the likely word being indicated at the given text position when the user performs
+// a selection gesture. The search considers words in the following order:
+// at the text position, at a word boundary before the text position, and at a word boundary after
+// the text position.
+- (NKTTextRange *)gesturedWordRangeAtTextPosition:(NKTTextPosition *)textPosition
+{
+    // The text position might already be at within a word (in either text direction)
+    if ([self.tokenizer isPosition:textPosition
+                    withinTextUnit:UITextGranularityWord
+                       inDirection:UITextStorageDirectionForward])
+    {
+        return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition
+                                                      withGranularity:UITextGranularityWord
+                                                          inDirection:UITextStorageDirectionForward];
+    }
+    else if ([self.tokenizer isPosition:textPosition
+                             atBoundary:UITextGranularityWord
+                            inDirection:UITextStorageDirectionForward])
+    {
+        return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition
+                                                      withGranularity:UITextGranularityWord
+                                                          inDirection:UITextStorageDirectionBackward];
+    }
+    
+    // Search for target word at other boundaries
+    NKTTextPosition *previousBoundary = (NKTTextPosition *)[self.tokenizer positionFromPosition:textPosition
+                                                                                     toBoundary:UITextGranularityWord
+                                                                                    inDirection:UITextStorageDirectionBackward];
+    NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:previousBoundary
+                                                                     withGranularity:UITextGranularityWord
+                                                                         inDirection:UITextStorageDirectionBackward];
+    
+    // The text range can still be nil if the previous boundary is the start of the document
+    if (textRange != nil)
+    {
+        return textRange;
+    }
+    
+    NKTTextPosition *nextBoundary = (NKTTextPosition *)[self.tokenizer positionFromPosition:textPosition
+                                                                                 toBoundary:UITextGranularityWord
+                                                                                inDirection:UITextStorageDirectionForward];
+    return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:nextBoundary
+                                                  withGranularity:UITextGranularityWord
+                                                      inDirection:UITextStorageDirectionForward];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -614,12 +751,12 @@
         
         if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
         {
-            textRangeLoupe_.fillColor = [self.delegate loupeFillColor];
+            textRangeLoupe_.fillColor = [(id <NKTTextViewDelegate>)self.delegate loupeFillColor];
         }
         
         if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
         {
-            [self.delegate addLoupe:textRangeLoupe_];
+            [(id <NKTTextViewDelegate>)self.delegate addLoupe:textRangeLoupe_];
         }
         else
         {
@@ -640,12 +777,12 @@
 
         if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
         {
-            caretLoupe_.fillColor = [self.delegate loupeFillColor];
+            caretLoupe_.fillColor = [(id <NKTTextViewDelegate>)self.delegate loupeFillColor];
         }
         
         if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
         {
-            [self.delegate addLoupe:caretLoupe_];
+            [(id <NKTTextViewDelegate>)self.delegate addLoupe:caretLoupe_];
         }
         else
         {
@@ -758,7 +895,7 @@
     
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
     {
-        [self.delegate textViewDidChange:self];
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
     NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
@@ -795,7 +932,7 @@
     
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
     {
-        [self.delegate textViewDidChange:self];
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
     [self setSelectedTextRange:[deletionTextRange.start textRange] notifyInputDelegate:NO];
@@ -823,7 +960,9 @@
     [self regenerateTextFrame];
     
     // The text range to be replaced lies fully before the selected text range
-    if (textRange.end.location <= selectedTextRange_.start.location)
+    NKTTextRangeRelation relation = [textRange relationToTextRange:selectedTextRange_];
+    
+    if (relation == NKTTextRangeRelationBefore)
     {
         NSInteger changeInLength = [replacementText length] - textRange.length;
         NSUInteger newStartIndex = selectedTextRange_.start.location + changeInLength;
@@ -831,8 +970,7 @@
         [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
     }
     // The text range overlaps the selected text range
-    else if ((textRange.start.location >= selectedTextRange_.start.location) &&
-             (textRange.start.location < selectedTextRange_.end.location))
+    else if (relation == NKTTextRangeRelationOverlapping)
     {
         NSUInteger newLength = textRange.start.location - selectedTextRange_.start.location;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLength:newLength];
@@ -906,7 +1044,7 @@
         
         if ([self.delegate respondsToSelector:@selector(textViewDidChangeSelection:)])
         {
-            [self.delegate textViewDidChangeSelection:self];
+            [(id <NKTTextViewDelegate>)self.delegate textViewDidChangeSelection:self];
         }
     }
     
@@ -1090,29 +1228,14 @@
                            toPosition:(NKTTextPosition *)secondTextPosition
 {
     KBCLogDebug(@"%@ : %@", firstTextPosition, secondTextPosition);
-    
-    // TODO: extract to NKTTextPosition
-    
-    if (firstTextPosition.location < secondTextPosition.location)
-    {
-        return NSOrderedAscending;
-    }
-    else if (firstTextPosition.location > secondTextPosition.location)
-    {
-        return NSOrderedDescending;
-    }
-    else
-    {        
-        return NSOrderedSame;
-    }
+    return [firstTextPosition compare:secondTextPosition];
 }
 
 // UITextInput method
 - (NSInteger)offsetFromPosition:(NKTTextPosition *)fromPosition toPosition:(NKTTextPosition *)toPosition
 {
     KBCLogDebug(@"%@ : %@", fromPosition, toPosition);
-    // TODO: extract to NKTTextPosition
-    return (toPosition.location - fromPosition.location);
+    return (NSInteger)toPosition.location - (NSInteger)fromPosition.location;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1247,10 +1370,11 @@
     return [self caretRectWithOrigin:charOrigin font:font];
 }
 
+// TODO: move to selection display controller?
 - (CGRect)caretRectWithOrigin:(CGPoint)origin font:(UIFont *)font
 {
     CGRect caretFrame = CGRectZero;
-    const CGFloat caretWidth = 3.0;
+    const CGFloat caretWidth = 2.0;
     const CGFloat caretVerticalPadding = 1.0;
     caretFrame.origin.x = origin.x;
     caretFrame.origin.y = origin.y - font.ascender - caretVerticalPadding;
@@ -1336,7 +1460,7 @@
     {
         if ([self.delegate respondsToSelector:@selector(defaultTextAttributes)])
         {
-            return [self.delegate defaultTextAttributes];
+            return [(id <NKTTextViewDelegate>)self.delegate defaultTextAttributes];
         }
     }
     
@@ -1351,7 +1475,7 @@
     }
     // The typing attributes at the beginning of a paragraph are the attributes for the first
     // character of the paragraph
-    else if ((textPosition.location < [self.text length]) &&
+    else if ([textPosition isBeforeTextPosition:(NKTTextPosition *)[self endOfDocument]] &&
              [self.tokenizer isPosition:textPosition
                              atBoundary:UITextGranularityParagraph
                             inDirection:UITextStorageDirectionBackward])
