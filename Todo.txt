@@ -14,7 +14,10 @@ Controller
 
 Text View
 ---------
-[ ] Issue: Handles - Use a gesture recognizer that recognizes immediately if hit, not just when moved
+[x] Issue: Loupes should appear soon after gesture begins
+[x] Issue: Handles - Use a gesture recognizer that recognizes immediately if hit, not just when moved
+[ ] Design: Adjust drag handle gesture to use point just above or below actual gesture location
+[ ] Issue: Clamping does not actually work correctly with multipage bounds
 [ ] Feature: Context menus w/ selection
 [ ] Feature: Cut copy paste
 [ ] Feature: Scrolling behavior while editing
@@ -29,15 +32,11 @@ Text View
 
 Done
 ----
-[x] Feature: Selection handles
-[x] Issue: Selection handle may show up on wrong line when multiline text range selected
-[x] Issue: Selection handles don't resize as needed (orientation and change of input text attributes)
-[x] Issue: Selection is screwed up when selection goes backward above top bounds
-[x] Issue: Read UI guidelines for hit testing region tips - adjust handle hit test region as needed
-[x] Feature: Tokenization and movement - e.g. make sure selection isn't allowed to be empty
+
 
 Deferred
 --------
+[ ] Issue: Loupe drawing needs to lag by 1 frame ... - HACKED for now
 [ ] Issue: When end of text is newline, keyboard up movement has minor issue when caret is on the last line - small enough to ignore for now
 [ ] Design: Better icons for B/I/U
 [ ] Issue: Bradley hand - no regular variant, only bold variant

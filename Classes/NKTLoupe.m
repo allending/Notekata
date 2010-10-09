@@ -31,6 +31,7 @@
     if ((self = [super initWithFrame:CGRectZero]))
     {
         self.backgroundColor = [UIColor clearColor];
+        self.opaque = NO;
         
         // Load and create resources
         switch (style)
@@ -166,6 +167,12 @@
 
 #pragma mark Displaying
 
+- (void)setHidden:(BOOL)hidden
+{
+    [self setHidden:hidden animated:NO];
+}
+
+// TODO: explain logic
 - (void)setHidden:(BOOL)hidden animated:(BOOL)animated
 {
     if (self.hidden == hidden)
@@ -175,44 +182,56 @@
     
     if (!animated)
     {
-        self.hidden = hidden;
+        if (hidden)
+        {
+            self.frame = CGRectMake(anchor_.x, anchor_.y, 0.0, 0.0);
+        }
+        else
+        {
+            self.frame = CGRectMake(anchor_.x - anchorOffset_.x,
+                                    anchor_.y - anchorOffset_.y,
+                                    overlay_.size.width,
+                                    overlay_.size.height);
+        }
+        
+        [super setHidden:hidden];
         return;
     }
-
+    
     // Always not hidden initially if animating
-    self.hidden = NO;
+    [super setHidden:NO];
     
     // Animate from not hidden to hidden
     if (hidden)
     {
-        self.frame = CGRectMake(anchor_.x - anchorOffset_.x,
-                                anchor_.y - anchorOffset_.y,
-                                overlay_.size.width,
-                                overlay_.size.height);
         [UIView beginAnimations:nil context:nil];
         [UIView setAnimationDelegate:self];
         [UIView setAnimationDidStopSelector:@selector(hidingAnimationDidStop:finished:context:)];
+        [UIView setAnimationBeginsFromCurrentState:YES];
         [UIView setAnimationDuration:0.15];
         self.frame = CGRectMake(anchor_.x, anchor_.y, 0.0, 0.0);
+        self.alpha = 0.0;
         [UIView commitAnimations];
     }
     // Animate from hidden to not hidden
     else
     {
-        self.frame = CGRectMake(anchor_.x, anchor_.y, 0.0, 0.0);
         [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationBeginsFromCurrentState:YES];
+        [UIView setAnimationDelay:0.15];
         [UIView setAnimationDuration:0.15];
         self.frame = CGRectMake(anchor_.x - anchorOffset_.x,
                                 anchor_.y - anchorOffset_.y,
                                 overlay_.size.width,
                                 overlay_.size.height);
+        self.alpha = 1.0;
         [UIView commitAnimations];
     }
 }
 
 - (void)hidingAnimationDidStop:(NSString *)animationID finished:(NSNumber *)finished context:(void *)context
 {
-    self.hidden = YES;
+    [self setHidden:YES];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -237,8 +256,9 @@
     CGContextFillRect(imageContext, CGRectMake(0.0, 0.0, zoomedSize.width, zoomedSize.height));
     // Compute clamped origin for zoomed region in zoomed view space
     CGPoint zoomOrigin = CGPointMake(zoomCenter_.x - halfZoomedSize.width, zoomCenter_.y - halfZoomedSize.height);
-    zoomOrigin.x = KBCClampFloat(zoomOrigin.x, 0.0, zoomedView_.bounds.size.width - zoomedSize.width);
-    zoomOrigin.y = KBCClampFloat(zoomOrigin.y, 0.0, zoomedView_.bounds.size.height - zoomedSize.height);
+// TODO: clamping wrong
+//    zoomOrigin.x = KBCClampFloat(zoomOrigin.x, 0.0, zoomedView_.bounds.size.width - zoomedSize.width);
+//    zoomOrigin.y = KBCClampFloat(zoomOrigin.y, 0.0, zoomedView_.bounds.size.height - zoomedSize.height);
     // Apply inverse zoom origin so zoomed view can render directly into the context
     CGContextTranslateCTM(imageContext, -zoomOrigin.x, -zoomOrigin.y);
     [zoomedView_.layer renderInContext:imageContext];

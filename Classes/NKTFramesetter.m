@@ -213,7 +213,7 @@
 - (NSInteger)virtualLineIndexClosestToPoint:(CGPoint)point
 {
     //CGFloat virtualLinePointOffset = -lineHeight_ * 0.1;
-    return (NSInteger)floor(point.y / lineHeight_);
+    return (NSInteger)floor((point.y - 12.0) / lineHeight_);
 }
 
 - (NKTLine *)lineClosestToPoint:(CGPoint)point

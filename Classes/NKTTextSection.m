@@ -54,8 +54,8 @@
     if ((self = [super initWithFrame:frame]))
     {
         self.backgroundColor = [UIColor clearColor];
-        self.opaque = YES;
-        self.clearsContextBeforeDrawing = NO;
+        self.opaque = NO;
+        self.clearsContextBeforeDrawing = YES;
         self.userInteractionEnabled = NO;
         numberOfSkirtLines_ = 1;
     }

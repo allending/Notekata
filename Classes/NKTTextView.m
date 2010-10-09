@@ -159,7 +159,10 @@
     gestureRecognizerDelegate_ = [[NKTTextViewGestureRecognizerDelegate alloc] initWithTextView:self];
     doubleTapAndDragGestureRecognizer_ = [[NKTDragGestureRecognizer alloc] initWithTarget:self
                                                                                    action:@selector(handleDoubleTapAndDrag:)];
+    doubleTapAndDragGestureRecognizer_.minimumNumberOfTouches = 2;
+    doubleTapAndDragGestureRecognizer_.maximumNumberOfTouches = 2;
     doubleTapAndDragGestureRecognizer_.delegate = gestureRecognizerDelegate_;
+    
     nonEditTapGestureRecognizer_ = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                            action:@selector(handleTap:)];
     nonEditTapGestureRecognizer_.delegate = gestureRecognizerDelegate_;
@@ -167,22 +170,24 @@
     tapGestureRecognizer_ = [[UITapGestureRecognizer alloc] initWithTarget:self
                                                                     action:@selector(handleTap:)];
     tapGestureRecognizer_.delegate = gestureRecognizerDelegate_;
+    
     longPressGestureRecognizer_ = [[UILongPressGestureRecognizer alloc] initWithTarget:self
                                                                                 action:@selector(handleLongPress:)];
     longPressGestureRecognizer_.delegate = gestureRecognizerDelegate_;
+    
     [self addGestureRecognizer:tapGestureRecognizer_];
     [self addGestureRecognizer:nonEditTapGestureRecognizer_];
     [self addGestureRecognizer:longPressGestureRecognizer_];
     [self addGestureRecognizer:doubleTapAndDragGestureRecognizer_];
     
     // Add drag gesture recognizers to the selection display controller managed handles
-    UIPanGestureRecognizer *backwardHandleGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self
-                                                                                                      action:@selector(handleBackwardHandleDrag:)];
+    UIPanGestureRecognizer *backwardHandleGestureRecognizer = [[NKTDragGestureRecognizer alloc] initWithTarget:self
+                                                                                                        action:@selector(handleBackwardHandleDrag:)];
     [selectionDisplayController_.backwardHandle addGestureRecognizer:backwardHandleGestureRecognizer];
     [backwardHandleGestureRecognizer release];    
-
-    UIPanGestureRecognizer *forwardHandleGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self
-                                                                                                     action:@selector(handleForwardHandleDrag:)];
+    
+    UIPanGestureRecognizer *forwardHandleGestureRecognizer = [[NKTDragGestureRecognizer alloc] initWithTarget:self
+                                                                                                       action:@selector(handleForwardHandleDrag:)];
     [selectionDisplayController_.forwardHandle addGestureRecognizer:forwardHandleGestureRecognizer];
     [forwardHandleGestureRecognizer release];    
 }
@@ -600,6 +605,8 @@
         self.initialDoubleTapTextRange = gesturedWordRange;
         self.gestureTextRange = gesturedWordRange;
         self.markedTextRange = nil;
+        [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
+        [self.textRangeLoupe setHidden:NO animated:YES];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
@@ -644,9 +651,13 @@
     CGPoint point = [gestureRecognizer locationInView:self];
     CGPoint framesetterPoint = [self convertPointToFramesetter:point];
     NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
-    
-    if (gestureRecognizer.state == UIGestureRecognizerStateBegan ||
-        gestureRecognizer.state == UIGestureRecognizerStateChanged)
+
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
+    {
+        [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
+        [self.textRangeLoupe setHidden:NO animated:YES];
+    }
+    else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
         if ([textPosition compare:selectedTextRange_.end] == NSOrderedAscending)
         {
@@ -671,8 +682,12 @@
     CGPoint framesetterPoint = [self convertPointToFramesetter:point];
     NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
     
-    if (gestureRecognizer.state == UIGestureRecognizerStateBegan ||
-        gestureRecognizer.state == UIGestureRecognizerStateChanged)
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
+    {
+        [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
+        [self.textRangeLoupe setHidden:NO animated:YES];
+    }
+    else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
         if ([textPosition compare:selectedTextRange_.start] == NSOrderedDescending)
         {
@@ -762,6 +777,13 @@
         {
             [self.superview addSubview:textRangeLoupe_];
         }
+        
+        // HACK: visual inconsistencies may appear the first time the text range loupe is shown.
+        // I haven't fully dived into unraveling the specific issue, but it probably has to do 
+        // with a loupes somewhat esoteric drawing of another view within itself. For now, the
+        // line below forces one redisplay of the loupe when it is created the first time and
+        // seems to fix the problem.
+        [textRangeLoupe_ performSelector:@selector(setNeedsDisplay) withObject:nil afterDelay:0];
     }
     
     return textRangeLoupe_;
@@ -805,15 +827,17 @@
         loupe.zoomCenter = [self convertPoint:zoomCenter toView:loupe.zoomedView];
         // Anchor loupe to a point just on top of the line
         CGPoint anchor = CGPointMake(point.x, baselineOrigin.y - (lineHeight_ * 0.75));
-        anchor = KBCClampPointToRect(anchor, self.bounds);
+        // TODO: clamping wrong
+        //anchor = KBCClampPointToRect(anchor, self.bounds);
         loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
     else
     {
         // No adjusting of point, just use it as both the zoom center and anchor
-        loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];;
-        CGPoint anchor = KBCClampPointToRect(point, self.bounds);
-        loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
+        loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];
+        // TODO: clamping wrong
+        //CGPoint anchor = KBCClampPointToRect(point, self.bounds);
+        loupe.anchor = [self convertPoint:point toView:loupe.superview];
     }
 }
 
@@ -824,7 +848,8 @@
     loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];
     // Anchor loupe to a point just on top of the text position
     CGPoint anchor = CGPointMake(point.x, point.y - (lineHeight_ * 0.75));
-    anchor = KBCClampPointToRect(anchor, self.bounds);
+    // TODO: clamping wrong
+    //anchor = KBCClampPointToRect(anchor, self.bounds);
     loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
 }
 

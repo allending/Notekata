@@ -9,7 +9,8 @@
 
 @implementation NKTDragGestureRecognizer
 
-@synthesize numberOfTapsRequired = numberOfTapsRequired_;
+@synthesize minimumNumberOfTouches = minimumNumberOfTouches_;
+@synthesize maximumNumberOfTouches = maximumNumberOfTouches_;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -19,7 +20,8 @@
 {
     if ((self = [super initWithTarget:target action:action]))
     {
-        numberOfTapsRequired_ = 2;
+        minimumNumberOfTouches_ = 1;
+        maximumNumberOfTouches_ = NSUIntegerMax;
     }
     
     return self;
@@ -58,7 +60,7 @@
     
     UITouch *touch = [touches anyObject];
     
-    if (touch.tapCount == numberOfTapsRequired_)
+    if (touch.tapCount >= minimumNumberOfTouches_ && touch.tapCount <= maximumNumberOfTouches_)
     {
         KBCLogDebug(@"possible -> began (tap count met)");
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(abortPossibleGesture) object:nil];

@@ -8,11 +8,13 @@
 @interface NKTDragGestureRecognizer : UIGestureRecognizer
 {
 @private
-    NSUInteger numberOfTapsRequired_;
+    NSUInteger minimumNumberOfTouches_;
+    NSUInteger maximumNumberOfTouches_;
 }
 
 #pragma mark Configuring the Gesture
 
-@property (nonatomic) NSUInteger numberOfTapsRequired;
+@property (nonatomic) NSUInteger minimumNumberOfTouches;
+@property (nonatomic) NSUInteger maximumNumberOfTouches;
 
 @end

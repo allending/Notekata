@@ -98,7 +98,7 @@
         return CGRectNull;
     }
     
-    return CGRectMake(baselineOrigin_.x, baselineOrigin_.y - self.ascent, width_, self.ascent + self.descent);
+    return CGRectMake(baselineOrigin_.x, baselineOrigin_.y - self.ascent - 2.0, width_, self.ascent + self.descent + 4.0);
 }
 
 - (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition
