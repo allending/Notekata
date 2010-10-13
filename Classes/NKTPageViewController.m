@@ -18,7 +18,8 @@
 
 #pragma mark Managing Views
 
-@property (nonatomic, retain) UIView *fakeGapView;
+@property (nonatomic, retain) UIView *creamPaperBackgroundView;
+@property (nonatomic, retain) UIView *plainPaperBackgroundView;
 @property (nonatomic, retain) UIImageView *capAndEdgeView;
 @property (nonatomic, retain) UIImageView *edgeShadowView;
 
@@ -83,8 +84,9 @@
 @synthesize fontPickerViewController = fontPickerViewController_;
 
 @synthesize textView = textView_;
-@synthesize edgeView = edgeView_;
-@synthesize fakeGapView = fakeGapView_;
+@synthesize creamPaperBackgroundView = creamPaperBackgroundView_;
+@synthesize plainPaperBackgroundView = plainPaperBackgroundView_;
+@synthesize coverEdgeView = coverEdgeView_;
 @synthesize capAndEdgeView = capAndEdgeView_;
 @synthesize edgeShadowView = edgeShadowView_;
 @synthesize pageStyle = pageStyle_;
@@ -127,8 +129,9 @@
     [fontPickerViewController_ release];
 
     [textView_ release];
-    [edgeView_ release];
-    [fakeGapView_ release];
+    [creamPaperBackgroundView_ release];
+    [plainPaperBackgroundView_ release];
+    [coverEdgeView_ release];
     [capAndEdgeView_ release];
     [edgeShadowView_ release];
     [toolbar_ release];
@@ -255,28 +258,40 @@
 {
     [super viewDidLoad];
     
+    self.view.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
+    
+    // TODO: is this right?
+    self.textView.opaque = YES;
+    self.textView.clearsContextBeforeDrawing = NO;
+    
     // Set the background pattern for the edge view
     UIImage *edgePattern = [UIImage imageNamed:@"RedCoverPattern.png"];
-    self.edgeView.backgroundColor = [UIColor colorWithPatternImage:edgePattern];
+    self.coverEdgeView.backgroundColor = [UIColor colorWithPatternImage:edgePattern];
     
-    // Set the background pattern that will be the background of the text view
-    UIImage *backgroundPattern = [UIImage imageNamed:@"CreamPaperPattern.png"];
-    self.view.backgroundColor = [UIColor colorWithPatternImage:backgroundPattern];
-        
-    // Create a fake background insert create a 'gap' on the left side of the text view in landscape orientation
-    fakeGapView_ = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 0.0)];
-    fakeGapView_.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
-    fakeGapView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
+    // Create background views
+    UIImage *creamPaperPattern = [UIImage imageNamed:@"CreamPaperPattern.png"];
+    creamPaperBackgroundView_ = [[UIView alloc] init];
+    creamPaperBackgroundView_.opaque = YES;
+    creamPaperBackgroundView_.userInteractionEnabled = NO;
+    creamPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:creamPaperPattern];
+    
+    UIImage *plainPaperPattern = [UIImage imageNamed:@"PlainPaperPattern2.png"];
+    plainPaperBackgroundView_ = [[UIView alloc] init];
+    plainPaperBackgroundView_.opaque = YES;
+    plainPaperBackgroundView_.userInteractionEnabled = NO;
+    plainPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:plainPaperPattern];
     
     // Create a cap and edge image view to apply to the left edge of the text view
     UIImage *capAndEdgeImage = [UIImage imageNamed:@"DarkBgCap.png"];
     capAndEdgeImage = [capAndEdgeImage stretchableImageWithLeftCapWidth:6.0 topCapHeight:3.0];
     capAndEdgeView_ = [[UIImageView alloc] initWithImage:capAndEdgeImage];
+    capAndEdgeView_.userInteractionEnabled = NO;
     capAndEdgeView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     
     // Finally, apply a shadow to the left edge of the text view
     UIImage *edgeShadowImage = [UIImage imageNamed:@"EdgeShadow.png"];
     edgeShadowView_ = [[UIImageView alloc] initWithImage:edgeShadowImage];
+    edgeShadowView_.userInteractionEnabled = NO;
     edgeShadowView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     edgeShadowView_.frame = CGRectMake(5.0, 0.0, 10.0, 0.0);
     
@@ -299,8 +314,9 @@
 {
     [super viewDidUnload];
     self.textView = nil;
-    self.edgeView = nil;
-    self.fakeGapView = nil;
+    self.creamPaperBackgroundView = nil;
+    self.plainPaperBackgroundView = nil;
+    self.coverEdgeView = nil;
     self.capAndEdgeView = nil;
     self.edgeShadowView = nil;
     self.toolbar = nil;
@@ -348,8 +364,7 @@
     return YES;
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
-                                duration:(NSTimeInterval)duration
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
     {
@@ -361,14 +376,10 @@
         
         // Place and add adorment views
         frame.origin.x = 15.0;
+        frame.size.width = 6.0;
         capAndEdgeView_.frame = frame;
         [self.view addSubview:capAndEdgeView_];
         
-        frame.origin.x = 0.0;
-        frame.size.width = 15.0;
-        fakeGapView_.frame = frame;
-        [self.view addSubview:fakeGapView_];
-
         frame.origin.x = 5.0;
         frame.size.width = 10.0;
         edgeShadowView_.frame = frame;
@@ -384,7 +395,6 @@
         
         // Remove adornment views
         [capAndEdgeView_ removeFromSuperview];
-        [fakeGapView_ removeFromSuperview];
         [edgeShadowView_ removeFromSuperview];
     }
 }
@@ -427,14 +437,14 @@
     switch (pageStyle_)
     {
         case NKTPageStylePlain:
-            self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainPaperPattern2.png"]];
+            self.textView.backgroundView = plainPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = NO;
             self.textView.verticalMarginEnabled = NO;
             break;
             
         case NKTPageStylePlainRuled:
-            self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainPaperPattern2.png"]];
+            self.textView.backgroundView = plainPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;
             self.textView.horizontalRuleColor = [UIColor colorWithRed:0.84 green:0.84 blue:0.88 alpha:1.0];
@@ -442,7 +452,7 @@
             break;
             
         case NKTPageStyleCollegeRuled:
-            self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainPaperPattern2.png"]];
+            self.textView.backgroundView = plainPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;
             self.textView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.73 blue:0.85 alpha:1.0];
@@ -452,14 +462,14 @@
             break;
             
         case NKTPageStyleCream:
-            self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamPaperPattern.png"]];
+            self.textView.backgroundView = creamPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = NO;
             self.textView.verticalMarginEnabled = NO;
             break;
             
         case NKTPageStyleCreamRuled:
-            self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamPaperPattern.png"]];
+            self.textView.backgroundView = creamPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;
             self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
@@ -467,7 +477,7 @@
             break;
             
         case NKTPageStyleCollegeRuledCream:
-            self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamPaperPattern.png"]];
+            self.textView.backgroundView = creamPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;
             self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];

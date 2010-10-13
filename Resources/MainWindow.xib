@@ -335,20 +335,20 @@
 					<string key="className">NKTPageViewController</string>
 					<string key="superclassName">UIViewController</string>
 					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="coverEdgeView">UIView</string>
 						<string key="delegate_">id</string>
-						<string key="edgeView">UIView</string>
 						<string key="textView">NKTTextView</string>
 						<string key="titleLabel">UILabel</string>
 						<string key="toolbar">UIToolbar</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="coverEdgeView">
+							<string key="name">coverEdgeView</string>
+							<string key="candidateClassName">UIView</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="delegate_">
 							<string key="name">delegate_</string>
 							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="edgeView">
-							<string key="name">edgeView</string>
-							<string key="candidateClassName">UIView</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="textView">
 							<string key="name">textView</string>

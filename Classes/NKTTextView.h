@@ -20,6 +20,9 @@
     // Text Storage
     NSMutableAttributedString *text_;
     
+    // Background
+    UIView *backgroundView_;
+    
     // Styling
     UIEdgeInsets margins_;
     CGFloat lineHeight_;
@@ -73,10 +76,14 @@
 
 @property (nonatomic, copy) NSAttributedString *text;
 
+#pragma mark Configuring the Background
+
+@property (nonatomic, retain) UIView *backgroundView;
+
 #pragma mark Configuring Text Layout and Style
 
-@property (nonatomic, readwrite) UIEdgeInsets margins;
-@property (nonatomic, readwrite) CGFloat lineHeight;
+@property (nonatomic) UIEdgeInsets margins;
+@property (nonatomic) CGFloat lineHeight;
 @property (nonatomic, getter = areHorizontalRulesEnabled) BOOL horizontalRulesEnabled;
 @property (nonatomic, retain) UIColor *horizontalRuleColor;
 @property (nonatomic) CGFloat horizontalRuleOffset;

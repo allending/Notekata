@@ -18,6 +18,7 @@ Controller
 Text View
 ---------
 [ ] Issue: Correction prompt not getting right rects (untransformed)? - Can't reproduce
+[ ] Optimization: Shit load of tiling/untiling during startup
 [ ] Design: Adjust drag handle gesture to use point just above or below actual gesture location
 [ ] Issue: Clamping does not actually work correctly with multipage bounds
 [ ] Issue: Dragging the handle slightly should not change line immediately

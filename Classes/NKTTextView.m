@@ -90,6 +90,7 @@
 @implementation NKTTextView
 
 @synthesize text = text_;
+@synthesize backgroundView = backgroundView_;
 @synthesize margins = margins_;
 @synthesize lineHeight = lineHeight_;
 @synthesize horizontalRulesEnabled = horizontalRulesEnabled_;
@@ -192,6 +193,8 @@
 {
     [text_ release];
     
+    [backgroundView_ release];
+    
     [horizontalRuleColor_ release];
     [verticalMarginColor_ release];
 
@@ -226,6 +229,33 @@
     [super dealloc];
 }
 
+#pragma mark -
+#pragma mark Configuring the Background
+
+- (void)setBackgroundView:(UIView *)backgroundView
+{
+    if (backgroundView_ == backgroundView)
+    {
+        return;
+    }
+
+    if (backgroundView_ != nil)
+    {
+        [backgroundView_ removeFromSuperview];
+        [underlayViews_ removeObject:backgroundView_];
+        [backgroundView_ release];
+    }
+    
+    backgroundView_ = [backgroundView retain];
+    
+    if (backgroundView_ != nil)
+    {
+        [self insertSubview:backgroundView_ atIndex:0];
+        backgroundView_.frame = self.bounds;
+        [underlayViews_ addObject:backgroundView_];
+    }
+}
+
 //--------------------------------------------------------------------------------------------------
 
 #pragma mark -
@@ -251,8 +281,14 @@
     }
     
     [super setFrame:frame];
-    [self regenerateTextFrame];
-    [selectionDisplayController_ updateSelectionDisplay];
+    
+    // HACK: when the nib loads, -setFrame: gets called, but it happens before awakeFromNib! We just check the text
+    // property instead before doing any further processing.
+    if (text_ != nil)
+    {
+        [self regenerateTextFrame];
+        [selectionDisplayController_ updateSelectionDisplay];
+    }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -262,9 +298,12 @@
 
 // Called when scrolling occurs (behavior inherited from UIScrollView). We tile the sections as
 // neccesary whenever scrolling occurs.
-- (void)layoutSubviews 
+- (void)layoutSubviews
 {
     [super layoutSubviews];
+    CGRect frame = backgroundView_.frame;
+    frame.origin = self.contentOffset;
+    backgroundView_.frame = frame;
     [self tileSections];
 }
 
@@ -358,6 +397,7 @@
 
 - (void)tileSections
 {
+    KBCLogDebug(@"tiling within %@", NSStringFromCGRect(self.bounds));
     CGRect bounds = self.bounds;
     NSInteger firstVisibleSectionIndex = (NSInteger)floorf(CGRectGetMinY(bounds) / CGRectGetHeight(bounds));
     NSInteger lastVisibleSectionIndex = (NSInteger)floorf((CGRectGetMaxY(bounds) - 1.0) / CGRectGetHeight(bounds));
@@ -367,6 +407,7 @@
     {
         if (section.index < firstVisibleSectionIndex || section.index > lastVisibleSectionIndex)
         {
+            KBCLogDebug(@"untiling section %d", section.index);
             [reusableSections_ addObject:section];
             [section removeFromSuperview];
         }
@@ -388,6 +429,7 @@
             
             [self configureSection:section atIndex:index];
             NSUInteger insertionIndex = [underlayViews_ count];
+            KBCLogDebug(@"tiling section %d", section.index);
             [self insertSubview:section atIndex:insertionIndex];
             [visibleSections_ addObject:section];
         }
@@ -398,6 +440,7 @@
 {
     for (NKTTextSection *section in visibleSections_)
     {
+        KBCLogDebug(@"untiling section %d", section.index);
         [reusableSections_ addObject:section];
         [section removeFromSuperview];
     }
@@ -455,8 +498,6 @@
     sectionFrame.origin.y = (CGFloat)index * CGRectGetHeight(sectionFrame);
     return sectionFrame;
 }
-
-//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Managing the Framesetter

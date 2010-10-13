@@ -43,10 +43,11 @@ typedef enum
     // UI
     NKTTextView *textView_;
     // Styling
+    UIView *creamPaperBackgroundView_;
+    UIView *plainPaperBackgroundView_;
     NKTPageStyle pageStyle_;
     // Adornments
-    UIView *edgeView_;
-    UIView *fakeGapView_;
+    UIView *coverEdgeView_;
     UIImageView *capAndEdgeView_;
     UIImageView *edgeShadowView_;
     // Toolbar
@@ -76,7 +77,7 @@ typedef enum
 #pragma mark Accessing Views
 
 @property (nonatomic, retain) IBOutlet NKTTextView *textView;
-@property (nonatomic, retain) IBOutlet UIView *edgeView;
+@property (nonatomic, retain) IBOutlet UIView *coverEdgeView;
 @property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, retain) IBOutlet UILabel *titleLabel;
 
