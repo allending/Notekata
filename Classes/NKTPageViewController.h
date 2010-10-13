@@ -65,6 +65,10 @@ typedef enum
 
 @property (nonatomic, retain) NKTPage *page;
 
+#pragma mark Saving the Page
+
+- (void)saveEditedPageText;
+
 #pragma mark Setting the Delegate
 
 @property (nonatomic, assign) id <NKTPageViewControllerDelegate> delegate;

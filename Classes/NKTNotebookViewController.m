@@ -17,11 +17,13 @@
 
 @property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
 
-#pragma mark Adding Pages
+#pragma mark Managing Pages
 
-- (void)insertPage;
+- (NKTPage *)selectedPageBeforeViewDisappeared;
+- (NSUInteger)numberOfPages;
+- (NKTPage *)pageAtIndex:(NSUInteger)index;
 
-#pragma mark Responding to the Page View Controller
+#pragma mark Responding to Page View Controller Events
 
 - (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView;
 
@@ -78,40 +80,17 @@
 }
 
 #pragma mark -
-#pragma mark Accessing the Notebook
+#pragma mark Core Data Stack
 
-- (void)setNotebook:(NKTNotebook *)notebook
+// Fetched result controller for all pages for the current notebook sorted by page number.
+- (NSFetchedResultsController *)fetchedResultsController
 {
-    if (notebook_ == notebook)
+    if (notebook_ == nil)
     {
-        return;
+        KBCLogWarning(@"notebook property is nil, returning nil");
+        return nil;
     }
     
-    [notebook_ release];
-    notebook_ = [notebook retain];
-    // Invalidate fetched results 
-    self.fetchedResultsController = nil;
-    
-    // TODO: set page of page view controller?
-    // pageViewController_.page = [self lastPageForNotebook]?
-    
-    [self updateTitleLabel];
-    [self.tableView reloadData];
-}
-
-#pragma mark -
-#pragma mark Adding Pages
-
-- (void)insertPage
-{
-}
-
-#pragma mark -
-#pragma mark Fetched Results Controller
-
-// Fetched result controller for all pages belonging to the current notebook.
-- (NSFetchedResultsController *)fetchedResultsController
-{    
     if (fetchedResultsController_ != nil)
     {
         return fetchedResultsController_;
@@ -131,7 +110,6 @@
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
     
     // Create the fetched results controller
-    [fetchedResultsController_ release];
     fetchedResultsController_ = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                                                     managedObjectContext:managedObjectContext
                                                                       sectionNameKeyPath:nil
@@ -139,9 +117,10 @@
     fetchedResultsController_.delegate = self;
     
     NSError *error = nil;
+    
     if (![fetchedResultsController_ performFetch:&error])
     {
-        // TODO: alert panel
+        // TODO: FIX and LOG
         KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
@@ -150,9 +129,6 @@
     [sortDescriptor release];
     return fetchedResultsController_;
 }
-
-#pragma mark -
-#pragma mark Fetched Results Controller Delegate
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller 
 {
@@ -217,7 +193,56 @@
 }
 
 #pragma mark -
-#pragma mark Responding to the Page View Controller
+#pragma mark Accessing the Notebook
+
+- (void)setNotebook:(NKTNotebook *)notebook
+{
+    if (notebook_ == notebook)
+    {
+        return;
+    }
+    
+    [notebook_ release];
+    notebook_ = [notebook retain];
+    // Invalidate previously fetched results 
+    self.fetchedResultsController = nil;
+    
+    NKTPage *page = [self selectedPageBeforeViewDisappeared];
+    
+    if (page == nil)
+    {
+        page = [self pageAtIndex:0];
+    }
+    
+    // TODO: improve clarity?
+    self.pageViewController.page = page;
+    [self updateTitleLabel];
+    [self.tableView reloadData];
+}
+
+#pragma mark -
+#pragma mark Managing Pages
+
+- (NKTPage *)selectedPageBeforeViewDisappeared
+{
+    NSDictionary *lastSelectedPages = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastSelectedPages"];
+    return [lastSelectedPages objectForKey:notebook_.notebookId];
+}
+
+- (NSUInteger)numberOfPages
+{
+    id <NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:0];
+    return [sectionInfo numberOfObjects];
+}
+
+- (NKTPage *)pageAtIndex:(NSUInteger)index
+{
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+    return [self.fetchedResultsController objectAtIndexPath:indexPath];
+}
+
+#pragma mark -
+#pragma mark Responding to Page View Controller Events
 
 // TODO: optimize - be lazy
 - (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView
@@ -265,6 +290,7 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+    // TODO: store last selected page
 }
 
 - (void)viewDidDisappear:(BOOL)animated

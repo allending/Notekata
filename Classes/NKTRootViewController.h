@@ -16,7 +16,6 @@
     // Data
     NSManagedObjectContext *managedObjectContext_;
     NSFetchedResultsController *fetchedResultsController_;
-    NKTNotebook *selectedNotebook_;
     
     // Control
     NKTNotebookViewController *notebookViewController_;
@@ -28,22 +27,9 @@
 @property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
 
-#pragma mark Accessing the Selected Notebook
-
-@property (nonatomic, retain) NKTNotebook *selectedNotebook;
-
-#pragma mark Adding Notebooks
-
-- (void)insertNotebook;
-
 #pragma mark Accessing View Controllers
 
 @property (nonatomic, retain) IBOutlet NKTNotebookViewController *notebookViewController;
 @property (nonatomic, retain) IBOutlet NKTPageViewController *pageViewController;
-
-#pragma mark Monitoring the Application
-
-- (void)applicationDidFinishLaunching:(UIApplication *)application;
-- (void)applicationWillTerminate:(UIApplication *)application;
 
 @end

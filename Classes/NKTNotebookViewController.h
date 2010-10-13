@@ -16,8 +16,8 @@
 {
 @private
     // Data
-    NKTNotebook *notebook_;
     NSFetchedResultsController *fetchedResultsController_;
+    NKTNotebook *notebook_;
     
     // Control
     NKTPageViewController *pageViewController_;

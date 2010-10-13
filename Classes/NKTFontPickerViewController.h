@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "KobaUI.h"
 
@@ -10,13 +10,14 @@
 @interface NKTFontPickerViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 {
 @private
-    id <NKTFontPickerViewControllerDelegate> delegate_;
-    
+    // Data
     NSArray *availableFontSizes_;
     NSUInteger selectedFontSizeIndex_;
-    
     NSArray *fontFamilyNames_;
     NSUInteger selectedFontFamilyNameIndex_;
+    
+    // Delegate
+    id <NKTFontPickerViewControllerDelegate> delegate_;
 }
 
 #pragma mark Accessing the Delegate
@@ -35,8 +36,6 @@
 @end
 
 #pragma mark -
-
-//--------------------------------------------------------------------------------------------------
 
 // NKTFontPickerViewControllerDelegate
 @protocol NKTFontPickerViewControllerDelegate <NSObject>

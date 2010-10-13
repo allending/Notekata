@@ -164,6 +164,23 @@
 }
 
 #pragma mark -
+#pragma mark Saving the Page
+
+- (void)saveEditedPageText
+{
+    // Set the text of the page from the text view's text and save the page
+    page_.text = textView_.text;
+    NSError *error = nil;
+    
+    if (![page_.managedObjectContext save:&error])
+    {
+        // TODO: FIX and LOG
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+}
+
+#pragma mark -
 #pragma mark Responding to Split View Controller Events
 
 - (void)splitViewController:(UISplitViewController*)svc
@@ -385,6 +402,7 @@
 
 - (void)updateModelViews
 {
+    // NOTE: needs to be in this order because the title label is read from the text view text
     textView_.text = page_.text;
     [self updateTitleLabel];
     [self updateNavigationButtonTitle];
@@ -821,17 +839,7 @@
     }
     
     [self updateToolbar];
-    
-    // Set the text of the page to the text view's text and save
-    page_.text = textView_.text;
-    NSError *error = nil;
-    
-    if (![page_.managedObjectContext save:&error])
-    {
-        // TODO: FIX and LOG
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
+    [self saveEditedPageText];
 }
 
 - (void)textViewDidChangeSelection:(NKTTextView *)textView
