@@ -25,9 +25,9 @@
 
 @end
 
-#pragma mark -
-
 //--------------------------------------------------------------------------------------------------
+
+#pragma mark -
 
 @implementation NKTFramesetter
 
@@ -60,6 +60,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Getting the Frame Size
 
 - (CGSize)frameSize
@@ -69,6 +70,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Managing the Typesetter
 
 // It isn't clear whether it is safe to change the backing text for the typesetter returned by
@@ -96,6 +98,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Accessing Lines
 
 - (NSArray *)lines
@@ -131,6 +134,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Typesetting Lines
 
 - (void)typesetFromLineAtIndex:(NSUInteger)lineIndex
@@ -197,6 +201,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Updating the Framesetter
 
 - (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition
@@ -208,6 +213,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Hit-Testing and Geometry
 
 - (NSInteger)virtualLineIndexClosestToPoint:(CGPoint)point
@@ -326,6 +332,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Drawing
 
 - (void)drawLinesInRange:(NSRange)range inContext:(CGContextRef)context

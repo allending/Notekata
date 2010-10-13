@@ -13,14 +13,38 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
-		9F0ACBA1124228750050CFAE /* KBTDiagnostics.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB99124228750050CFAE /* KBTDiagnostics.m */; };
-		9F0ACBA2124228750050CFAE /* KBTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0ACB9B124228750050CFAE /* KBTFont.m */; };
+		9F0D0C811262D03F00348E1B /* NKTNotebook.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */; };
+		9F0D0DE11262E18000348E1B /* NKTPage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0DE01262E18000348E1B /* NKTPage.m */; };
+		9F0D0E271262E76300348E1B /* KBTAttributedStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0E261262E76300348E1B /* KBTAttributedStringTransformer.m */; };
+		9F0D0EB61263069A00348E1B /* CDataScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0E9E1263069A00348E1B /* CDataScanner.m */; };
+		9F0D0EB71263069A00348E1B /* CExtensibleJSONDataSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA11263069A00348E1B /* CExtensibleJSONDataSerializer.m */; };
+		9F0D0EB81263069A00348E1B /* CDataScanner_Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA41263069A00348E1B /* CDataScanner_Extensions.m */; };
+		9F0D0EB91263069A00348E1B /* NSCharacterSet_Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA61263069A00348E1B /* NSCharacterSet_Extensions.m */; };
+		9F0D0EBA1263069A00348E1B /* NSDictionary_JSONExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA81263069A00348E1B /* NSDictionary_JSONExtensions.m */; };
+		9F0D0EBB1263069A00348E1B /* NSScanner_Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EAA1263069A00348E1B /* NSScanner_Extensions.m */; };
+		9F0D0EBC1263069A00348E1B /* CJSONDataSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EAD1263069A00348E1B /* CJSONDataSerializer.m */; };
+		9F0D0EBD1263069A00348E1B /* CJSONDeserializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EAF1263069A00348E1B /* CJSONDeserializer.m */; };
+		9F0D0EBE1263069A00348E1B /* CJSONScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EB11263069A00348E1B /* CJSONScanner.m */; };
+		9F0D0EBF1263069A00348E1B /* CJSONSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EB31263069A00348E1B /* CJSONSerializer.m */; };
+		9F0D0EC01263069A00348E1B /* CSerializedJSONData.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EB51263069A00348E1B /* CSerializedJSONData.m */; };
+		9F0D0EDA12630AB100348E1B /* KBTAttributedStringIntermediate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */; };
+		9F0D11A11263571E00348E1B /* KobaText.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11A01263571E00348E1B /* KobaText.m */; };
+		9F0D11CA1263595000348E1B /* KBTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11C91263595000348E1B /* KBTFont.m */; };
+		9F0D11D7126359E100348E1B /* KBTUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11D6126359E100348E1B /* KBTUtilities.m */; };
+		9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D121F12635BF000348E1B /* KBCUtilities.m */; };
+		9F0D125F12635E3200348E1B /* License_JonathanWight.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F0D125E12635E3200348E1B /* License_JonathanWight.txt */; };
 		9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */; };
 		9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */; };
 		9F1665271255B9B800AEA16F /* Notes.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F1665261255B9B800AEA16F /* Notes.txt */; };
 		9F29982D1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */; };
-		9F327E6E125951A50026DCA7 /* NSString+KobaAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F327E6D125951A50026DCA7 /* NSString+KobaAdditions.m */; };
+		9F327E6E125951A50026DCA7 /* NSString+KobaCoreAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */; };
+		9F381028126378D800C1CBF7 /* RandomCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F381027126378D800C1CBF7 /* RandomCap.png */; };
+		9F3D04951261C73A00AB9903 /* NKTRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D04941261C73A00AB9903 /* NKTRootViewController.m */; };
+		9F3D079B1261F71F00AB9903 /* DocumentIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F3D079A1261F71F00AB9903 /* DocumentIcon.png */; };
+		9F3D08D012620AF200AB9903 /* NKTNotebookViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D08CF12620AF200AB9903 /* NKTNotebookViewController.m */; };
 		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
+		9F47F0B51260C27B00E5E6BB /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F47F0B41260C27B00E5E6BB /* CoreData.framework */; };
+		9F47F0FE1260C57F00E5E6BB /* Notekata.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 9F47F0FD1260C57F00E5E6BB /* Notekata.xcdatamodel */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
 		9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */; };
 		9F65A3C012499D2D0006BD17 /* NKTFontPickerViewTableViewTopCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F65A3BF12499D2D0006BD17 /* NKTFontPickerViewTableViewTopCap.png */; };
@@ -48,10 +72,12 @@
 		9FDDDDC412291912009BFCED /* KBCGestures.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDDC312291912009BFCED /* KBCGestures.m */; };
 		9FDDDF5E12295FAA009BFCED /* KBCLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FDDDF5D12295FAA009BFCED /* KBCLogging.m */; };
 		9FF42BE0124A7017009B9691 /* KUISegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FF42BDF124A7017009B9691 /* KUISegmentedControl.m */; };
-		9FFAD4B31226A8AD00218B2A /* NKTTextViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */; };
+		9FFAD4B31226A8AD00218B2A /* NKTPageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFAD4B21226A8AD00218B2A /* NKTPageViewController.m */; };
 		9FFC197D1249264800894224 /* DarkButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FFC197C1249264800894224 /* DarkButton.png */; };
-		F520393512097B1B00675702 /* NotekataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NotekataViewController.xib */; };
-		F520394E12097D3600675702 /* NKTTestText.m in Sources */ = {isa = PBXBuildFile; fileRef = F520394D12097D3600675702 /* NKTTestText.m */; };
+		9FFD7FF3126400F700CB082D /* DarkBgCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FFD7FF2126400F700CB082D /* DarkBgCap.png */; };
+		9FFD800A1264031800CB082D /* EdgeShadow.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FFD80091264031800CB082D /* EdgeShadow.png */; };
+		9FFD84FB1264A34400CB082D /* KUIUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FFD84FA1264A34400CB082D /* KUIUtilities.m */; };
+		F520393512097B1B00675702 /* NKTPageViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = F520393412097B1B00675702 /* NKTPageViewController.xib */; };
 		F5267D9F121AD23D003CA42D /* NKTCaret.m in Sources */ = {isa = PBXBuildFile; fileRef = F5267D9E121AD23D003CA42D /* NKTCaret.m */; };
 		F52EFA9F121B7492007A4951 /* NKTTextPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = F52EFA9E121B7492007A4951 /* NKTTextPosition.m */; };
 		F52EFAA4121B74B7007A4951 /* NKTTextRange.m in Sources */ = {isa = PBXBuildFile; fileRef = F52EFAA3121B74B7007A4951 /* NKTTextRange.m */; };
@@ -77,21 +103,63 @@
 		28AD735F0D9D9599002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Notekata-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Notekata-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
-		9F0ACB98124228750050CFAE /* KBTDiagnostics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTDiagnostics.h; sourceTree = "<group>"; };
-		9F0ACB99124228750050CFAE /* KBTDiagnostics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTDiagnostics.m; sourceTree = "<group>"; };
-		9F0ACB9A124228750050CFAE /* KBTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFont.h; sourceTree = "<group>"; };
-		9F0ACB9B124228750050CFAE /* KBTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFont.m; sourceTree = "<group>"; };
 		9F0ACBA0124228750050CFAE /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
+		9F0D0C7E1262D03F00348E1B /* NKTNotebook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebook.h; sourceTree = "<group>"; };
+		9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebook.m; sourceTree = "<group>"; };
+		9F0D0DDF1262E18000348E1B /* NKTPage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPage.h; sourceTree = "<group>"; };
+		9F0D0DE01262E18000348E1B /* NKTPage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPage.m; sourceTree = "<group>"; };
+		9F0D0E251262E76300348E1B /* KBTAttributedStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTAttributedStringTransformer.h; sourceTree = "<group>"; };
+		9F0D0E261262E76300348E1B /* KBTAttributedStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTAttributedStringTransformer.m; sourceTree = "<group>"; };
+		9F0D0E9D1263069A00348E1B /* CDataScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner.h; sourceTree = "<group>"; };
+		9F0D0E9E1263069A00348E1B /* CDataScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner.m; sourceTree = "<group>"; };
+		9F0D0EA01263069A00348E1B /* CExtensibleJSONDataSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CExtensibleJSONDataSerializer.h; sourceTree = "<group>"; };
+		9F0D0EA11263069A00348E1B /* CExtensibleJSONDataSerializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CExtensibleJSONDataSerializer.m; sourceTree = "<group>"; };
+		9F0D0EA31263069A00348E1B /* CDataScanner_Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner_Extensions.h; sourceTree = "<group>"; };
+		9F0D0EA41263069A00348E1B /* CDataScanner_Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner_Extensions.m; sourceTree = "<group>"; };
+		9F0D0EA51263069A00348E1B /* NSCharacterSet_Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSCharacterSet_Extensions.h; sourceTree = "<group>"; };
+		9F0D0EA61263069A00348E1B /* NSCharacterSet_Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSCharacterSet_Extensions.m; sourceTree = "<group>"; };
+		9F0D0EA71263069A00348E1B /* NSDictionary_JSONExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDictionary_JSONExtensions.h; sourceTree = "<group>"; };
+		9F0D0EA81263069A00348E1B /* NSDictionary_JSONExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDictionary_JSONExtensions.m; sourceTree = "<group>"; };
+		9F0D0EA91263069A00348E1B /* NSScanner_Extensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSScanner_Extensions.h; sourceTree = "<group>"; };
+		9F0D0EAA1263069A00348E1B /* NSScanner_Extensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSScanner_Extensions.m; sourceTree = "<group>"; };
+		9F0D0EAC1263069A00348E1B /* CJSONDataSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJSONDataSerializer.h; sourceTree = "<group>"; };
+		9F0D0EAD1263069A00348E1B /* CJSONDataSerializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJSONDataSerializer.m; sourceTree = "<group>"; };
+		9F0D0EAE1263069A00348E1B /* CJSONDeserializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJSONDeserializer.h; sourceTree = "<group>"; };
+		9F0D0EAF1263069A00348E1B /* CJSONDeserializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJSONDeserializer.m; sourceTree = "<group>"; };
+		9F0D0EB01263069A00348E1B /* CJSONScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJSONScanner.h; sourceTree = "<group>"; };
+		9F0D0EB11263069A00348E1B /* CJSONScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJSONScanner.m; sourceTree = "<group>"; };
+		9F0D0EB21263069A00348E1B /* CJSONSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CJSONSerializer.h; sourceTree = "<group>"; };
+		9F0D0EB31263069A00348E1B /* CJSONSerializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJSONSerializer.m; sourceTree = "<group>"; };
+		9F0D0EB41263069A00348E1B /* CSerializedJSONData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSerializedJSONData.h; sourceTree = "<group>"; };
+		9F0D0EB51263069A00348E1B /* CSerializedJSONData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSerializedJSONData.m; sourceTree = "<group>"; };
+		9F0D0ED812630AB100348E1B /* KBTAttributedStringIntermediate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTAttributedStringIntermediate.h; sourceTree = "<group>"; };
+		9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTAttributedStringIntermediate.m; sourceTree = "<group>"; };
+		9F0D11A01263571E00348E1B /* KobaText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KobaText.m; sourceTree = "<group>"; };
+		9F0D11C81263595000348E1B /* KBTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFont.h; sourceTree = "<group>"; };
+		9F0D11C91263595000348E1B /* KBTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFont.m; sourceTree = "<group>"; };
+		9F0D11D5126359E100348E1B /* KBTUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTUtilities.h; sourceTree = "<group>"; };
+		9F0D11D6126359E100348E1B /* KBTUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTUtilities.m; sourceTree = "<group>"; };
+		9F0D121E12635BF000348E1B /* KBCUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCUtilities.h; sourceTree = "<group>"; };
+		9F0D121F12635BF000348E1B /* KBCUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCUtilities.m; sourceTree = "<group>"; };
+		9F0D125E12635E3200348E1B /* License_JonathanWight.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License_JonathanWight.txt; sourceTree = "<group>"; };
 		9F10262F1246F3A300680CA8 /* KBTStyleDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTStyleDescriptor.h; sourceTree = "<group>"; };
 		9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTStyleDescriptor.m; sourceTree = "<group>"; };
 		9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFontFamilyDescriptor.h; sourceTree = "<group>"; };
 		9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFontFamilyDescriptor.m; sourceTree = "<group>"; };
 		9F1665261255B9B800AEA16F /* Notes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Notes.txt; sourceTree = "<group>"; };
 		9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = NKTFontPickerViewTableViewBorder.png; sourceTree = "<group>"; };
-		9F327E6C125951A50026DCA7 /* NSString+KobaAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+KobaAdditions.h"; sourceTree = "<group>"; };
-		9F327E6D125951A50026DCA7 /* NSString+KobaAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+KobaAdditions.m"; sourceTree = "<group>"; };
+		9F327E6C125951A50026DCA7 /* NSString+KobaCoreAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+KobaCoreAdditions.h"; sourceTree = "<group>"; };
+		9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+KobaCoreAdditions.m"; sourceTree = "<group>"; };
+		9F381027126378D800C1CBF7 /* RandomCap.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = RandomCap.png; sourceTree = "<group>"; };
+		9F3D04931261C73A00AB9903 /* NKTRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTRootViewController.h; sourceTree = "<group>"; };
+		9F3D04941261C73A00AB9903 /* NKTRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTRootViewController.m; sourceTree = "<group>"; };
+		9F3D079A1261F71F00AB9903 /* DocumentIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DocumentIcon.png; sourceTree = "<group>"; };
+		9F3D08CE12620AF200AB9903 /* NKTNotebookViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebookViewController.h; sourceTree = "<group>"; };
+		9F3D08CF12620AF200AB9903 /* NKTNotebookViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebookViewController.m; sourceTree = "<group>"; };
 		9F47A1B5122AC6C900285550 /* KBCGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCGeometry.h; sourceTree = "<group>"; };
 		9F47A1B6122AC6C900285550 /* KBCGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCGeometry.m; sourceTree = "<group>"; };
+		9F47F0B41260C27B00E5E6BB /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		9F47F0FD1260C57F00E5E6BB /* Notekata.xcdatamodel */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.xcdatamodel; path = Notekata.xcdatamodel; sourceTree = "<group>"; };
 		9F48CDD31226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewGestureRecognizerDelegate.h; sourceTree = "<group>"; };
 		9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewGestureRecognizerDelegate.m; sourceTree = "<group>"; };
 		9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = License_TropicalPixels.txt; sourceTree = "<group>"; };
@@ -136,12 +204,14 @@
 		9FDDDF5D12295FAA009BFCED /* KBCLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCLogging.m; sourceTree = "<group>"; };
 		9FF42BDE124A7017009B9691 /* KUISegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KUISegmentedControl.h; sourceTree = "<group>"; };
 		9FF42BDF124A7017009B9691 /* KUISegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KUISegmentedControl.m; sourceTree = "<group>"; };
-		9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewController.m; sourceTree = "<group>"; };
+		9FFAD4B21226A8AD00218B2A /* NKTPageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPageViewController.m; sourceTree = "<group>"; };
 		9FFC197C1249264800894224 /* DarkButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DarkButton.png; sourceTree = "<group>"; };
-		F5030A7811D3555B002CD3BD /* NKTTextViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewController.h; sourceTree = "<group>"; };
-		F520393412097B1B00675702 /* NotekataViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NotekataViewController.xib; sourceTree = "<group>"; };
-		F520394C12097D3600675702 /* NKTTestText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTestText.h; sourceTree = "<group>"; };
-		F520394D12097D3600675702 /* NKTTestText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTestText.m; sourceTree = "<group>"; };
+		9FFD7FF2126400F700CB082D /* DarkBgCap.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DarkBgCap.png; sourceTree = "<group>"; };
+		9FFD80091264031800CB082D /* EdgeShadow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = EdgeShadow.png; sourceTree = "<group>"; };
+		9FFD84F91264A34400CB082D /* KUIUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KUIUtilities.h; sourceTree = "<group>"; };
+		9FFD84FA1264A34400CB082D /* KUIUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KUIUtilities.m; sourceTree = "<group>"; };
+		F5030A7811D3555B002CD3BD /* NKTPageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPageViewController.h; sourceTree = "<group>"; };
+		F520393412097B1B00675702 /* NKTPageViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NKTPageViewController.xib; sourceTree = "<group>"; };
 		F5267D9D121AD23D003CA42D /* NKTCaret.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTCaret.h; sourceTree = "<group>"; };
 		F5267D9E121AD23D003CA42D /* NKTCaret.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTCaret.m; sourceTree = "<group>"; };
 		F52EFA9D121B7492007A4951 /* NKTTextPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextPosition.h; sourceTree = "<group>"; };
@@ -172,6 +242,7 @@
 				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
 				F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */,
 				9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */,
+				9F47F0B51260C27B00E5E6BB /* CoreData.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,9 +255,6 @@
 				F5632AAB11DD92D800868F7B /* Models */,
 				F5632AAC11DD92DE00868F7B /* Views */,
 				F5632AAA11DD92CF00868F7B /* Controllers */,
-				9FDDDE2D12291C42009BFCED /* KobaCore */,
-				9F5CA42C12406ED1009D1A47 /* KobaText */,
-				9FB1465112402B07001EEB7B /* KobaUI */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -204,8 +272,10 @@
 			children = (
 				F5E4990812143A4600C788A1 /* Todo.txt */,
 				9F1665261255B9B800AEA16F /* Notes.txt */,
+				9F0D125E12635E3200348E1B /* License_JonathanWight.txt */,
 				9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */,
 				080E96DDFE201D6D7F000001 /* Classes */,
+				9F0D120712635A8E00348E1B /* Libraries */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -226,24 +296,11 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				9FA5410A122A59530005323E /* BandLoupe.png */,
-				9FA5410B122A59530005323E /* BandLoupeMask.png */,
-				9FA5410C122A59530005323E /* CaretHandle.png */,
-				9FA5410D122A59530005323E /* CaretLoupe.png */,
-				9FA5410E122A59530005323E /* CaretLoupeMask.png */,
-				F54453AF11ED6371009D392B /* CreamPaperPattern.png */,
-				9FFC197C1249264800894224 /* DarkButton.png */,
-				F5F94DA311DC4DC1004AB62C /* Icon-72.png */,
+				9F47F0DF1260C31000E5E6BB /* Art */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
-				9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */,
-				9F65A42C1249A37F0006BD17 /* NKTFontPickerViewTableViewBottomCap.png */,
-				9F65A3BF12499D2D0006BD17 /* NKTFontPickerViewTableViewTopCap.png */,
+				F520393412097B1B00675702 /* NKTPageViewController.xib */,
 				8D1107310486CEB800E47090 /* Notekata-Info.plist */,
-				F520393412097B1B00675702 /* NotekataViewController.xib */,
-				F54453B011ED6371009D392B /* PlainPaperPattern.png */,
-				9FA564DF12517E14002EFFC7 /* PlainPaperPattern2.png */,
-				F54453B111ED6371009D392B /* RedCoverPattern.png */,
-				9F65A41A1249A24A0006BD17 /* ScrollBorder.png */,
+				9F47F0FD1260C57F00E5E6BB /* Notekata.xcdatamodel */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -256,24 +313,120 @@
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
 				F5632B0111DD9D1000868F7B /* CoreText.framework */,
 				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
+				9F47F0B41260C27B00E5E6BB /* CoreData.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9F0D0E88126305CC00348E1B /* TouchJSON */ = {
+			isa = PBXGroup;
+			children = (
+				9F0D0E9D1263069A00348E1B /* CDataScanner.h */,
+				9F0D0E9E1263069A00348E1B /* CDataScanner.m */,
+				9F0D0E9F1263069A00348E1B /* Experimental */,
+				9F0D0EA21263069A00348E1B /* Extensions */,
+				9F0D0EAB1263069A00348E1B /* JSON */,
+			);
+			path = TouchJSON;
+			sourceTree = "<group>";
+		};
+		9F0D0E9F1263069A00348E1B /* Experimental */ = {
+			isa = PBXGroup;
+			children = (
+				9F0D0EA01263069A00348E1B /* CExtensibleJSONDataSerializer.h */,
+				9F0D0EA11263069A00348E1B /* CExtensibleJSONDataSerializer.m */,
+			);
+			path = Experimental;
+			sourceTree = "<group>";
+		};
+		9F0D0EA21263069A00348E1B /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				9F0D0EA31263069A00348E1B /* CDataScanner_Extensions.h */,
+				9F0D0EA41263069A00348E1B /* CDataScanner_Extensions.m */,
+				9F0D0EA51263069A00348E1B /* NSCharacterSet_Extensions.h */,
+				9F0D0EA61263069A00348E1B /* NSCharacterSet_Extensions.m */,
+				9F0D0EA71263069A00348E1B /* NSDictionary_JSONExtensions.h */,
+				9F0D0EA81263069A00348E1B /* NSDictionary_JSONExtensions.m */,
+				9F0D0EA91263069A00348E1B /* NSScanner_Extensions.h */,
+				9F0D0EAA1263069A00348E1B /* NSScanner_Extensions.m */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		9F0D0EAB1263069A00348E1B /* JSON */ = {
+			isa = PBXGroup;
+			children = (
+				9F0D0EAC1263069A00348E1B /* CJSONDataSerializer.h */,
+				9F0D0EAD1263069A00348E1B /* CJSONDataSerializer.m */,
+				9F0D0EAE1263069A00348E1B /* CJSONDeserializer.h */,
+				9F0D0EAF1263069A00348E1B /* CJSONDeserializer.m */,
+				9F0D0EB01263069A00348E1B /* CJSONScanner.h */,
+				9F0D0EB11263069A00348E1B /* CJSONScanner.m */,
+				9F0D0EB21263069A00348E1B /* CJSONSerializer.h */,
+				9F0D0EB31263069A00348E1B /* CJSONSerializer.m */,
+				9F0D0EB41263069A00348E1B /* CSerializedJSONData.h */,
+				9F0D0EB51263069A00348E1B /* CSerializedJSONData.m */,
+			);
+			path = JSON;
+			sourceTree = "<group>";
+		};
+		9F0D120712635A8E00348E1B /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				9FDDDE2D12291C42009BFCED /* KobaCore */,
+				9FB1465112402B07001EEB7B /* KobaUI */,
+				9F5CA42C12406ED1009D1A47 /* KobaText */,
+				9F0D0E88126305CC00348E1B /* TouchJSON */,
+			);
+			path = Libraries;
+			sourceTree = "<group>";
+		};
+		9F47F0DF1260C31000E5E6BB /* Art */ = {
+			isa = PBXGroup;
+			children = (
+				9FA5410A122A59530005323E /* BandLoupe.png */,
+				9FA5410B122A59530005323E /* BandLoupeMask.png */,
+				9FA5410C122A59530005323E /* CaretHandle.png */,
+				9FA5410D122A59530005323E /* CaretLoupe.png */,
+				9FA5410E122A59530005323E /* CaretLoupeMask.png */,
+				F54453AF11ED6371009D392B /* CreamPaperPattern.png */,
+				9FFD7FF2126400F700CB082D /* DarkBgCap.png */,
+				9FFC197C1249264800894224 /* DarkButton.png */,
+				9F3D079A1261F71F00AB9903 /* DocumentIcon.png */,
+				9FFD80091264031800CB082D /* EdgeShadow.png */,
+				F5F94DA311DC4DC1004AB62C /* Icon-72.png */,
+				9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */,
+				9F65A42C1249A37F0006BD17 /* NKTFontPickerViewTableViewBottomCap.png */,
+				9F65A3BF12499D2D0006BD17 /* NKTFontPickerViewTableViewTopCap.png */,
+				F54453B011ED6371009D392B /* PlainPaperPattern.png */,
+				9FA564DF12517E14002EFFC7 /* PlainPaperPattern2.png */,
+				9F381027126378D800C1CBF7 /* RandomCap.png */,
+				F54453B111ED6371009D392B /* RedCoverPattern.png */,
+				9F65A41A1249A24A0006BD17 /* ScrollBorder.png */,
+			);
+			name = Art;
 			sourceTree = "<group>";
 		};
 		9F5CA42C12406ED1009D1A47 /* KobaText */ = {
 			isa = PBXGroup;
 			children = (
-				9F0ACB98124228750050CFAE /* KBTDiagnostics.h */,
-				9F0ACB99124228750050CFAE /* KBTDiagnostics.m */,
-				9F0ACB9A124228750050CFAE /* KBTFont.h */,
-				9F0ACB9B124228750050CFAE /* KBTFont.m */,
+				9F0D0ED812630AB100348E1B /* KBTAttributedStringIntermediate.h */,
+				9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */,
+				9F0D0E251262E76300348E1B /* KBTAttributedStringTransformer.h */,
+				9F0D0E261262E76300348E1B /* KBTAttributedStringTransformer.m */,
+				9F0D11C81263595000348E1B /* KBTFont.h */,
+				9F0D11C91263595000348E1B /* KBTFont.m */,
 				9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */,
 				9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */,
 				9F10262F1246F3A300680CA8 /* KBTStyleDescriptor.h */,
 				9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */,
+				9F0D11D5126359E100348E1B /* KBTUtilities.h */,
+				9F0D11D6126359E100348E1B /* KBTUtilities.m */,
 				9F0ACBA0124228750050CFAE /* KobaText.h */,
+				9F0D11A01263571E00348E1B /* KobaText.m */,
 			);
-			name = KobaText;
+			path = KobaText;
 			sourceTree = "<group>";
 		};
 		9FB1465112402B07001EEB7B /* KobaUI */ = {
@@ -284,8 +437,10 @@
 				9FF42BDF124A7017009B9691 /* KUISegmentedControl.m */,
 				9FB1465212402B26001EEB7B /* KUIToggleButton.h */,
 				9FB1465312402B26001EEB7B /* KUIToggleButton.m */,
+				9FFD84F91264A34400CB082D /* KUIUtilities.h */,
+				9FFD84FA1264A34400CB082D /* KUIUtilities.m */,
 			);
-			name = KobaUI;
+			path = KobaUI;
 			sourceTree = "<group>";
 		};
 		9FDDDE2D12291C42009BFCED /* KobaCore */ = {
@@ -299,12 +454,14 @@
 				9FDDDF5D12295FAA009BFCED /* KBCLogging.m */,
 				9FC347661238EEEC001AFF98 /* KBCMath.h */,
 				9FC347671238EEEC001AFF98 /* KBCMath.m */,
+				9F0D121E12635BF000348E1B /* KBCUtilities.h */,
+				9F0D121F12635BF000348E1B /* KBCUtilities.m */,
 				9F67110D122B901E00B0811B /* KobaCore.h */,
 				9F6E4E4D1258E342005721FB /* KobaCore.m */,
-				9F327E6C125951A50026DCA7 /* NSString+KobaAdditions.h */,
-				9F327E6D125951A50026DCA7 /* NSString+KobaAdditions.m */,
+				9F327E6C125951A50026DCA7 /* NSString+KobaCoreAdditions.h */,
+				9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */,
 			);
-			name = KobaCore;
+			path = KobaCore;
 			sourceTree = "<group>";
 		};
 		F5632AAA11DD92CF00868F7B /* Controllers */ = {
@@ -312,8 +469,12 @@
 			children = (
 				9FCBC1681248AD6D008A0A1F /* NKTFontPickerViewController.h */,
 				9FCBC1691248AD6D008A0A1F /* NKTFontPickerViewController.m */,
-				F5030A7811D3555B002CD3BD /* NKTTextViewController.h */,
-				9FFAD4B21226A8AD00218B2A /* NKTTextViewController.m */,
+				9F3D08CE12620AF200AB9903 /* NKTNotebookViewController.h */,
+				9F3D08CF12620AF200AB9903 /* NKTNotebookViewController.m */,
+				F5030A7811D3555B002CD3BD /* NKTPageViewController.h */,
+				9FFAD4B21226A8AD00218B2A /* NKTPageViewController.m */,
+				9F3D04931261C73A00AB9903 /* NKTRootViewController.h */,
+				9F3D04941261C73A00AB9903 /* NKTRootViewController.m */,
 				1D3623240D0F684500981E51 /* NotekataAppDelegate.h */,
 				1D3623250D0F684500981E51 /* NotekataAppDelegate.m */,
 			);
@@ -323,8 +484,10 @@
 		F5632AAB11DD92D800868F7B /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				F520394C12097D3600675702 /* NKTTestText.h */,
-				F520394D12097D3600675702 /* NKTTestText.m */,
+				9F0D0C7E1262D03F00348E1B /* NKTNotebook.h */,
+				9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */,
+				9F0D0DDF1262E18000348E1B /* NKTPage.h */,
+				9F0D0DE01262E18000348E1B /* NKTPage.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -421,7 +584,7 @@
 				F54453B311ED6371009D392B /* CreamPaperPattern.png in Resources */,
 				F54453B411ED6371009D392B /* PlainPaperPattern.png in Resources */,
 				F54453B511ED6371009D392B /* RedCoverPattern.png in Resources */,
-				F520393512097B1B00675702 /* NotekataViewController.xib in Resources */,
+				F520393512097B1B00675702 /* NKTPageViewController.xib in Resources */,
 				F5E4990912143A4600C788A1 /* Todo.txt in Resources */,
 				9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */,
 				9FA5410F122A59530005323E /* BandLoupe.png in Resources */,
@@ -436,6 +599,11 @@
 				9F29982D1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png in Resources */,
 				9FA564E012517E14002EFFC7 /* PlainPaperPattern2.png in Resources */,
 				9F1665271255B9B800AEA16F /* Notes.txt in Resources */,
+				9F3D079B1261F71F00AB9903 /* DocumentIcon.png in Resources */,
+				9F0D125F12635E3200348E1B /* License_JonathanWight.txt in Resources */,
+				9F381028126378D800C1CBF7 /* RandomCap.png in Resources */,
+				9FFD7FF3126400F700CB082D /* DarkBgCap.png in Resources */,
+				9FFD800A1264031800CB082D /* EdgeShadow.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,12 +618,11 @@
 				1D3623260D0F684500981E51 /* NotekataAppDelegate.m in Sources */,
 				F544536311ED61A5009D392B /* NKTTextView.m in Sources */,
 				F5D12AA011F2ECA20049C2CE /* NKTLine.m in Sources */,
-				F520394E12097D3600675702 /* NKTTestText.m in Sources */,
 				F5D56D5812129CFA0010849C /* NKTTextSection.m in Sources */,
 				F5267D9F121AD23D003CA42D /* NKTCaret.m in Sources */,
 				F52EFA9F121B7492007A4951 /* NKTTextPosition.m in Sources */,
 				F52EFAA4121B74B7007A4951 /* NKTTextRange.m in Sources */,
-				9FFAD4B31226A8AD00218B2A /* NKTTextViewController.m in Sources */,
+				9FFAD4B31226A8AD00218B2A /* NKTPageViewController.m in Sources */,
 				9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */,
 				9FDDDC7E1228F34E009BFCED /* NKTDragGestureRecognizer.m in Sources */,
 				9FDDDDC412291912009BFCED /* KBCGestures.m in Sources */,
@@ -466,8 +633,6 @@
 				9FC2B787123776A8002FD8BA /* NKTHighlightRegion.m in Sources */,
 				9FC347681238EEEC001AFF98 /* KBCMath.m in Sources */,
 				9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */,
-				9F0ACBA1124228750050CFAE /* KBTDiagnostics.m in Sources */,
-				9F0ACBA2124228750050CFAE /* KBTFont.m in Sources */,
 				9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */,
 				9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */,
 				9FCBC16B1248AD6D008A0A1F /* NKTFontPickerViewController.m in Sources */,
@@ -476,8 +641,31 @@
 				9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */,
 				9F7D2BA412585738006D23DD /* NKTFramesetter.m in Sources */,
 				9F6E4E4E1258E342005721FB /* KobaCore.m in Sources */,
-				9F327E6E125951A50026DCA7 /* NSString+KobaAdditions.m in Sources */,
+				9F327E6E125951A50026DCA7 /* NSString+KobaCoreAdditions.m in Sources */,
 				9FD542E8125F0C5000B240BB /* NKTHandle.m in Sources */,
+				9F47F0FE1260C57F00E5E6BB /* Notekata.xcdatamodel in Sources */,
+				9F3D04951261C73A00AB9903 /* NKTRootViewController.m in Sources */,
+				9F3D08D012620AF200AB9903 /* NKTNotebookViewController.m in Sources */,
+				9F0D0C811262D03F00348E1B /* NKTNotebook.m in Sources */,
+				9F0D0DE11262E18000348E1B /* NKTPage.m in Sources */,
+				9F0D0E271262E76300348E1B /* KBTAttributedStringTransformer.m in Sources */,
+				9F0D0EB61263069A00348E1B /* CDataScanner.m in Sources */,
+				9F0D0EB71263069A00348E1B /* CExtensibleJSONDataSerializer.m in Sources */,
+				9F0D0EB81263069A00348E1B /* CDataScanner_Extensions.m in Sources */,
+				9F0D0EB91263069A00348E1B /* NSCharacterSet_Extensions.m in Sources */,
+				9F0D0EBA1263069A00348E1B /* NSDictionary_JSONExtensions.m in Sources */,
+				9F0D0EBB1263069A00348E1B /* NSScanner_Extensions.m in Sources */,
+				9F0D0EBC1263069A00348E1B /* CJSONDataSerializer.m in Sources */,
+				9F0D0EBD1263069A00348E1B /* CJSONDeserializer.m in Sources */,
+				9F0D0EBE1263069A00348E1B /* CJSONScanner.m in Sources */,
+				9F0D0EBF1263069A00348E1B /* CJSONSerializer.m in Sources */,
+				9F0D0EC01263069A00348E1B /* CSerializedJSONData.m in Sources */,
+				9F0D0EDA12630AB100348E1B /* KBTAttributedStringIntermediate.m in Sources */,
+				9F0D11A11263571E00348E1B /* KobaText.m in Sources */,
+				9F0D11CA1263595000348E1B /* KBTFont.m in Sources */,
+				9F0D11D7126359E100348E1B /* KBTUtilities.m in Sources */,
+				9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */,
+				9FFD84FB1264A34400CB082D /* KUIUtilities.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

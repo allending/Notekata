@@ -135,7 +135,7 @@
 #pragma mark Drawing
 
 - (void)drawRect:(CGRect)drawingRect
-{    
+{
     if (!fillsRects_ && !strokesRects_)
     {
         return;

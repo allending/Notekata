@@ -1,6 +1,37 @@
 Notes
 -----
 
+buggy:
+{
+    String = "Abc\nDef";
+    StyleRanges =     (
+                {
+            Length = 3;
+            Location = 0;
+        },
+                {
+            Length = 4;
+            Location = 3;
+        }
+    );
+    Styles =     (
+                {
+            Bold = 0;
+            FontFamilyName = "Helvetica Neue";
+            FontSize = 24;
+            Italic = 0;
+            Underlined = 0;
+        },
+                {
+            Bold = 1;
+            FontFamilyName = "Helvetica Neue";
+            FontSize = 32;
+            Italic = 1;
+            Underlined = 1;
+        }
+    );
+}
+
 Font traits are painful:
     normal:                                  bold and italic disabled
     normal + bold:                           bold enabled, italic disabled

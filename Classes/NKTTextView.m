@@ -70,7 +70,7 @@
 
 - (void)confirmGestureTextRange;
 - (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;
-- (void)setMarkedTextRange:(NKTTextRange *)textRange;
+- (void)setMarkedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;
 
 #pragma mark Geometry and Hit-Testing
 
@@ -83,14 +83,13 @@
 
 @end
 
-#pragma mark -
-
 //--------------------------------------------------------------------------------------------------
+
+#pragma mark -
 
 @implementation NKTTextView
 
 @synthesize text = text_;
-
 @synthesize margins = margins_;
 @synthesize lineHeight = lineHeight_;
 @synthesize horizontalRulesEnabled = horizontalRulesEnabled_;
@@ -99,13 +98,9 @@
 @synthesize verticalMarginEnabled = verticalMarginEnabled_;
 @synthesize verticalMarginColor = verticalMarginColor_;
 @synthesize verticalMarginInset = verticalMarginInset_;
-
 @synthesize markedTextStyle = markedTextStyle_;
-
 @synthesize inputTextAttributes = inputTextAttributes_;
-
 @synthesize inputDelegate = inputDelegate_;
-
 @synthesize nonEditTapGestureRecognizer = nonEditTapGestureRecognizer_;
 @synthesize tapGestureRecognizer = tapGestureRecognizer_;
 @synthesize longPressGestureRecognizer = longPressGestureRecognizer_;
@@ -114,6 +109,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Initializing
 
 - (id)initWithFrame:(CGRect)frame
@@ -138,7 +134,7 @@
     self.alwaysBounceVertical = YES;
     text_ = [[NSMutableAttributedString alloc] init];
     margins_ = UIEdgeInsetsMake(60.0, 80.0, 80.0, 60.0);
-    lineHeight_ = 32.0;
+    lineHeight_ = 30.0;
     horizontalRulesEnabled_ = YES;
     horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
     horizontalRuleOffset_ = 3.0;
@@ -232,6 +228,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Updating the Content Size
 
 - (void)updateContentSize
@@ -243,6 +240,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Modifying the Bounds and Frame Rectangles
 
 - (void)setFrame:(CGRect)frame
@@ -259,6 +257,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Laying Out Views
 
 // Called when scrolling occurs (behavior inherited from UIScrollView). We tile the sections as
@@ -271,6 +270,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Accessing the Text
 
 - (void)setText:(NSAttributedString *)text
@@ -285,11 +285,12 @@
     [self regenerateTextFrame];
     self.gestureTextRange = nil;
     self.selectedTextRange = nil;
-    self.markedTextRange = nil;
+    [self setMarkedTextRange:nil notifyInputDelegate:YES];
 }
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Configuring Text Layout and Style
 
 - (void)setMargins:(UIEdgeInsets)margins
@@ -352,6 +353,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Tiling Sections
 
 - (void)tileSections
@@ -456,6 +458,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Managing the Framesetter
 
 - (CGFloat)lineWidth
@@ -509,6 +512,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Managing the Responder Chain
 
 // Returning YES allows the view to receive keyboard input
@@ -527,8 +531,8 @@
     }
     
     self.gestureTextRange = nil;
-    [self setSelectedTextRange:nil notifyInputDelegate:NO];
-    self.markedTextRange = nil;
+    [self setSelectedTextRange:nil notifyInputDelegate:YES];
+    [self setMarkedTextRange:nil notifyInputDelegate:YES];
     
     if ([self.delegate respondsToSelector:@selector(textViewDidEndEditing:)])
     {
@@ -540,6 +544,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Responding to Gestures
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
@@ -561,8 +566,8 @@
     CGPoint point = [gestureRecognizer locationInView:self];
     CGPoint framesetterPoint = [self convertPointToFramesetter:point];
     NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    [self setMarkedTextRange:nil notifyInputDelegate:YES];
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:YES];
-    self.markedTextRange = nil;
     selectionDisplayController_.caretVisible = YES;
     
     if (becameFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
@@ -580,7 +585,7 @@
         CGPoint framesetterPoint = [self convertPointToFramesetter:point];
         NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
         self.gestureTextRange = [textPosition textRange];
-        self.markedTextRange = nil;
+        [self setMarkedTextRange:nil notifyInputDelegate:YES];
         [self configureLoupe:self.caretLoupe toShowPoint:point anchorToLine:NO];
         [self.caretLoupe setHidden:NO animated:YES];
         selectionDisplayController_.caretVisible = YES;
@@ -602,9 +607,15 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         NKTTextRange *gesturedWordRange = [self gesturedWordRangeAtTextPosition:textPosition];
+        
+        if (gesturedWordRange == nil)
+        {
+            return;
+        }
+        
         self.initialDoubleTapTextRange = gesturedWordRange;
         self.gestureTextRange = gesturedWordRange;
-        self.markedTextRange = nil;
+        [self setMarkedTextRange:nil notifyInputDelegate:YES];
         [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
         [self.textRangeLoupe setHidden:NO animated:YES];
     }
@@ -663,7 +674,7 @@
         {
             self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
                                                                textPosition:selectedTextRange_.end];
-            self.markedTextRange = nil;
+            [self setMarkedTextRange:nil notifyInputDelegate:YES];
         }
         
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
@@ -693,7 +704,7 @@
         {
             self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start
                                                                textPosition:textPosition];
-            self.markedTextRange = nil;
+            [self setMarkedTextRange:nil notifyInputDelegate:YES];
         }
         
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
@@ -754,6 +765,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Managing Loupes
 
 - (NKTLoupe *)textRangeLoupe
@@ -855,6 +867,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Inserting and Deleting Text
 
 // UITextInput method
@@ -925,7 +938,7 @@
     
     NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
-    self.markedTextRange = nil;
+    [self setMarkedTextRange:nil notifyInputDelegate:NO];
 }
 
 // UITextInput method
@@ -961,11 +974,12 @@
     }
     
     [self setSelectedTextRange:[deletionTextRange.start textRange] notifyInputDelegate:NO];
-    self.markedTextRange = nil;
+    [self setMarkedTextRange:nil notifyInputDelegate:NO];
 }
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Replacing and Returning Text
 
 // UITextInput method
@@ -1005,6 +1019,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Managing Text Ranges
 
 - (NKTTextRange *)gestureTextRange
@@ -1082,12 +1097,28 @@
     return markedTextRange_;
 }
 
+// This is never called from the input delegate, so we always notify it.
 - (void)setMarkedTextRange:(NKTTextRange *)textRange
+{
+    [self setMarkedTextRange:textRange notifyInputDelegate:YES];
+}
+
+- (void)setMarkedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate
 {
     if (![markedTextRange_  isEqualToTextRange:textRange])
     {
+        if (notifyInputDelegate)
+        {
+            [inputDelegate_ selectionWillChange:self];
+        }
+        
         [markedTextRange_ release];
         markedTextRange_ = [textRange copy];
+        
+        if (notifyInputDelegate)
+        {
+            [inputDelegate_ selectionDidChange:self];
+        }
     }
     
     [selectionDisplayController_ updateSelectionDisplay];
@@ -1152,6 +1183,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Computing Text Ranges and Text Positions
 
 // UITextInput method
@@ -1246,6 +1278,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Evaluating Text Positions
 
 // UITextInput method
@@ -1265,6 +1298,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Determining Layout and Writing Direction
 
 // UITextInput method
@@ -1347,6 +1381,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Geometry and Hit-Testing
 
 // UITextInput method
@@ -1384,8 +1419,8 @@
     
     if (applyInputTextAttributes)
     {
-        KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithAttributes:self.inputTextAttributes];
-        font = [styleDescriptor uiFontForFontStyle];
+        KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:self.inputTextAttributes];
+        font = [styleDescriptor uiFontForFont];
     }
     else
     {
@@ -1435,6 +1470,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Text Input Delegate and Text Input Tokenizer
 
 - (id <UITextInputTokenizer>)tokenizer
@@ -1449,6 +1485,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Returning Text Styling Information
 
 // UITextInput method
@@ -1466,6 +1503,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Styling Text
 
 // Input text attributes refer to the text attributes that would be applied to inserted/modified
@@ -1564,6 +1602,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Getting Fonts at Text Positions
 
 - (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition
@@ -1610,6 +1649,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Returning the Text Input View
 
 - (UIView *)textInputView
@@ -1619,6 +1659,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Managing Selection Views
 
 // TODO: look through these
@@ -1637,6 +1678,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Tokenizing
 
 // TODO: look through these

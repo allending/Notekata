@@ -27,9 +27,9 @@
 
 @end
 
-#pragma mark -
-
 //--------------------------------------------------------------------------------------------------
+
+#pragma mark -
 
 @implementation NKTTextSection
 
@@ -47,6 +47,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Initializing
 
 - (id)initWithFrame:(CGRect)frame
@@ -73,6 +74,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Getting Indices
 
 - (NSUInteger)indexForFirstVisibleHorizontalRule
@@ -86,6 +88,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Getting Offsets
 
 - (CGFloat)verticalOffset
@@ -105,6 +108,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Drawing
 
 - (void)drawRect:(CGRect)rect
@@ -226,6 +230,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
+#pragma mark -
 #pragma mark Debugging
 
 - (NSString *)description
