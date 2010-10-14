@@ -1338,6 +1338,8 @@
     self.inputTextAttributes = nil;
     
     [selectionDisplayController_ updateSelectionDisplay];
+    
+    [self scrollTextRangeToVisible:self.selectedTextRange animated:YES];
 }
 
 // UITextInput method

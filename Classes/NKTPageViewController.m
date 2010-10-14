@@ -69,6 +69,20 @@
 - (void)underlineToggleChanged:(KUIToggleButton *)toggleButton;
 - (void)fontButtonPressed:(UIButton *)button;
 
+#pragma mark Registering for Keyboard Events
+
+- (void)registerForKeyboardEvents;
+- (void)unregisterForKeyboardEvents;
+
+#pragma mark Responding to Keyboard Events
+
+- (void)keyboardWillShow:(NSNotification *)notification;
+- (void)keyboardDidShow:(NSNotification *)notification;
+- (void)keyboardWillHide:(NSNotification *)notification;
+- (CGRect)keyboardFrameFromNotification:(NSNotification *)notification;
+- (void)growTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
+- (void)shrinkTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
+
 @end
 
 #pragma mark -
@@ -268,73 +282,6 @@
 }
 
 #pragma mark -
-#pragma mark Getting Keyboard Geometry
-
-- (CGRect)keyboardEndRectInScrollViewFromNotification:(NSNotification *)aNotification {
-    NSDictionary* info = [aNotification userInfo];
-    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
-    CGRect rect = [aValue CGRectValue];
-    // Keyboard rect is in screen space, so convert it
-    return [self.textView convertRect:rect fromView:self.textView.window];
-}
-
-- (CGSize)keyboardEndSizeInScrollViewFromNotification:(NSNotification *)aNotification {
-    return [self keyboardEndRectInScrollViewFromNotification:aNotification].size;
-}
-
-#pragma mark -
-#pragma mark Registering For Keyboard Notifications
-
-- (void)handleKeyboardDidShowUsingResizeScrollViewScheme:(NSNotification *)aNotification {
-    CGSize keyboardSize = [self keyboardEndSizeInScrollViewFromNotification:aNotification];
-    
-    // Resize scroll view frame
-    CGRect resizedFrame = self.textView.frame;
-    resizedFrame.size.height -= keyboardSize.height;
-    self.textView.frame = resizedFrame;
-    
-    [self.textView scrollTextRangeToVisible:self.textView.selectedTextRange animated:YES];
-//    CGRect targetRect = activeField.frame;
-//    targetRect.size.height += AdjustedRectBottomPadding;
-//    // Scroll active field into view
-//    [self.scrollView scrollRectToVisible:targetRect animated:YES];
-}
-
-- (void)handleKeyboardWillHideUsingResizeScrollViewScheme:(NSNotification *)aNotification {
-    CGSize keyboardSize = [self keyboardEndSizeInScrollViewFromNotification:aNotification];
-    
-    // Resizing may clobber content offset, so save it
-    CGPoint originalOffset = self.textView.contentOffset;
-    
-    // Resize scroll view frame
-    CGRect restoredFrame = [self.textView frame];
-    restoredFrame.size.height += keyboardSize.height;
-    self.textView.frame = restoredFrame;
-    
-    // Restore pre-resize content offset. This prevents the scroll view from
-    // jumping if there the visible content does not fill the scroll view after
-    // resizing.
-    self.textView.contentOffset = originalOffset;
-    //[self.textView scrollTextRangeToVisible:self.textView.selectedTextRange];
-}
-
-- (void)registerForKeyboardNotifications {
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(keyboardWillShow:)
-//                                                 name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleKeyboardDidShowUsingResizeScrollViewScheme:)
-                                                 name:UIKeyboardDidShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleKeyboardWillHideUsingResizeScrollViewScheme:)
-                                                 name:UIKeyboardWillHideNotification object:nil];    
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(keyboardDidHide:)
-//                                                 name:UIKeyboardDidHideNotification object:nil];
-}
-
-
-#pragma mark -
 #pragma mark View Lifecycle
 
 - (void)viewDidLoad
@@ -385,10 +332,7 @@
     fontPickerViewController_.selectedFontSize = 16;
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 420.0);
-    
-    // Register for keyboard events
-    [self registerForKeyboardNotifications];
-    
+        
     // Set up the text view
     textView_.delegate = self;
     [self styleTextView];
@@ -421,6 +365,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    [self registerForKeyboardEvents];
     [self updateModelViews];
 }
 
@@ -433,6 +378,7 @@
 {
     [super viewWillDisappear:animated];
     [self saveEditedPageText];
+    [self unregisterForKeyboardEvents];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -959,6 +905,93 @@
     }
     
     [self updateTitleLabel];
+}
+
+#pragma mark -
+#pragma mark Registering for Keyboard Events
+
+- (void)registerForKeyboardEvents
+{
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)unregisterForKeyboardEvents
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+#pragma mark -
+#pragma mark Responding to Keyboard Events
+
+static const CGFloat KeyboardOverlapTolerance = 1.0;
+
+- (void)keyboardWillShow:(NSNotification *)notification
+{
+    [self growTextViewToAccomodateKeyboardFrameFromNotification:notification];
+}
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    [self shrinkTextViewToAccomodateKeyboardFrameFromNotification:notification];
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification
+{
+    [self growTextViewToAccomodateKeyboardFrameFromNotification:notification];
+}
+
+- (CGRect)keyboardFrameFromNotification:(NSNotification *)notification
+{
+    NSValue* windowFrameValue = [[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect windowFrame = [windowFrameValue CGRectValue];
+    return [self.view convertRect:windowFrame fromView:self.view.window];
+}
+
+// Does nothing if the keyboard frame overlaps the text view frame
+- (void)growTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification
+{
+    CGRect keyboardFrame = [self keyboardFrameFromNotification:notification];
+    CGRect textViewFrame = textView_.frame;
+    CGFloat heightOverlap = CGRectGetMaxY(textViewFrame) - CGRectGetMinY(keyboardFrame);
+    
+    // When the height overlap is negative, we grow the text view before the keyboard appears. Even though this grows
+    // the text view frame, we should be safe from the shrinking logic in keyboardDidShow: because the overlap would
+    // be 0 or close to it by then.
+    if (heightOverlap < KeyboardOverlapTolerance)
+    {
+        CGPoint originalOffset = self.textView.contentOffset;
+        
+        // Resize scroll view frame
+        textViewFrame.size.height -= heightOverlap;
+        textView_.frame = textViewFrame;
+        
+        self.textView.contentOffset = originalOffset;
+    }
+}
+
+// Does nothing if the keyboard frame does not overlap the text view frame
+- (void)shrinkTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification
+{
+    CGRect textViewFrame = textView_.frame;
+    CGRect keyboardFrame = [self keyboardFrameFromNotification:notification];
+    CGFloat heightOverlap = CGRectGetMaxY(textViewFrame) - CGRectGetMinY(keyboardFrame);
+    
+    // When the height overlap is positive, we shrink the text view after the keyboard appears.
+    if (heightOverlap > KeyboardOverlapTolerance)
+    {
+        // Resize scroll view frame
+        textViewFrame.size.height -= heightOverlap;
+        textView_.frame = textViewFrame;
+        [textView_ scrollTextRangeToVisible:textView_.selectedTextRange animated:YES];
+    }
 }
 
 @end
