@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
 
@@ -49,10 +49,22 @@
 @property (nonatomic, retain) NKTTextRange *initialDoubleTapTextRange;
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer;
+
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer;
+- (void)checkForLongPressGestureEdgeScroll;
+- (void)updateLongPressGestureSelection;
+
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer;
+- (void)checkForDoubleTapAndDragGestureEdgeScroll;
+- (void)updateDoubleTapAndDragGestureSelection;
+
 - (void)handleBackwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer;
+- (void)checkForBackwardHandleDragGestureEdgeScroll;
+- (void)updateBackwardHandleDragGestureSelection;
+
 - (void)handleForwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer;
+- (void)checkForForwardHandleDragGestureEdgeScroll;
+- (void)updateForwardHandleDragGestureSelection;
 
 - (NKTTextRange *)gesturedWordRangeAtTextPosition:(NKTTextPosition *)textPosition;
 
@@ -80,6 +92,10 @@
 #pragma mark Getting Fonts at Text Positions
 
 - (UIFont *)fontAtTextPosition:(NKTTextPosition *)textPosition;
+
+#pragma mark Scrolling
+
+- (void)scrollAtEdgeWithPoint:(CGPoint)point;
 
 @end
 
@@ -178,15 +194,13 @@
     [self addGestureRecognizer:doubleTapAndDragGestureRecognizer_];
     
     // Add drag gesture recognizers to the selection display controller managed handles
-    UIPanGestureRecognizer *backwardHandleGestureRecognizer = [[NKTDragGestureRecognizer alloc] initWithTarget:self
-                                                                                                        action:@selector(handleBackwardHandleDrag:)];
-    [selectionDisplayController_.backwardHandle addGestureRecognizer:backwardHandleGestureRecognizer];
-    [backwardHandleGestureRecognizer release];    
+    backwardHandleGestureRecognizer_ = [[NKTDragGestureRecognizer alloc] initWithTarget:self
+                                                                                 action:@selector(handleBackwardHandleDrag:)];
+    [selectionDisplayController_.backwardHandle addGestureRecognizer:backwardHandleGestureRecognizer_];
     
-    UIPanGestureRecognizer *forwardHandleGestureRecognizer = [[NKTDragGestureRecognizer alloc] initWithTarget:self
-                                                                                                       action:@selector(handleForwardHandleDrag:)];
-    [selectionDisplayController_.forwardHandle addGestureRecognizer:forwardHandleGestureRecognizer];
-    [forwardHandleGestureRecognizer release];    
+    forwardHandleGestureRecognizer_ = [[NKTDragGestureRecognizer alloc] initWithTarget:self
+                                                                                action:@selector(handleForwardHandleDrag:)];
+    [selectionDisplayController_.forwardHandle addGestureRecognizer:forwardHandleGestureRecognizer_];
 }
 
 - (void)dealloc
@@ -225,6 +239,8 @@
     [longPressGestureRecognizer_ release];
     [doubleTapAndDragGestureRecognizer_ release];
     [initialDoubleTapTextRange_ release];
+    [backwardHandleGestureRecognizer_ release];
+    [forwardHandleGestureRecognizer_ release];
     
     [super dealloc];
 }
@@ -319,12 +335,17 @@
         return;
     }
     
+    self.gestureTextRange = nil;
+    [self setSelectedTextRange:nil notifyInputDelegate:YES];
+    [self setMarkedTextRange:nil notifyInputDelegate:YES];
+    
+    [inputDelegate_ textWillChange:self];
     [text_ release];
     text_ = [[NSMutableAttributedString alloc] initWithAttributedString:text];
     [self regenerateTextFrame];
-    self.gestureTextRange = nil;
-    self.selectedTextRange = nil;
-    [self setMarkedTextRange:nil notifyInputDelegate:YES];
+    [inputDelegate_ textDidChange:self];
+    
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -572,8 +593,9 @@
     }
     
     self.gestureTextRange = nil;
-    [self setSelectedTextRange:nil notifyInputDelegate:YES];
-    [self setMarkedTextRange:nil notifyInputDelegate:YES];
+    [self setSelectedTextRange:nil notifyInputDelegate:NO];
+    [self setMarkedTextRange:nil notifyInputDelegate:NO];
+    [selectionDisplayController_ updateSelectionDisplay];
     
     if ([self.delegate respondsToSelector:@selector(textViewDidEndEditing:)])
     {
@@ -582,8 +604,6 @@
     
     return YES;
 }
-
-//--------------------------------------------------------------------------------------------------
 
 #pragma mark -
 #pragma mark Responding to Gestures
@@ -610,6 +630,7 @@
     [self setMarkedTextRange:nil notifyInputDelegate:YES];
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:YES];
     selectionDisplayController_.caretVisible = YES;
+    [selectionDisplayController_ updateSelectionDisplay];
     
     if (becameFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
     {
@@ -618,30 +639,56 @@
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
-{    
+{
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan ||
         gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        CGPoint point = [gestureRecognizer locationInView:self];
-        CGPoint framesetterPoint = [self convertPointToFramesetter:point];
-        NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
-        self.gestureTextRange = [textPosition textRange];
-        [self setMarkedTextRange:nil notifyInputDelegate:YES];
-        [self configureLoupe:self.caretLoupe toShowPoint:point anchorToLine:NO];
-        [self.caretLoupe setHidden:NO animated:YES];
-        selectionDisplayController_.caretVisible = YES;
+        [self updateLongPressGestureSelection];
+                
+        if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
+        {
+            [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                     selector:@selector(checkForLongPressGestureEdgeScroll)
+                                                       object:nil];
+            [self performSelector:@selector(checkForLongPressGestureEdgeScroll) withObject:nil afterDelay:0.35];
+        }
     }
     else
     {
         [self confirmGestureTextRange];
         [self.caretLoupe setHidden:YES animated:YES];
         selectionDisplayController_.caretVisible = [self isFirstResponder];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForLongPressGestureEdgeScroll)
+                                                   object:nil];
     }
+}
+
+- (void)checkForLongPressGestureEdgeScroll
+{
+    CGPoint point = [longPressGestureRecognizer_ locationInView:self];
+    [self scrollAtEdgeWithPoint:point];
+    [self updateLongPressGestureSelection];
+    [self performSelector:@selector(checkForLongPressGestureEdgeScroll) withObject:nil afterDelay:0.35];
+}
+
+- (void)updateLongPressGestureSelection
+{
+    CGPoint point = [longPressGestureRecognizer_ locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    self.gestureTextRange = [textPosition textRange];
+    [self setMarkedTextRange:nil notifyInputDelegate:YES];
+    [self configureLoupe:self.caretLoupe toShowPoint:point anchorToLine:NO];
+    [self.caretLoupe setHidden:NO animated:YES];
+    selectionDisplayController_.caretVisible = YES;
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)handleDoubleTapAndDrag:(UIGestureRecognizer *)gestureRecognizer
 {
-    CGPoint point = [gestureRecognizer locationInView:self];
+    CGPoint point = [doubleTapAndDragGestureRecognizer_ locationInView:self];
     CGPoint framesetterPoint = [self convertPointToFramesetter:point];
     NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
     
@@ -659,6 +706,12 @@
         [self setMarkedTextRange:nil notifyInputDelegate:YES];
         [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
         [self.textRangeLoupe setHidden:NO animated:YES];
+        [selectionDisplayController_ updateSelectionDisplay];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForDoubleTapAndDragGestureEdgeScroll)
+                                                   object:nil];
+        [self performSelector:@selector(checkForDoubleTapAndDragGestureEdgeScroll) withObject:nil afterDelay:0.35];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
@@ -667,23 +720,7 @@
             return;
         }
         
-        if ([textPosition compare:initialDoubleTapTextRange_.start] == NSOrderedAscending)
-        {
-            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
-                                                               textPosition:initialDoubleTapTextRange_.end];
-        }
-        else if ([textPosition compare:initialDoubleTapTextRange_.end] == NSOrderedDescending)
-        {
-            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:initialDoubleTapTextRange_.start
-                                                               textPosition:textPosition];
-        }
-        else
-        {
-            self.gestureTextRange = initialDoubleTapTextRange_;
-        }
-        
-        [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
-        [self.textRangeLoupe setHidden:NO animated:YES];
+        [self updateDoubleTapAndDragGestureSelection];
     }
     else
     {
@@ -695,7 +732,45 @@
         self.initialDoubleTapTextRange = nil;
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForDoubleTapAndDragGestureEdgeScroll)
+                                                   object:nil];
     }
+}
+
+- (void)checkForDoubleTapAndDragGestureEdgeScroll
+{
+    CGPoint point = [doubleTapAndDragGestureRecognizer_ locationInView:self];
+    [self scrollAtEdgeWithPoint:point];
+    [self updateDoubleTapAndDragGestureSelection];
+    [self performSelector:@selector(checkForDoubleTapAndDragGestureEdgeScroll) withObject:nil afterDelay:0.35];
+}
+
+- (void)updateDoubleTapAndDragGestureSelection
+{
+    CGPoint point = [doubleTapAndDragGestureRecognizer_ locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    
+    if ([textPosition compare:initialDoubleTapTextRange_.start] == NSOrderedAscending)
+    {
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
+                                                           textPosition:initialDoubleTapTextRange_.end];
+    }
+    else if ([textPosition compare:initialDoubleTapTextRange_.end] == NSOrderedDescending)
+    {
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:initialDoubleTapTextRange_.start
+                                                           textPosition:textPosition];
+    }
+    else
+    {
+        self.gestureTextRange = initialDoubleTapTextRange_;
+    }
+    
+    [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
+    [self.textRangeLoupe setHidden:NO animated:YES];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)handleBackwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer
@@ -703,29 +778,56 @@
     CGPoint point = [gestureRecognizer locationInView:self];
     CGPoint framesetterPoint = [self convertPointToFramesetter:point];
     NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
-
+    
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
         [self.textRangeLoupe setHidden:NO animated:YES];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForBackwardHandleDragGestureEdgeScroll)
+                                                   object:nil];
+        [self performSelector:@selector(checkForBackwardHandleDragGestureEdgeScroll) withObject:nil afterDelay:0.35];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        if ([textPosition compare:selectedTextRange_.end] == NSOrderedAscending)
-        {
-            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
-                                                               textPosition:selectedTextRange_.end];
-            [self setMarkedTextRange:nil notifyInputDelegate:YES];
-        }
-        
-        [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
-        [self.textRangeLoupe setHidden:NO animated:YES];
+        [self updateBackwardHandleDragGestureSelection];
     }
     else
     {
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForBackwardHandleDragGestureEdgeScroll)
+                                                   object:nil];
     }
+}
+
+- (void)checkForBackwardHandleDragGestureEdgeScroll
+{
+    CGPoint point = [backwardHandleGestureRecognizer_ locationInView:self];
+    [self scrollAtEdgeWithPoint:point];
+    [self updateBackwardHandleDragGestureSelection];
+    [self performSelector:@selector(checkForBackwardHandleDragGestureEdgeScroll) withObject:nil afterDelay:0.35];
+}
+
+- (void)updateBackwardHandleDragGestureSelection
+{
+    CGPoint point = [backwardHandleGestureRecognizer_ locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    
+    if ([textPosition compare:selectedTextRange_.end] == NSOrderedAscending)
+    {
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
+                                                           textPosition:selectedTextRange_.end];
+        [self setMarkedTextRange:nil notifyInputDelegate:YES];
+        [selectionDisplayController_ updateSelectionDisplay];
+    }
+    
+    [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
+    [self.textRangeLoupe setHidden:NO animated:YES];
 }
 
 - (void)handleForwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer
@@ -738,24 +840,51 @@
     {
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
         [self.textRangeLoupe setHidden:NO animated:YES];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForForwardHandleDragGestureEdgeScroll)
+                                                   object:nil];
+        [self performSelector:@selector(checkForForwardHandleDragGestureEdgeScroll) withObject:nil afterDelay:0.35];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
-        if ([textPosition compare:selectedTextRange_.start] == NSOrderedDescending)
-        {
-            self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start
-                                                               textPosition:textPosition];
-            [self setMarkedTextRange:nil notifyInputDelegate:YES];
-        }
-        
-        [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
-        [self.textRangeLoupe setHidden:NO animated:YES];
+        [self updateForwardHandleDragGestureSelection];
     }
     else
     {
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
+        
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(checkForForwardHandleDragGestureEdgeScroll)
+                                                   object:nil];
     }
+}
+
+- (void)checkForForwardHandleDragGestureEdgeScroll
+{
+    CGPoint point = [forwardHandleGestureRecognizer_ locationInView:self];
+    [self scrollAtEdgeWithPoint:point];
+    [self updateForwardHandleDragGestureSelection];
+    [self performSelector:@selector(checkForForwardHandleDragGestureEdgeScroll) withObject:nil afterDelay:0.35];
+}
+
+- (void)updateForwardHandleDragGestureSelection
+{
+    CGPoint point = [forwardHandleGestureRecognizer_ locationInView:self];
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
+    
+    if ([textPosition compare:selectedTextRange_.start] == NSOrderedDescending)
+    {
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start
+                                                           textPosition:textPosition];
+        [self setMarkedTextRange:nil notifyInputDelegate:YES];
+        [selectionDisplayController_ updateSelectionDisplay];
+    }
+    
+    [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
+    [self.textRangeLoupe setHidden:NO animated:YES];
 }
 
 // Searches for the likely word being indicated at the given text position when the user performs
@@ -804,8 +933,6 @@
                                                       inDirection:UITextStorageDirectionForward];
 }
 
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark -
 #pragma mark Managing Loupes
 
@@ -816,11 +943,6 @@
         textRangeLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleBand];
         textRangeLoupe_.hidden = YES;
         textRangeLoupe_.zoomedView = self;
-        
-        if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
-        {
-            textRangeLoupe_.fillColor = [(id <NKTTextViewDelegate>)self.delegate loupeFillColor];
-        }
         
         if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
         {
@@ -849,11 +971,6 @@
         caretLoupe_ = [[NKTLoupe alloc] initWithStyle:NKTLoupeStyleRound];
         caretLoupe_.hidden = YES;
         caretLoupe_.zoomedView = self;
-
-        if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
-        {
-            caretLoupe_.fillColor = [(id <NKTTextViewDelegate>)self.delegate loupeFillColor];
-        }
         
         if ([self.delegate respondsToSelector:@selector(addLoupeView:)])
         {
@@ -870,6 +987,11 @@
 
 - (void)configureLoupe:(NKTLoupe *)loupe toShowPoint:(CGPoint)point anchorToLine:(BOOL)anchorToLine
 {
+    if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
+    {
+        loupe.fillColor = [(id <NKTTextViewDelegate>)self.delegate loupeFillColor];
+    }
+    
     if (anchorToLine)
     {
         // Set the zoom center of the loupe to the baseline with the same offset as the original point
@@ -896,6 +1018,11 @@
 
 - (void)configureLoupe:(NKTLoupe *)loupe toShowTextPosition:(NKTTextPosition *)textPosition
 {
+    if ([self.delegate respondsToSelector:@selector(loupeFillColor)])
+    {
+        loupe.fillColor = [(id <NKTTextViewDelegate>)self.delegate loupeFillColor];
+    }
+    
     CGPoint framesetterPoint = [self.framesetter baselineOriginForCharAtTextPosition:textPosition];
     CGPoint point = [self convertPointFromFramesetter:framesetterPoint];
     loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];
@@ -980,6 +1107,10 @@
     NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
     [self setMarkedTextRange:nil notifyInputDelegate:NO];
+    [selectionDisplayController_ updateSelectionDisplay];
+    
+    // Make caret visible if it is not
+    [self scrollTextRangeToVisible:self.selectedTextRange animated:YES];
 }
 
 // UITextInput method
@@ -1014,8 +1145,13 @@
         [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
-    [self setSelectedTextRange:[deletionTextRange.start textRange] notifyInputDelegate:NO];
+    NKTTextPosition *textPosition = deletionTextRange.start;
+    [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
     [self setMarkedTextRange:nil notifyInputDelegate:NO];
+    [selectionDisplayController_ updateSelectionDisplay];
+    
+    // Make caret visible if it is not
+    [self scrollTextRangeToVisible:self.selectedTextRange animated:YES];
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1048,6 +1184,7 @@
         NSUInteger newStartIndex = selectedTextRange_.start.location + changeInLength;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLocation:newStartIndex];
         [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
+        [selectionDisplayController_ updateSelectionDisplay];
     }
     // The text range overlaps the selected text range
     else if (relation == NKTTextRangeRelationOverlapping)
@@ -1055,6 +1192,7 @@
         NSUInteger newLength = textRange.start.location - selectedTextRange_.start.location;
         NKTTextRange *newTextRange = [selectedTextRange_ textRangeByChangingLength:newLength];
         [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
+        [selectionDisplayController_ updateSelectionDisplay];
     }
 }
 
@@ -1075,14 +1213,13 @@
         [gestureTextRange_ release];
         gestureTextRange_ = [textRange copy];
     }
-    
-    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)confirmGestureTextRange
 {
     [self setSelectedTextRange:gestureTextRange_ notifyInputDelegate:YES];
     self.gestureTextRange = nil;
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 // UITextInput method
@@ -1101,35 +1238,38 @@
     // away from the text position (through this method) unless we notify the input delegate that
     // the selected text range has changed.
     [self setSelectedTextRange:textRange notifyInputDelegate:YES];
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate
 {
-    if (![selectedTextRange_ isEqualToTextRange:textRange])
+    if (selectedTextRange_ == textRange || [selectedTextRange_ isEqualToTextRange:textRange])
     {
-        if (notifyInputDelegate)
-        {
-            [inputDelegate_ selectionWillChange:self];
-        }
-        
-        [selectedTextRange_ release];
-        selectedTextRange_ = [textRange copy];
-        
-        // The input text attributes are cleared when the selected text range changes
-        self.inputTextAttributes = nil;
-        
-        if (notifyInputDelegate)
-        {
-            [inputDelegate_ selectionDidChange:self];
-        }
-        
-        if ([self.delegate respondsToSelector:@selector(textViewDidChangeSelection:)])
-        {
-            [(id <NKTTextViewDelegate>)self.delegate textViewDidChangeSelection:self];
-        }
+        return;
     }
     
-    [selectionDisplayController_ updateSelectionDisplay];
+    if (notifyInputDelegate)
+    {
+        KBCLogDebug(@"calling input delegate -selectionWillChange:");
+        [inputDelegate_ selectionWillChange:self];
+    }
+    
+    [selectedTextRange_ release];
+    selectedTextRange_ = [textRange copy];
+    
+    // The input text attributes are cleared when the selected text range changes
+    self.inputTextAttributes = nil;
+    
+    if (notifyInputDelegate)
+    {
+        KBCLogDebug(@"calling input delegate -selectionDidChange:");
+        [inputDelegate_ selectionDidChange:self];
+    }
+    
+    if ([self.delegate respondsToSelector:@selector(textViewDidChangeSelection:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidChangeSelection:self];
+    }
 }
 
 // UITextInput method
@@ -1138,31 +1278,27 @@
     return markedTextRange_;
 }
 
-// This is never called from the input delegate, so we always notify it.
-- (void)setMarkedTextRange:(NKTTextRange *)textRange
-{
-    [self setMarkedTextRange:textRange notifyInputDelegate:YES];
-}
-
 - (void)setMarkedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate
 {
-    if (![markedTextRange_  isEqualToTextRange:textRange])
+    if (markedTextRange_  == textRange || [markedTextRange_ isEqualToTextRange:textRange])
     {
-        if (notifyInputDelegate)
-        {
-            [inputDelegate_ selectionWillChange:self];
-        }
-        
-        [markedTextRange_ release];
-        markedTextRange_ = [textRange copy];
-        
-        if (notifyInputDelegate)
-        {
-            [inputDelegate_ selectionDidChange:self];
-        }
+        return;
     }
     
-    [selectionDisplayController_ updateSelectionDisplay];
+    if (notifyInputDelegate)
+    {
+        KBCLogDebug(@"calling input delegate -selectionWillChange:");
+        [inputDelegate_ selectionWillChange:self];
+    }
+    
+    [markedTextRange_ release];
+    markedTextRange_ = [textRange copy];
+    
+    if (notifyInputDelegate)
+    {
+        KBCLogDebug(@"calling input delegate -selectionDidChange:");
+        [inputDelegate_ selectionDidChange:self];
+    }
 }
 
 // UITextInput method
@@ -1190,22 +1326,24 @@
     [self regenerateTextFrame];
     
     NKTTextRange *textRange = [replacementTextRange textRangeByChangingLength:[markedText_ length]];
-    self.markedTextRange = textRange;
     
-    // Update the selected text range within the marked text
-    NSRange range = NSMakeRange(markedTextRange_.start.location + relativeSelectedRange.location,
+    // Since the selected text range is always within the marked text range, update the selected text range first
+    NSRange range = NSMakeRange(textRange.start.location + relativeSelectedRange.location,
                                 relativeSelectedRange.length);
     NKTTextRange *newTextRange = [NKTTextRange textRangeWithRange:range affinity:UITextStorageDirectionForward];
     [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
+    [self setMarkedTextRange:textRange notifyInputDelegate:NO];
     
     // Input text attributes are reset when marked text is set
     self.inputTextAttributes = nil;
+    
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 // UITextInput method
 - (void)unmarkText
 {
-    self.markedTextRange = nil;
+    [self setMarkedTextRange:nil notifyInputDelegate:NO];
     [markedText_ release];
     markedText_ = nil;
 }
@@ -1560,7 +1698,7 @@
     }
     
     // Use default text attributes if there is no text or selected text range
-    if (![self hasText] || self.selectedTextRange == nil)
+    if (![self hasText] || selectedTextRange_ == nil)
     {
         if ([self.delegate respondsToSelector:@selector(defaultTextAttributes)])
         {
@@ -1728,6 +1866,42 @@
 {
     NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
     return line.textRange;
+}
+
+#pragma mark Scrolling
+
+- (void)scrollAtEdgeWithPoint:(CGPoint)point
+{
+    CGPoint framesetterPoint = [self convertPointToFramesetter:point];
+    CGPoint boundsPoint = CGPointMake(point.x - self.contentOffset.x, point.y - self.contentOffset.y);
+    NKTLine *line = [self.framesetter lineClosestToPoint:framesetterPoint];
+    
+    if (boundsPoint.y < 40.0)
+    {
+        if (line.index > 0)
+        {
+            NKTLine *previousLine = [self.framesetter lineAtIndex:line.index - 1];
+            [self scrollTextRangeToVisible:previousLine.textRange animated:YES];
+        }
+    }
+    else if (boundsPoint.y > (self.bounds.size.height - 40.0))
+    {
+        if (line.index + 1 < [self.framesetter numberOfLines])
+        {
+            NKTLine *nextLine = [self.framesetter lineAtIndex:line.index + 1];
+            [self scrollTextRangeToVisible:nextLine.textRange animated:YES];
+        }
+    }
+}
+
+- (void)scrollTextRangeToVisible:(NKTTextRange *)textRange animated:(BOOL)animated
+{
+    CGRect firstCaretRect = [self caretRectForTextPosition:textRange.start applyInputTextAttributes:YES];
+    CGRect lastCaretRect = [self caretRectForTextPosition:textRange.end applyInputTextAttributes:YES];
+    CGRect combinedRect = CGRectUnion(firstCaretRect, lastCaretRect);
+    combinedRect.origin.y -= 40.0;
+    combinedRect.size.height += 80.0;
+    [self scrollRectToVisible:combinedRect animated:animated];
 }
 
 @end

@@ -70,6 +70,8 @@
     UILongPressGestureRecognizer *longPressGestureRecognizer_;
     NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer_;
     NKTTextRange *initialDoubleTapTextRange_;
+    NKTDragGestureRecognizer *backwardHandleGestureRecognizer_;
+    NKTDragGestureRecognizer *forwardHandleGestureRecognizer_;
 }
 
 #pragma mark Accessing the Text
@@ -107,6 +109,10 @@
 #pragma mark Tokenizing
 
 - (NKTTextRange *)textRangeForLineContainingTextPosition:(UITextPosition *)textPosition;
+
+#pragma mark Scrolling
+
+- (void)scrollTextRangeToVisible:(UITextRange *)textRange animated:(BOOL)animated;
 
 @end
 

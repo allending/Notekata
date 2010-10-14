@@ -171,8 +171,24 @@
 
 - (void)saveEditedPageText
 {
+    KBCLogDebug(@"saving edited text");
+    
+    if (![self isViewLoaded])
+    {
+        KBCLogWarning(@"view is not loaded, ignoring");
+        return;
+    }
+    
     // Set the text of the page from the text view's text and save the page
-    page_.text = textView_.text;
+    NSAttributedString *text = textView_.text;
+    
+    if (text == nil)
+    {
+        KBCLogWarning(@"page text is nil, ignoring");
+        return;
+    }
+    
+    page_.text = text;
     NSError *error = nil;
     
     if (![page_.managedObjectContext save:&error])
@@ -252,6 +268,73 @@
 }
 
 #pragma mark -
+#pragma mark Getting Keyboard Geometry
+
+- (CGRect)keyboardEndRectInScrollViewFromNotification:(NSNotification *)aNotification {
+    NSDictionary* info = [aNotification userInfo];
+    NSValue* aValue = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
+    CGRect rect = [aValue CGRectValue];
+    // Keyboard rect is in screen space, so convert it
+    return [self.textView convertRect:rect fromView:self.textView.window];
+}
+
+- (CGSize)keyboardEndSizeInScrollViewFromNotification:(NSNotification *)aNotification {
+    return [self keyboardEndRectInScrollViewFromNotification:aNotification].size;
+}
+
+#pragma mark -
+#pragma mark Registering For Keyboard Notifications
+
+- (void)handleKeyboardDidShowUsingResizeScrollViewScheme:(NSNotification *)aNotification {
+    CGSize keyboardSize = [self keyboardEndSizeInScrollViewFromNotification:aNotification];
+    
+    // Resize scroll view frame
+    CGRect resizedFrame = self.textView.frame;
+    resizedFrame.size.height -= keyboardSize.height;
+    self.textView.frame = resizedFrame;
+    
+    [self.textView scrollTextRangeToVisible:self.textView.selectedTextRange animated:YES];
+//    CGRect targetRect = activeField.frame;
+//    targetRect.size.height += AdjustedRectBottomPadding;
+//    // Scroll active field into view
+//    [self.scrollView scrollRectToVisible:targetRect animated:YES];
+}
+
+- (void)handleKeyboardWillHideUsingResizeScrollViewScheme:(NSNotification *)aNotification {
+    CGSize keyboardSize = [self keyboardEndSizeInScrollViewFromNotification:aNotification];
+    
+    // Resizing may clobber content offset, so save it
+    CGPoint originalOffset = self.textView.contentOffset;
+    
+    // Resize scroll view frame
+    CGRect restoredFrame = [self.textView frame];
+    restoredFrame.size.height += keyboardSize.height;
+    self.textView.frame = restoredFrame;
+    
+    // Restore pre-resize content offset. This prevents the scroll view from
+    // jumping if there the visible content does not fill the scroll view after
+    // resizing.
+    self.textView.contentOffset = originalOffset;
+    //[self.textView scrollTextRangeToVisible:self.textView.selectedTextRange];
+}
+
+- (void)registerForKeyboardNotifications {
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(keyboardWillShow:)
+//                                                 name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleKeyboardDidShowUsingResizeScrollViewScheme:)
+                                                 name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(handleKeyboardWillHideUsingResizeScrollViewScheme:)
+                                                 name:UIKeyboardWillHideNotification object:nil];    
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(keyboardDidHide:)
+//                                                 name:UIKeyboardDidHideNotification object:nil];
+}
+
+
+#pragma mark -
 #pragma mark View Lifecycle
 
 - (void)viewDidLoad
@@ -303,6 +386,9 @@
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 420.0);
     
+    // Register for keyboard events
+    [self registerForKeyboardNotifications];
+    
     // Set up the text view
     textView_.delegate = self;
     [self styleTextView];
@@ -343,12 +429,10 @@
     [super viewDidAppear:animated];
 }
 
-// TODO: extract methods
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    [textView_ resignFirstResponder];
-    [[NSUserDefaults standardUserDefaults] setObject:page_.pageId forKey:@"lastPageId"];
+    [self saveEditedPageText];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -404,7 +488,7 @@
 
 - (UIColor *)loupeFillColor
 {
-    return self.view.backgroundColor;
+    return textView_.backgroundView.backgroundColor;
 }
 
 #pragma mark -
