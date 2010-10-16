@@ -88,8 +88,8 @@
 {
     // HACK: force page view controller to save contents until I figure out what condition causes the page view not
     // to receive end text editing messages leading to a page text save
-    KBCLogDebug(@"forcing page view controller to save edited page text");
-    [pageViewController_ saveEditedPageText];
+//    KBCLogDebug(@"forcing page view controller to save edited page text");
+//    [pageViewController_ saveEditedPageText];
     
     // Save changes in the application's managed object context before the application terminates
     if (managedObjectContext_ != nil)

@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "KobaUI.h"
 
@@ -8,6 +8,7 @@
 @class NKTHandle;
 @class NKTHighlightRegion;
 @class NKTLine;
+@class NKTSelectedTextRegion;
 @class NKTTextPosition;
 @class NKTTextRange;
 
@@ -25,7 +26,7 @@
     BOOL selectedTextRegionVisible_;
     BOOL markedTextRegionVisible_;
     NKTCaret *caret_;
-    NKTHighlightRegion *selectedTextRegion_;
+    NKTSelectedTextRegion *selectedTextRegion_;
     NKTHighlightRegion *markedTextRegion_;
     NKTHandle *backwardHandle_;
     NKTHandle *forwardHandle_;
@@ -56,8 +57,6 @@
 
 #pragma mark -
 
-//--------------------------------------------------------------------------------------------------
-
 // NKTSelectionDisplayControllerDelegate
 @protocol NKTSelectionDisplayControllerDelegate <NSObject>
 
@@ -71,6 +70,8 @@
 
 - (CGRect)caretRectForTextPosition:(NKTTextPosition *)textPosition
           applyInputTextAttributes:(BOOL)applyTextInputAttributes;
+- (CGRect)firstRectForTextRange:(UITextRange *)textRange;
+- (CGRect)lastRectForTextRange:(UITextRange *)textRange;
 - (NSArray *)rectsForTextRange:(UITextRange *)textRange;
 
 #pragma mark Managing Selection Views

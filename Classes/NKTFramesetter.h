@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "KobaUI.h"
 #import "KobaText.h"
@@ -50,7 +50,9 @@
 - (NKTTextPosition *)closestTextPositionForCaretToPoint:(CGPoint)point;
 - (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition;
 - (CGPoint)baselineOriginForCharAtTextPosition:(NKTTextPosition *)textPosition;
-- (NSArray *)rectsForTextRange:(NKTTextRange *)textRange;
+
+- (CGRect)firstRectForTextRange:(NKTTextRange *)textRange;
+- (CGRect)lastRectForTextRange:(NKTTextRange *)textRange;
 - (NSArray *)rectsForTextRange:(NKTTextRange *)textRange transform:(CGAffineTransform)transform;
 
 #pragma mark Drawing

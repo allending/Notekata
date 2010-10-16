@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "NKTTextRange.h"
 #import "KobaText.h"
@@ -8,70 +8,41 @@
 
 @implementation NKTTextRange
 
-@synthesize range = range_;
-@synthesize affinity = affinity_;
-
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Initializing
 
-- (id)initWithRange:(NSRange)range
-{
-    return [self initWithRange:range affinity:UITextStorageDirectionForward];
-}
-
-- (id)initWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity
+- (id)initWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition
 {
     if ((self = [super init]))
     {
-        if (range.location == NSNotFound)
+        if ([textPosition compare:otherTextPosition] == NSOrderedAscending)
         {
-            KBCLogWarning(@"location is NSNotFound, returning nil");
-            [self release];
-            return nil;
+            startTextPosition_ = [textPosition retain];
+            endTextPosition_ = [otherTextPosition retain];
         }
-        
-        range_ = range;
-        affinity_ = affinity;
+        else
+        {
+            startTextPosition_ = [otherTextPosition retain];
+            endTextPosition_ = [textPosition retain];
+        }
     }
     
     return self;
 }
 
-+ (id)textRangeWithRange:(NSRange)range
++ (id)textRangeWithTextPosition:(NKTTextPosition *)textPosition textPosition:(NKTTextPosition *)otherTextPosition
 {
-    return [[[self alloc] initWithRange:range] autorelease];
-}
-
-+ (id)textRangeWithRange:(NSRange)range affinity:(UITextStorageDirection)affinity
-{
-    return [[[self alloc] initWithRange:range affinity:affinity] autorelease];
-}
-
-+ (NKTTextRange *)textRangeWithTextPosition:(NKTTextPosition *)firstTextPosition
-                               textPosition:(NKTTextPosition *)secondTextPosition
-{
-    if ([firstTextPosition compare:secondTextPosition] == NSOrderedAscending)
-    {
-        NSRange range = NSMakeRange(firstTextPosition.location,
-                                    secondTextPosition.location - firstTextPosition.location);
-        return [NKTTextRange textRangeWithRange:range affinity:firstTextPosition.affinity];
-    }
-    else
-    {
-        NSRange range = NSMakeRange(secondTextPosition.location,
-                                    firstTextPosition.location - secondTextPosition.location);
-        return [NKTTextRange textRangeWithRange:range affinity:secondTextPosition.affinity];
-    }
+    return [[[self alloc] initWithTextPosition:textPosition textPosition:otherTextPosition] autorelease];
 }
 
 - (void)dealloc
 {
+    [startTextPosition_ release];
+    [endTextPosition_ release];
     [super dealloc];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Copying
 
 - (id)copyWithZone:(NSZone *)zone
@@ -79,146 +50,77 @@
     return [self retain];
 }
 
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Accessing the Range
-
-- (NSUInteger)location
-{
-    return range_.location;
-}
-
-- (NSUInteger)length
-{
-    return range_.length;
-}
-
-//--------------------------------------------------------------------------------------------------
-
 #pragma mark Defining Ranges of Text
 
 - (NKTTextPosition *)start
 {
-    return [NKTTextPosition textPositionWithLocation:range_.location affinity:affinity_];
+    return startTextPosition_;
 }
 
 - (NKTTextPosition *)end
 {
-    return [NKTTextPosition textPositionWithLocation:NSMaxRange(range_) affinity:affinity_];
+    return endTextPosition_;
 }
 
 - (BOOL)isEmpty
 {
-    return range_.length == 0;
+    return startTextPosition_.location == endTextPosition_.location;
 }
 
-//--------------------------------------------------------------------------------------------------
+#pragma mark -
+#pragma mark Accessing the Range
 
+- (NSRange)nsRange
+{
+    return NSMakeRange(startTextPosition_.location, endTextPosition_.location - startTextPosition_.location);
+}
+
+- (CFRange)cfRange
+{
+    return CFRangeMake(startTextPosition_.location, endTextPosition_.location - startTextPosition_.location);
+}
+
+- (NSUInteger)location
+{
+    return [self nsRange].location;
+}
+
+- (NSUInteger)length
+{
+    return [self nsRange].length;
+}
+
+#pragma mark -
 #pragma mark Checking for Text Position Containment
 
-- (BOOL)enclosesTextPosition:(NKTTextPosition *)textPosition
+- (BOOL)containsTextPosition:(NKTTextPosition *)textPosition
 {
-    if (textPosition.affinity == UITextStorageDirectionForward)
-    {
-        return NSLocationInRange(textPosition.location, range_);
-    }
-    else
-    {
-        return NSLocationInRange(textPosition.location, range_) || (textPosition.location == NSMaxRange(range_));
-    }
+    return [textPosition compare:startTextPosition_] != NSOrderedAscending &&
+           [textPosition compare:endTextPosition_] == NSOrderedAscending;
 }
 
-//--------------------------------------------------------------------------------------------------
+- (BOOL)containsTextPositionIgnoringAffinity:(NKTTextPosition *)textPosition
+{
+    return [textPosition compareIgnoringAffinity:startTextPosition_] != NSOrderedAscending &&
+           [textPosition compareIgnoringAffinity:endTextPosition_] == NSOrderedAscending;
+}
 
 #pragma mark Creating Text Ranges
 
-- (NKTTextRange *)textRangeByGrowingLeft
+- (NKTTextRange *)textRangeByApplyingStartOffset:(NSUInteger)offset
 {
-    NSRange range = range_;
-    
-    if (range.location > 0)
-    {
-        --range.location;
-        ++range.length;
-    }
-    
-    return [[self class] textRangeWithRange:range];
+    NKTTextPosition *newStartTextPosition = [startTextPosition_ textPositionByApplyingOffset:offset];
+    return [NKTTextRange textRangeWithTextPosition:newStartTextPosition textPosition:endTextPosition_];
 }
 
-- (NKTTextRange *)textRangeByGrowingRight
+- (NKTTextRange *)textRangeByApplyingEndOffset:(NSUInteger)offset
 {
-    NSRange range = NSMakeRange(range_.location, range_.length + 1);
-    return [[self class] textRangeWithRange:range];
+    NKTTextPosition *newEndTextPosition = [endTextPosition_ textPositionByApplyingOffset:offset];
+    return [NKTTextRange textRangeWithTextPosition:startTextPosition_ textPosition:newEndTextPosition];
 }
 
-- (NKTTextRange *)textRangeByChangingLocation:(NSUInteger)location
-{
-    NSRange range = NSMakeRange(location, range_.length);
-    return [[self class] textRangeWithRange:range];
-}
-
-- (NKTTextRange *)textRangeByChangingLength:(NSUInteger)length
-{
-    NSRange range = NSMakeRange(range_.location, length);
-    return [[self class] textRangeWithRange:range];
-}
-
-- (NKTTextRange *)textRangeByClippingUntilTextPosition:(NKTTextPosition *)textPosition
-{
-    if (self.empty && ![self isEqualToTextPosition:textPosition])
-    {
-        KBCLogWarning(@"range %@ is empty and is not equal to text position %@, returning nil", self, textPosition);
-        return nil;
-    }
-    
-    if (!NSLocationInRange(textPosition.location, range_))
-    {
-        KBCLogWarning(@"text position %d is not located in non-empty range %@", textPosition, self);
-    }
-    
-    NSRange range = NSMakeRange(range_.location, textPosition.location - range_.location);
-    return [NKTTextRange textRangeWithRange:range];
-}
-
-- (NKTTextRange *)textRangeByClippingFromTextPosition:(NKTTextPosition *)textPosition
-{
-    if (self.empty && ![self isEqualToTextPosition:textPosition])
-    {
-        KBCLogWarning(@"range %@ is empty and is not equal to text position %@, returning nil", self, textPosition);
-        return nil;
-    }
-    
-    if (!NSLocationInRange(textPosition.location, range_))
-    {
-        KBCLogWarning(@"text position %d is not located in non-empty range %@", textPosition, self);
-    }
-    
-    NSRange range = NSMakeRange(textPosition.location, NSMaxRange(range_) -  textPosition.location);
-    return [NKTTextRange textRangeWithRange:range];
-}
-
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Comparing Text Ranges
-
-- (NKTTextRangeRelation)relationToTextRange:(NKTTextRange *)textRange
-{
-    if (NSMaxRange(range_) <= textRange.start.location)
-    {
-        return NKTTextRangeRelationBefore;
-    }
-    else if (range_.location >= textRange.start.location &&
-             range_.location < textRange.end.location)
-    {
-        return NKTTextRangeRelationOverlapping;
-    }
-    else
-    {
-        return NKTTextRangeRelationAfter;
-    }
-}
-
-// TODO: take affinity into account?
 
 - (BOOL)isEqual:(id)object
 {
@@ -237,35 +139,21 @@
 }
 
 - (BOOL)isEqualToTextRange:(NKTTextRange *)textRange
-{
-    if (textRange == nil)
-    {
-        return NO;
-    }
-    
-    return NSEqualRanges(range_, textRange.range);
+{   
+    return [startTextPosition_ isEqual:textRange.start] && [endTextPosition_ isEqual:textRange.end];
 }
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
 {
-    if (textPosition == nil)
-    {
-        return NO;
-    }
-    
-    return self.empty && range_.location == textPosition.location;
+    return [startTextPosition_ isEqual:textPosition] && [endTextPosition_ isEqual:textPosition];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Debugging
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%@ (%@, %@)",
-                                       [self class],
-                                       NSStringFromRange(range_),
-                                       KBTStringFromUITextDirection(affinity_)];
+    return [NSString stringWithFormat:@"%@ (%@ %@)", [self class], startTextPosition_, endTextPosition_];
 }
 
 @end

@@ -225,7 +225,7 @@
         direction == UITextLayoutDirectionRight ||
         direction == UITextLayoutDirectionDown)
     {
-        return [textPosition isEqualToTextPosition:[lineTextRange.end previousTextPosition]];
+        return [textPosition isEqualToTextPosition:[lineTextRange.end textPositionByApplyingOffset:-1]];
     }
     else
     {
@@ -368,7 +368,7 @@
         direction == UITextLayoutDirectionRight ||
         direction == UITextLayoutDirectionDown)
     {
-        return ![textPosition isEqualToTextPosition:[lineTextRange.end previousTextPosition]];
+        return ![textPosition isEqualToTextPosition:[lineTextRange.end textPositionByApplyingOffset:-1]];
     }
     else
     {
@@ -542,7 +542,7 @@
             return textPosition;
         }
         
-        NKTTextPosition *oneBeforeEnd = [lineTextRange.end previousTextPosition];
+        NKTTextPosition *oneBeforeEnd = [lineTextRange.end textPositionByApplyingOffset:-1];
         
         if ([textPosition isEqualToTextPosition:oneBeforeEnd])
         {
@@ -600,7 +600,7 @@
         
         if ([newlines characterIsMember:theChar])
         {
-            return [textPosition nextTextPosition];
+            return [textPosition textPositionByApplyingOffset:+1];
         }
         else
         {
@@ -630,7 +630,7 @@
         
         if ([newlines characterIsMember:previousChar])
         {
-            return [textPosition previousTextPosition];
+            return [textPosition textPositionByApplyingOffset:-1];
         }
         else
         {

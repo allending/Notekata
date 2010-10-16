@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "NKTTextPosition.h"
 #import "KobaText.h"
@@ -11,8 +11,7 @@
 @synthesize location = location_;
 @synthesize affinity = affinity_;
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Initializing
 
 - (id)initWithLocation:(NSUInteger)location
@@ -48,24 +47,8 @@
     return [[[self alloc] initWithLocation:location affinity:affinity] autorelease];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Creating Text Positions
-
-- (NKTTextPosition *)previousTextPosition
-{
-    if (location_ == 0)
-    {
-        return nil;
-    }
-    
-    return [[self class] textPositionWithLocation:(location_ - 1)];
-}
-
-- (NKTTextPosition *)nextTextPosition
-{
-    return [[self class] textPositionWithLocation:(location_ + 1)];
-}
 
 - (NKTTextPosition *)textPositionByApplyingOffset:(NSInteger)offset
 {
@@ -80,23 +63,46 @@
         return nil;
     }
     
-    return [[self class] textPositionWithLocation:(NSUInteger)newLocation];
+    return [[self class] textPositionWithLocation:(NSUInteger)newLocation affinity:affinity_];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Creating Text Ranges
 
 - (NKTTextRange *)textRange
 {
-    return [NKTTextRange textRangeWithRange:NSMakeRange(location_, 0) affinity:affinity_];
+    return [NKTTextRange textRangeWithTextPosition:self textPosition:self];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Comparing Text Posiitons
 
 - (NSComparisonResult)compare:(NKTTextPosition *)textPosition
+{
+    if (location_ < textPosition.location)
+    {
+        return NSOrderedAscending;
+    }
+    else if (location_ > textPosition.location)
+    {
+        return NSOrderedDescending;
+    }
+    
+    if (affinity_ == UITextStorageDirectionBackward && textPosition.affinity == UITextStorageDirectionForward)
+    {
+        return NSOrderedAscending;
+    }
+    else if (affinity_ == UITextStorageDirectionForward && textPosition.affinity == UITextStorageDirectionBackward)
+    {
+        return NSOrderedDescending;
+    }
+    else
+    {
+        return NSOrderedSame;
+    }
+}
+
+- (NSComparisonResult)compareIgnoringAffinity:(NKTTextPosition *)textPosition
 {
     if (location_ < textPosition.location)
     {
@@ -112,35 +118,37 @@
     }
 }
 
-- (BOOL)isBeforeTextPosition:(NKTTextPosition *)textPosition
-{
-    return [self compare:textPosition] == NSOrderedAscending;
-}
-
-- (BOOL)isAfterTextPosition:(NKTTextPosition *)textPosition
-{
-    return [self compare:textPosition] == NSOrderedDescending;
-}
-
-// TODO: take affinity into account?
-
 - (BOOL)isEqual:(id)object
 {
-    if ([object isKindOfClass:[NKTTextPosition class]])
+    if (![object isKindOfClass:[NKTTextPosition class]])
     {
-        return [self isEqualToTextPosition:object];
+        return NO;
     }
     
-    return NO;
+    return [self isEqualToTextPosition:object];
 }
 
 - (BOOL)isEqualToTextPosition:(NKTTextPosition *)textPosition
-{    
-    return [self compare:textPosition] == NSOrderedSame;
+{
+    if (textPosition == nil)
+    {
+        return NO;
+    }
+    
+    return location_ == textPosition.location && affinity_ == textPosition.affinity;
 }
 
-//--------------------------------------------------------------------------------------------------
+- (BOOL)isEqualToTextPositionIgnoringAffinity:(NKTTextPosition *)textPosition
+{
+    if (textPosition == nil)
+    {
+        return NO;
+    }
+    
+    return location_ == textPosition.location;
+}
 
+#pragma mark -
 #pragma mark Debugging
 
 - (NSString *)description

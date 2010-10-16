@@ -1,11 +1,12 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "NKTSelectionDisplayController.h"
 #import "NKTCaret.h"
 #import "NKTHandle.h"
 #import "NKTHighlightRegion.h"
+#import "NKTSelectedTextRegion.h"
 #import "NKTTextRange.h"
 
 @interface NKTSelectionDisplayController()
@@ -13,7 +14,7 @@
 #pragma mark Managing Selection Elements
 
 @property (nonatomic, readonly) NKTCaret *caret;
-@property (nonatomic, readonly) NKTHighlightRegion *selectedTextRegion;
+@property (nonatomic, readonly) NKTSelectedTextRegion *selectedTextRegion;
 @property (nonatomic, readonly) NKTHighlightRegion *markedTextRegion;
 
 #pragma mark Updating Selection Elements
@@ -26,8 +27,6 @@
 
 #pragma mark -
 
-//--------------------------------------------------------------------------------------------------
-
 @implementation NKTSelectionDisplayController
 
 @synthesize delegate = delegate_;
@@ -35,8 +34,7 @@
 @synthesize selectedTextRegionVisible = selectedTextRegionVisible_;
 @synthesize markedTextRegionVisible = markedTextRegionVisible_;
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Initializing
 
 - (id)init
@@ -59,8 +57,7 @@
     [super dealloc];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Setting the Delegate
 
 - (void)setDelegate:(id <NKTSelectionDisplayControllerDelegate>)delegate
@@ -69,8 +66,7 @@
     [self updateSelectionDisplay];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Managing Selection Element Views
 
 - (NKTCaret *)caret
@@ -85,12 +81,11 @@
     return caret_;
 }
 
-- (NKTHighlightRegion *)selectedTextRegion
+- (NKTSelectedTextRegion *)selectedTextRegion
 {
     if (selectedTextRegion_ == nil)
     {
-        selectedTextRegion_ = [[NKTHighlightRegion alloc] init];
-        selectedTextRegion_.coalescesRects = YES;
+        selectedTextRegion_ = [[NKTSelectedTextRegion alloc] init];
         selectedTextRegion_.strokesRects = NO;
         selectedTextRegion_.fillColor = [UIColor colorWithRed:0.25 green:0.45 blue:0.9 alpha:0.3];
         selectedTextRegion_.hidden = !selectedTextRegionVisible_;
@@ -136,20 +131,7 @@
     return forwardHandle_;
 }
 
-- (void)handleBackwardHandleDragged:(UIGestureRecognizer *)gestureRecognizer
-{
-    
-    
-    // [delegate backOfTextRangeMovedToPoint:point]
-}
-
-- (void)handleForwardHandleDragged:(UIGestureRecognizer *)gestureRecognizer
-{
-    // [delegate frontOfTextRangeMovedToPoint:point]
-}
-
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Controlling Selection Element Display
 
 - (void)setCaretVisible:(BOOL)caretVisible
@@ -185,8 +167,7 @@
     [self updateMarkedTextRegion];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Updating Selection Elements
 
 - (void)updateSelectionDisplay
@@ -203,13 +184,15 @@
     
     if (caretVisible_ && gestureTextRange != nil && gestureTextRange.empty)
     {
-        self.caret.frame = [delegate_ caretRectForTextPosition:gestureTextRange.start applyInputTextAttributes:NO];
+        CGRect caretRect = [delegate_ caretRectForTextPosition:gestureTextRange.start applyInputTextAttributes:NO];
+        self.caret.frame = caretRect;
         self.caret.blinkingEnabled = NO;
         self.caret.hidden = NO;
     }
     else if (caretVisible_ && gestureTextRange == nil && selectedTextRange != nil && selectedTextRange.empty)
     {
-        self.caret.frame = [delegate_ caretRectForTextPosition:selectedTextRange.start applyInputTextAttributes:YES];
+        CGRect caretRect = [delegate_ caretRectForTextPosition:selectedTextRange.start applyInputTextAttributes:YES];
+        self.caret.frame = caretRect;
         self.caret.blinkingEnabled = YES;
         [self.caret restartBlinking];
         self.caret.hidden = NO;
@@ -220,63 +203,44 @@
     }
 }
 
+static const CGFloat HandleRectWidth = 2.0;
+
 - (void)updateSelectedTextRegion
-{
-    NKTTextRange *gestureTextRange = delegate_.gestureTextRange;
-    NKTTextRange *selectedTextRange = delegate_.selectedTextRange;
+{    
+    if (selectedTextRegionVisible_)
+    {
+        NKTTextRange *gestureTextRange = delegate_.gestureTextRange;
+        NKTTextRange *selectedTextRange = delegate_.selectedTextRange;
+        NKTTextRange *targetTextRange = gestureTextRange != nil ? gestureTextRange : selectedTextRange;
+        
+        if (targetTextRange != nil && !targetTextRange.empty)
+        {
+            // TODO: make sure delegate must return valid rects
+            CGRect firstRect = [delegate_ firstRectForTextRange:targetTextRange];
+            CGRect lastRect = [delegate_ lastRectForTextRange:targetTextRange];
+            
+            self.selectedTextRegion.firstRect = firstRect;
+            self.selectedTextRegion.lastRect = lastRect;
+            self.selectedTextRegion.hidden = NO;
+            
+            CGRect backwardHandleRect = firstRect;
+            backwardHandleRect.origin.x -= HandleRectWidth;
+            backwardHandleRect.size.width = HandleRectWidth;
+            self.backwardHandle.frame = backwardHandleRect;
+            self.backwardHandle.hidden = NO;
+            
+            CGRect forwardHandleRect = lastRect;
+            forwardHandleRect.origin.x = CGRectGetMaxX(forwardHandleRect);
+            forwardHandleRect.size.width = HandleRectWidth;
+            self.forwardHandle.frame = forwardHandleRect;
+            self.forwardHandle.hidden = NO;
+            return;
+        }
+    }
     
-    if (selectedTextRegionVisible_ && gestureTextRange != nil && !gestureTextRange.empty)
-    {
-        NSArray *rects = [delegate_ rectsForTextRange:gestureTextRange];
-        self.selectedTextRegion.rects = rects;
-        self.selectedTextRegion.hidden = NO;
-        
-        // TODO: Cleanup
-        if ([rects count] > 0)
-        {
-            CGRect backwardHandleRect = [[rects objectAtIndex:0] CGRectValue];
-            backwardHandleRect.origin.x -= 2.0;
-            backwardHandleRect.size.width = 2.0;
-            self.backwardHandle.frame = backwardHandleRect;
-            self.backwardHandle.hidden = NO;
-            
-            CGRect forwardHandleRect = [[rects objectAtIndex:[rects count] - 1] CGRectValue];
-            forwardHandleRect.origin.x = CGRectGetMaxX(forwardHandleRect) - 3.0;
-            forwardHandleRect.origin.x += 2.0;
-            forwardHandleRect.size.width = 2.0;
-            self.forwardHandle.frame = forwardHandleRect;
-            self.forwardHandle.hidden = NO;
-        }
-    }
-    else if (selectedTextRegionVisible_ && gestureTextRange == nil && selectedTextRange != nil && !selectedTextRange.empty)
-    {
-        NSArray *rects = [delegate_ rectsForTextRange:selectedTextRange];
-        self.selectedTextRegion.rects = rects;
-        self.selectedTextRegion.hidden = NO;
-        
-        // TODO: cleanup
-        if ([rects count] > 0)
-        {
-            CGRect backwardHandleRect = [[rects objectAtIndex:0] CGRectValue];
-            backwardHandleRect.origin.x -= 2.0;
-            backwardHandleRect.size.width = 2.0;
-            self.backwardHandle.frame = backwardHandleRect;
-            self.backwardHandle.hidden = NO;
-            
-            CGRect forwardHandleRect = [[rects objectAtIndex:[rects count] - 1] CGRectValue];
-            forwardHandleRect.origin.x = CGRectGetMaxX(forwardHandleRect) - 3.0;
-            forwardHandleRect.origin.x += 2.0;
-            forwardHandleRect.size.width = 2.0;
-            self.forwardHandle.frame = forwardHandleRect;
-            self.forwardHandle.hidden = NO;
-        }
-    }
-    else
-    {
-        self.selectedTextRegion.hidden = YES;
-        self.backwardHandle.hidden = YES;
-        self.forwardHandle.hidden = YES;
-    }
+    self.selectedTextRegion.hidden = YES;
+    self.backwardHandle.hidden = YES;
+    self.forwardHandle.hidden = YES;
 }
 
 - (void)updateMarkedTextRegion

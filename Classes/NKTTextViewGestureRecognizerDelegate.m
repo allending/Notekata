@@ -48,7 +48,7 @@
         return ![textView_ isFirstResponder];
     }
     // Double tap and drag gesture only allowed when there is no marked text
-    else if (gestureRecognizer == textView_.doubleTapAndDragGestureRecognizer)
+    else if (gestureRecognizer == textView_.doubleTapDragGestureRecognizer)
     {
         NKTTextRange *markedTextRange = (NKTTextRange *)textView_.markedTextRange;
         return (markedTextRange == nil || markedTextRange.empty);

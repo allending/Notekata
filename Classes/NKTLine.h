@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "KobaUI.h"
 #import "KobaText.h"
@@ -17,11 +17,12 @@
     id <NKTLineDelegate> delegate_;
     NSUInteger index_;
     NSAttributedString *text_;
-    NSRange range_;
+    NKTTextRange *textRange_;
     CGPoint baselineOrigin_;
     CGFloat width_;
     CGFloat height_;
     CTLineRef line_;
+    BOOL lastLine_;
 }
 
 #pragma mark Initializing
@@ -29,10 +30,11 @@
 - (id)initWithDelegate:(id <NKTLineDelegate>)delegate
                  index:(NSUInteger)index
                   text:(NSAttributedString *)text
-                 range:(NSRange)range
+             textRange:(NKTTextRange *)textRange
         baselineOrigin:(CGPoint)origin
                  width:(CGFloat)width
-                height:(CGFloat)height;
+                height:(CGFloat)height
+              lastLine:(BOOL)lastLine;
 
 #pragma mark Accessing the Index
 
@@ -40,17 +42,13 @@
 
 #pragma mark Accessing the Text Range
 
-@property (nonatomic, readonly) NSRange range;
 @property (nonatomic, readonly) NKTTextRange *textRange;
 
 #pragma mark Line Geometry
 
 @property (nonatomic, readonly) CGPoint baselineOrigin;
-@property (nonatomic, readonly) CGRect rect;
 
-- (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition;
-- (CGRect)rectFromTextPosition:(NKTTextPosition *)textPosition;
-- (CGRect)rectToTextPosition:(NKTTextPosition *)textPosition;
+- (CGRect)rectForTextRange:(NKTTextRange *)textRange;
 
 #pragma mark Getting Line Typographic Information
 
@@ -65,8 +63,9 @@
 
 #pragma mark Hit-Testing
 
-// The line expects the point to be in the space of its parent.
+// The point needs to be in the space of the line's parent.
 - (NKTTextPosition *)closestTextPositionForCaretToPoint:(CGPoint)point;
+- (BOOL)containsCaretAtTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Drawing
 
@@ -75,8 +74,6 @@
 @end
 
 #pragma mark -
-
-//--------------------------------------------------------------------------------------------------
 
 // NKTLineDelegate
 @protocol NKTLineDelegate

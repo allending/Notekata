@@ -185,7 +185,7 @@
 
 - (void)saveEditedPageText
 {
-    KBCLogDebug(@"saving edited text");
+    KBCLogDebug(@"***********************************************\nsaving edited text");
     
     if (![self isViewLoaded])
     {
@@ -195,6 +195,8 @@
     
     // Set the text of the page from the text view's text and save the page
     NSAttributedString *text = textView_.text;
+    
+    KBCLogDebug([textView_.text string]);
     
     if (text == nil)
     {
@@ -208,9 +210,11 @@
     if (![page_.managedObjectContext save:&error])
     {
         // TODO: FIX and LOG
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
+    
+    KBCLogDebug(@"***********************************************\nsaved edited text");
 }
 
 #pragma mark -

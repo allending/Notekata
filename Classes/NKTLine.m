@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #define KBC_LOGGING_DISABLE_DEBUG_OUTPUT 1
 
@@ -18,35 +18,34 @@
 
 #pragma mark -
 
-//--------------------------------------------------------------------------------------------------
-
 @implementation NKTLine
 
 @synthesize index = index_;
-@synthesize range = range_;
+@synthesize textRange = textRange_;
 @synthesize baselineOrigin = baselineOrigin_;
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Initializing
 
 - (id)initWithDelegate:(id <NKTLineDelegate>)delegate
                  index:(NSUInteger)index
                   text:(NSAttributedString *)text
-                 range:(NSRange)range
-                baselineOrigin:(CGPoint)origin
+             textRange:(NKTTextRange *)textRange
+        baselineOrigin:(CGPoint)origin
                  width:(CGFloat)width
                 height:(CGFloat)height
+              lastLine:(BOOL)lastLine
 {
     if ((self = [super init]))
-    {
+    {        
         delegate_ = delegate;
         index_ = index;
         text_ = text;
-        range_ = range;
+        textRange_ = [textRange copy];
         baselineOrigin_ = origin;
         width_ = width;
         height_ = height;
+        lastLine_ = lastLine;
     }
     
     return self;
@@ -54,6 +53,8 @@
 
 - (void)dealloc
 {
+    [textRange_ release];
+    
     if (line_ != NULL)
     {
         CFRelease(line_);
@@ -62,86 +63,54 @@
     [super dealloc];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Accessing the Core Text Line
 
 - (CTLineRef)line
 {
-    if (line_ == NULL && (range_.length != 0))
+    if (line_ == NULL && !textRange_.empty)
     {
         KBCLogDebug(@"core text line created for %@", self);
         CTTypesetterRef typesetter = [delegate_ typesetter];
-        line_ = CTTypesetterCreateLine(typesetter, CFRangeFromNSRange(range_));
+        line_ = CTTypesetterCreateLine(typesetter, textRange_.cfRange);
     }
     
     return line_;
 }
 
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Accessing the Text Range
-
-- (NKTTextRange *)textRange
-{
-    return [NKTTextRange textRangeWithRange:range_ affinity:UITextStorageDirectionForward];
-}
-
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Line Geometry
 
-- (CGRect)rect
+- (CGRect)rectForTextRange:(NKTTextRange *)textRange
 {
-    if (self.textRange.empty)
+    if (textRange_.empty ||
+        textRange.empty ||
+        [textRange_.start compare:textRange.end] != NSOrderedAscending ||
+        [textRange.start compare:textRange_.end] != NSOrderedAscending)
     {
         return CGRectNull;
     }
     
-    return CGRectMake(baselineOrigin_.x, baselineOrigin_.y - self.ascent - 2.0, width_, self.ascent + self.descent + 4.0);
-}
-
-- (CGRect)rectFromTextPosition:(NKTTextPosition *)fromTextPosition toTextPosition:(NKTTextPosition *)toTextPosition
-{
-    CGRect rect = self.rect;
-    CGFloat fromCharOffset = [self offsetForCharAtTextPosition:fromTextPosition];
-    CGFloat toCharOffset = [self offsetForCharAtTextPosition:toTextPosition];
+    CGFloat backwardOffset = [self offsetForCharAtTextPosition:textRange.start];
+    CGFloat forwardOffset = 0.0;
     
-    if (toCharOffset == 0.0)
+    if ([textRange.end compare:textRange_.end] != NSOrderedAscending && !lastLine_)
     {
-        return CGRectNull;
+        forwardOffset = width_;
+    }
+    else
+    {
+        forwardOffset = [self offsetForCharAtTextPosition:textRange.end];
     }
     
-    rect.origin.x += fromCharOffset;
-    rect.size.width = toCharOffset - fromCharOffset;
-    return rect;
+    CGFloat rectWidth = forwardOffset - backwardOffset;
+    CGFloat topOffset = self.ascent != 0.0 ? self.ascent : height_;
+    CGFloat bottomOffset = self.descent;
+    CGFloat rectHeight = topOffset + bottomOffset;
+    return CGRectMake(backwardOffset, baselineOrigin_.y - topOffset, rectWidth, rectHeight);
 }
 
-- (CGRect)rectFromTextPosition:(NKTTextPosition *)textPosition
-{
-    CGRect rect = self.rect;
-    CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
-    rect.origin.x += charOffset;
-    rect.size.width -= charOffset;
-    return rect;
-}
-
-- (CGRect)rectToTextPosition:(NKTTextPosition *)textPosition
-{
-    CGRect rect = self.rect;
-    CGFloat charOffset = [self offsetForCharAtTextPosition:textPosition];
-    
-    if (charOffset == 0.0)
-    {
-        return CGRectNull;
-    }
-    
-    rect.size.width = charOffset;
-    return rect;
-}
-
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Getting Line Typographic Information
 
 - (CGFloat)ascent
@@ -165,13 +134,12 @@
     return leading;
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Getting Character Positions
 
 - (CGFloat)offsetForCharAtTextPosition:(NKTTextPosition *)textPosition
 {
-    if (range_.length == 0)
+    if (textRange_.empty)
     {
         return 0.0;
     }
@@ -186,28 +154,39 @@
     return CGPointMake(baselineOrigin_.x + charOffset, baselineOrigin_.y);
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Hit-Testing
 
 - (NKTTextPosition *)closestTextPositionForCaretToPoint:(CGPoint)point
 {
-    if (range_.length == 0)
+    //  If the text range is empty, return the text position with the proper affinity
+    if (textRange_.empty)
     {
-        return [NKTTextPosition textPositionWithLocation:range_.location affinity:UITextStorageDirectionForward];
+        if (point.x <= baselineOrigin_.x)
+        {
+            return textRange_.start;
+        }
+        else
+        {
+            return textRange_.end;
+        }
+
     }
     
-    CGPoint localPoint = CGPointMake(point.x - baselineOrigin_.x, point.y - baselineOrigin_.y);
+    // NOTE: y-coordinate ignored
+    CGPoint localPoint = CGPointMake(point.x - baselineOrigin_.x, 0.0);
     NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(self.line, localPoint);
     UITextStorageDirection affinity = UITextStorageDirectionForward;
     
-    if (charIndex == NSMaxRange(range_))
+    // When the index matches the end of the line's text range, we may not want to return the end of the line's text
+    // range depending on whether it is a newline or not
+    if (charIndex == textRange_.end.location)
     {
-        unichar lastChar = [[text_ string] characterAtIndex:charIndex - 1];
+        unichar lastCharOnLine = [[text_ string] characterAtIndex:charIndex - 1];
         NSCharacterSet *newlines = [NSCharacterSet newlineCharacterSet];
-    
-        // The caret should be placed before any newlines that break the line
-        if ([newlines characterIsMember:lastChar])
+        
+        // The caret should be placed before any newlines at the end of the line
+        if ([newlines characterIsMember:lastCharOnLine])
         {
             charIndex = charIndex - 1;
         }
@@ -220,8 +199,23 @@
     return [NKTTextPosition textPositionWithLocation:charIndex affinity:affinity];
 }
 
-//--------------------------------------------------------------------------------------------------
+- (BOOL)containsCaretAtTextPosition:(NKTTextPosition *)textPosition
+{
+    if ([self.textRange containsTextPosition:textPosition])
+    {
+        return YES;
+    }
+    else if (lastLine_ && [self.textRange.end isEqualToTextPositionIgnoringAffinity:textPosition])
+    {
+        return YES;
+    }
+    else
+    {
+        return NO;
+    }
+}
 
+#pragma mark -
 #pragma mark Drawing
 
 - (void)drawInContext:(CGContextRef)context
@@ -229,16 +223,12 @@
     CTLineDraw(self.line, context);
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Debugging
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%@ (%d, %@)",
-                                       [self class],
-                                       index_,
-                                       NSStringFromRange(range_)];
+    return [NSString stringWithFormat:@"%@ (%d, %@)", [self class], index_, textRange_];
 }
 
 @end

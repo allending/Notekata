@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "KobaUI.h"
 #import "NKTSelectionDisplayController.h"
@@ -68,7 +68,7 @@
     UITapGestureRecognizer *nonEditTapGestureRecognizer_;
     UITapGestureRecognizer *tapGestureRecognizer_;
     UILongPressGestureRecognizer *longPressGestureRecognizer_;
-    NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer_;
+    NKTDragGestureRecognizer *doubleTapDragGestureRecognizer_;
     NKTTextRange *initialDoubleTapTextRange_;
     NKTDragGestureRecognizer *backwardHandleGestureRecognizer_;
     NKTDragGestureRecognizer *forwardHandleGestureRecognizer_;
@@ -77,6 +77,12 @@
 #pragma mark Accessing the Text
 
 @property (nonatomic, copy) NSAttributedString *text;
+
+#pragma mark Styling Text
+
+@property (nonatomic, copy) NSDictionary *inputTextAttributes;
+
+- (void)styleTextRange:(UITextRange *)textRange withTarget:(id)target selector:(SEL)selector;
 
 #pragma mark Configuring the Background
 
@@ -93,32 +99,24 @@
 @property (nonatomic, retain) UIColor *verticalMarginColor;
 @property (nonatomic) CGFloat verticalMarginInset;
 
-#pragma mark Styling Text
+#pragma mark Scrolling
 
-@property (nonatomic, copy) NSDictionary *inputTextAttributes;
-
-- (void)styleTextRange:(UITextRange *)textRange withTarget:(id)target selector:(SEL)selector;
+- (void)scrollTextRangeToVisible:(UITextRange *)textRange animated:(BOOL)animated;
 
 #pragma mark Accessing Gesture Recognizers
 
 @property (nonatomic, readonly) UITapGestureRecognizer *nonEditTapGestureRecognizer;
 @property (nonatomic, readonly) UITapGestureRecognizer *tapGestureRecognizer;
 @property (nonatomic, readonly) UILongPressGestureRecognizer *longPressGestureRecognizer;
-@property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapAndDragGestureRecognizer;
+@property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapDragGestureRecognizer;
 
 #pragma mark Tokenizing
 
 - (NKTTextRange *)textRangeForLineContainingTextPosition:(UITextPosition *)textPosition;
 
-#pragma mark Scrolling
-
-- (void)scrollTextRangeToVisible:(UITextRange *)textRange animated:(BOOL)animated;
-
 @end
 
 #pragma mark -
-
-//--------------------------------------------------------------------------------------------------
 
 // NKTTextViewDelegate declares methods that allow clients to respond to messages from NKTTextView.
 @protocol NKTTextViewDelegate <UIScrollViewDelegate>

@@ -17,10 +17,12 @@ Controller
 
 Text View
 ---------
+[ ] Issue: Typesetting - line with spaces prefix, not all the way to end "    Yeah, so this is starting to be pretty freaking cool!" and enter newline issue.
 [ ] Issue: Correction prompt not getting right rects (untransformed)? - Can't reproduce
-[ ] Optimization: Shit load of tiling/untiling during startup
+[ ] Issue: keyboard movement wonky with new changes (see screenshot)
+[ ] Optimization: Shit load of tiling/untiling during startup?
 [ ] Design: Adjust drag handle gesture to use point just above or below actual gesture location
-[ ] Issue: Clamping does not actually work correctly with multipage bounds
+[ ] Issue: Clamping loupes does not actually work correctly with multipage bounds
 [ ] Issue: Dragging the handle slightly should not change line immediately
 [ ] Feature: Context menus w/ selection
 [ ] Feature: Cut copy paste
