@@ -247,7 +247,8 @@
         
         NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
                                                       inManagedObjectContext:managedObjectContext_];
-        page.text = [[NSAttributedString alloc] initWithString:@""];
+        page.textString = @"";
+        page.textStyleString = @""; 
         [notebook addPagesObject:page];
         
         error = nil;

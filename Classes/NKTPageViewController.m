@@ -185,26 +185,22 @@
 
 - (void)saveEditedPageText
 {
-    KBCLogDebug(@"***********************************************\nsaving edited text");
-    
     if (![self isViewLoaded])
     {
         KBCLogWarning(@"view is not loaded, ignoring");
         return;
     }
     
+    KBCLogDebug(@"***********************************************\nstart saving edited text");
+    
     // Set the text of the page from the text view's text and save the page
     NSAttributedString *text = textView_.text;
+    KBTAttributedStringIntermediate *intermediate = [[KBTAttributedStringIntermediate alloc] initWithAttributedString:text];
+    KBCLogDebug(@"text string:\n%@", [intermediate string]);
+    page_.textString = [intermediate string];
+    page_.textStyleString = [intermediate styleString];
+    [intermediate release];
     
-    KBCLogDebug([textView_.text string]);
-    
-    if (text == nil)
-    {
-        KBCLogWarning(@"page text is nil, ignoring");
-        return;
-    }
-    
-    page_.text = text;
     NSError *error = nil;
     
     if (![page_.managedObjectContext save:&error])
@@ -214,7 +210,7 @@
         abort();
     }
     
-    KBCLogDebug(@"***********************************************\nsaved edited text");
+    KBCLogDebug(@"***********************************************\nend saving edited text");
 }
 
 #pragma mark -
@@ -446,8 +442,10 @@
 
 - (void)updateModelViews
 {
+    KBTAttributedStringIntermediate *intermediate = [KBTAttributedStringIntermediate attributedStringIntermediateWithString:page_.textString
+                                                                                                                styleString:page_.textStyleString];
     // NOTE: needs to be in this order because the title label is read from the text view text
-    textView_.text = page_.text;
+    textView_.text = [intermediate attributedString];
     [self updateTitleLabel];
     [self updateNavigationButtonTitle];
 }

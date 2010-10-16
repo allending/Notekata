@@ -2,7 +2,7 @@
 //  NKTPage.m
 //  Notekata
 //
-//  Created by Allen Ding on 10/11/10.
+//  Created by Allen Ding on 10/16/10.
 //  Copyright 2010 Allen Ding. All rights reserved.
 //
 
@@ -13,8 +13,9 @@
 @implementation NKTPage 
 
 @dynamic pageNumber;
+@dynamic textString;
 @dynamic pageId;
-@dynamic text;
+@dynamic textStyleString;
 @dynamic notebook;
 
 @end

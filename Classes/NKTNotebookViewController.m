@@ -38,7 +38,7 @@
 
 #pragma mark Table View Data Source
 
-- (void)configureCell:(UITableViewCell *)cell withText:(NSAttributedString *)text;
+- (void)configureCell:(UITableViewCell *)cell withString:(NSString *)string;
 
 @end
 
@@ -175,7 +175,7 @@
             break;
             
         case NSFetchedResultsChangeUpdate:
-            [self configureCell:[self.tableView cellForRowAtIndexPath:indexPath] withText:page.text];
+            [self configureCell:[self.tableView cellForRowAtIndexPath:indexPath] withString:page.textString];
             break;
             
         case NSFetchedResultsChangeMove:
@@ -252,7 +252,7 @@
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     // TODO: refactor
     // Update cell with the live contents of the text view
-    [self configureCell:cell withText:textView.text];
+    [self configureCell:cell withString:[textView.text string]];
 }
 
 #pragma mark -
@@ -348,9 +348,9 @@
     return [sectionInfo numberOfObjects];
 }
 
-- (void)configureCell:(UITableViewCell *)cell withText:(NSAttributedString *)text
+- (void)configureCell:(UITableViewCell *)cell withString:(NSString *)string
 {
-    NSString *snippet = KUITrimmedSnippetFromString([text string], 50);
+    NSString *snippet = KUITrimmedSnippetFromString(string, 50);
     
     if ([snippet length] == 0)
     {
@@ -376,7 +376,7 @@
     }
     
     NKTPage *page = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    [self configureCell:cell withText:page.text];
+    [self configureCell:cell withString:page.textString];
     return cell;
 }
 

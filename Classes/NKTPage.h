@@ -2,7 +2,7 @@
 //  NKTPage.h
 //  Notekata
 //
-//  Created by Allen Ding on 10/11/10.
+//  Created by Allen Ding on 10/16/10.
 //  Copyright 2010 Allen Ding. All rights reserved.
 //
 
@@ -15,8 +15,12 @@
 }
 
 @property (nonatomic, retain) NSNumber * pageNumber;
+@property (nonatomic, retain) NSString * textString;
 @property (nonatomic, retain) NSNumber * pageId;
-@property (nonatomic, retain) id text;
+@property (nonatomic, retain) NSString * textStyleString;
 @property (nonatomic, retain) NKTNotebook * notebook;
 
 @end
+
+
+

@@ -13,22 +13,21 @@
 {
 @private
     NSString *string_;
-    NSMutableArray *styles_;
-    NSMutableArray *styleRanges_;
+    NSString *styleString_;
 }
 
 #pragma mark Initializing
 
-// Note that the attributed string is retained for efficiency, and should be truly non-mutable.
 - (id)initWithAttributedString:(NSAttributedString *)attributedString;
-- (id)initWithPortableRepresentation:(NSDictionary *)interchangeRepresentation;
+- (id)initWithString:(NSString *)string styleString:(NSString *)styleString;
 
 + (id)attributedStringIntermediateWithAttributedString:(NSAttributedString *)attributedString;
-+ (id)attributedStringIntermediateWithPortableRepresentation:(NSDictionary *)interchangeRepresentation;
++ (id)attributedStringIntermediateWithString:(NSString *)string styleString:(NSString *)styleString;
 
 #pragma mark Getting Representations
 
-- (NSDictionary *)portableRepresentation;
 - (NSAttributedString *)attributedString;
+- (NSString *)string;
+- (NSString *)styleString;
 
 @end

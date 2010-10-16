@@ -4,7 +4,6 @@
 
 #import <CoreText/CoreText.h>
 #import "KBTAttributedStringIntermediate.h"
-#import "KBTAttributedStringTransformer.h"
 #import "KBTFont.h"
 #import "KBTFontFamilyDescriptor.h"
 #import "KBTStyleDescriptor.h"

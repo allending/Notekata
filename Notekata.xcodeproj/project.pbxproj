@@ -14,8 +14,6 @@
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
 		9F0D0C811262D03F00348E1B /* NKTNotebook.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */; };
-		9F0D0DE11262E18000348E1B /* NKTPage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0DE01262E18000348E1B /* NKTPage.m */; };
-		9F0D0E271262E76300348E1B /* KBTAttributedStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0E261262E76300348E1B /* KBTAttributedStringTransformer.m */; };
 		9F0D0EB61263069A00348E1B /* CDataScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0E9E1263069A00348E1B /* CDataScanner.m */; };
 		9F0D0EB71263069A00348E1B /* CExtensibleJSONDataSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA11263069A00348E1B /* CExtensibleJSONDataSerializer.m */; };
 		9F0D0EB81263069A00348E1B /* CDataScanner_Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA41263069A00348E1B /* CDataScanner_Extensions.m */; };
@@ -54,6 +52,7 @@
 		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
 		9F6E4E4E1258E342005721FB /* KobaCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6E4E4D1258E342005721FB /* KobaCore.m */; };
 		9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */; };
+		9F78B29C1269DDC200234E02 /* NKTPage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F78B29B1269DDC200234E02 /* NKTPage.m */; };
 		9F7D2BA412585738006D23DD /* NKTFramesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F7D2BA312585738006D23DD /* NKTFramesetter.m */; };
 		9FA540FC122A56A30005323E /* NKTLoupe.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA540FB122A56A30005323E /* NKTLoupe.m */; };
 		9FA5410F122A59530005323E /* BandLoupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410A122A59530005323E /* BandLoupe.png */; };
@@ -107,10 +106,6 @@
 		9F0ACBA0124228750050CFAE /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
 		9F0D0C7E1262D03F00348E1B /* NKTNotebook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebook.h; sourceTree = "<group>"; };
 		9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebook.m; sourceTree = "<group>"; };
-		9F0D0DDF1262E18000348E1B /* NKTPage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPage.h; sourceTree = "<group>"; };
-		9F0D0DE01262E18000348E1B /* NKTPage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPage.m; sourceTree = "<group>"; };
-		9F0D0E251262E76300348E1B /* KBTAttributedStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTAttributedStringTransformer.h; sourceTree = "<group>"; };
-		9F0D0E261262E76300348E1B /* KBTAttributedStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTAttributedStringTransformer.m; sourceTree = "<group>"; };
 		9F0D0E9D1263069A00348E1B /* CDataScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner.h; sourceTree = "<group>"; };
 		9F0D0E9E1263069A00348E1B /* CDataScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner.m; sourceTree = "<group>"; };
 		9F0D0EA01263069A00348E1B /* CExtensibleJSONDataSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CExtensibleJSONDataSerializer.h; sourceTree = "<group>"; };
@@ -174,6 +169,8 @@
 		9F6E4E4D1258E342005721FB /* KobaCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KobaCore.m; sourceTree = "<group>"; };
 		9F70F9BE12545C0200F3025B /* NKTTextViewTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewTokenizer.h; sourceTree = "<group>"; };
 		9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewTokenizer.m; sourceTree = "<group>"; wrapsLines = 0; };
+		9F78B29A1269DDC200234E02 /* NKTPage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPage.h; sourceTree = "<group>"; };
+		9F78B29B1269DDC200234E02 /* NKTPage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPage.m; sourceTree = "<group>"; };
 		9F7D2BA212585738006D23DD /* NKTFramesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFramesetter.h; sourceTree = "<group>"; };
 		9F7D2BA312585738006D23DD /* NKTFramesetter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTFramesetter.m; sourceTree = "<group>"; };
 		9FA540FA122A56A30005323E /* NKTLoupe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTLoupe.h; sourceTree = "<group>"; };
@@ -416,8 +413,6 @@
 			children = (
 				9F0D0ED812630AB100348E1B /* KBTAttributedStringIntermediate.h */,
 				9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */,
-				9F0D0E251262E76300348E1B /* KBTAttributedStringTransformer.h */,
-				9F0D0E261262E76300348E1B /* KBTAttributedStringTransformer.m */,
 				9F0D11C81263595000348E1B /* KBTFont.h */,
 				9F0D11C91263595000348E1B /* KBTFont.m */,
 				9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */,
@@ -489,8 +484,8 @@
 			children = (
 				9F0D0C7E1262D03F00348E1B /* NKTNotebook.h */,
 				9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */,
-				9F0D0DDF1262E18000348E1B /* NKTPage.h */,
-				9F0D0DE01262E18000348E1B /* NKTPage.m */,
+				9F78B29A1269DDC200234E02 /* NKTPage.h */,
+				9F78B29B1269DDC200234E02 /* NKTPage.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -652,8 +647,6 @@
 				9F3D04951261C73A00AB9903 /* NKTRootViewController.m in Sources */,
 				9F3D08D012620AF200AB9903 /* NKTNotebookViewController.m in Sources */,
 				9F0D0C811262D03F00348E1B /* NKTNotebook.m in Sources */,
-				9F0D0DE11262E18000348E1B /* NKTPage.m in Sources */,
-				9F0D0E271262E76300348E1B /* KBTAttributedStringTransformer.m in Sources */,
 				9F0D0EB61263069A00348E1B /* CDataScanner.m in Sources */,
 				9F0D0EB71263069A00348E1B /* CExtensibleJSONDataSerializer.m in Sources */,
 				9F0D0EB81263069A00348E1B /* CDataScanner_Extensions.m in Sources */,
@@ -672,6 +665,7 @@
 				9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */,
 				9FFD84FB1264A34400CB082D /* KUIUtilities.m in Sources */,
 				9FC1D46C1267F34000443368 /* NKTSelectedTextRegion.m in Sources */,
+				9F78B29C1269DDC200234E02 /* NKTPage.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
