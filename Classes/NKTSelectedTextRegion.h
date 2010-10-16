@@ -10,10 +10,9 @@
 @private
     CGRect firstRect_;
     CGRect lastRect_;
-    BOOL fillsRects_;
-    BOOL strokesRects_;
-    UIColor *fillColor_;
-    UIColor *strokeColor_;
+    UIView *topFillView_;
+    UIView *middleFillView_;
+    UIView *bottomFillView_;
 }
 
 #pragma mark Accessing Rects
@@ -23,9 +22,6 @@
 
 #pragma mark Configuring the Style
 
-@property (nonatomic) BOOL fillsRects;
-@property (nonatomic) BOOL strokesRects;
 @property (nonatomic, retain) UIColor *fillColor;
-@property (nonatomic, retain) UIColor *strokeColor;
 
 @end

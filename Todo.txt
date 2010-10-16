@@ -17,7 +17,7 @@ Controller
 
 Text View
 ---------
-[ ] Issue: Typesetting - line with spaces prefix, not all the way to end "    Yeah, so this is starting to be pretty freaking cool!" and enter newline issue.
+[ ] Issue: Double tap drag should never select outside of line tapped
 [ ] Issue: Correction prompt not getting right rects (untransformed)? - Can't reproduce
 [ ] Issue: keyboard movement wonky with new changes (see screenshot)
 [ ] Optimization: Shit load of tiling/untiling during startup?
@@ -38,6 +38,8 @@ Text View
 
 Done
 ----
+[x] Issue: Caret placement fucked in this specific example A\nA\nA\n etc.
+[x] Issue: Typesetting - line with spaces prefix, not all the way to end "    Yeah, so this is starting to be pretty freaking cool!" and enter newline issue.
 
 Deferred
 --------

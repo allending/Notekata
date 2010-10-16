@@ -1217,7 +1217,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
-    NKTTextPosition *textPosition = [insertionTextRange.start textPositionByApplyingOffset:[text length]];
+    NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:insertionTextRange.start.location + [text length]
+                                                                     affinity:UITextStorageDirectionForward];
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
     [self setMarkedTextRange:nil notifyInputDelegate:NO];
     [selectionDisplayController_ updateSelectionDisplay];
@@ -1272,7 +1273,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
-    NKTTextPosition *textPosition = deletionTextRange.start;
+    NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:deletionTextRange.start.location
+                                                                     affinity:UITextStorageDirectionForward];
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:NO];
     [self setMarkedTextRange:nil notifyInputDelegate:NO];
     [selectionDisplayController_ updateSelectionDisplay];

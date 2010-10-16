@@ -86,8 +86,6 @@
     if (selectedTextRegion_ == nil)
     {
         selectedTextRegion_ = [[NKTSelectedTextRegion alloc] init];
-        selectedTextRegion_.strokesRects = NO;
-        selectedTextRegion_.fillColor = [UIColor colorWithRed:0.25 green:0.45 blue:0.9 alpha:0.3];
         selectedTextRegion_.hidden = !selectedTextRegionVisible_;
         [delegate_ addOverlayView:selectedTextRegion_];
     }
