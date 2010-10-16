@@ -244,11 +244,11 @@
     
     if (lineIndex < 0)
     {
-        return [NKTTextPosition textPositionWithLocation:0 affinity:UITextStorageDirectionForward];
+        lineIndex = 0;
     }
     else if (lineIndex >= self.numberOfLines)
     {
-        return [NKTTextPosition textPositionWithLocation:[text_ length] affinity:UITextStorageDirectionForward];
+        lineIndex = self.numberOfLines - 1;
     }
     
     NKTLine *line = [self.lines objectAtIndex:lineIndex];
@@ -258,7 +258,7 @@
 - (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition
 {
     NSUInteger minLineIndex = 0;
-    NSUInteger maxLineIndex = [self numberOfLines] - 1;
+    NSUInteger maxLineIndex = self.numberOfLines - 1;
     NSUInteger midLineIndex = 0;
     
     while (minLineIndex <= maxLineIndex)

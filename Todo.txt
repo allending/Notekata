@@ -8,7 +8,7 @@ General
 
 Model
 -----
-
+[ ] BIG Issue: Persistance problem still present, full diagnostic sweep required
 
 Controller
 ----------
@@ -38,13 +38,6 @@ Text View
 
 Done
 ----
-[x] Design: Figure out initial controller and their interactions
-[x] Design: Figure out an initial look
-[x] Feature: Store a single page and persist
-[x] Issue: tap out of provisional marked text and continue - uikeyinput needs to know about it
-[x] Issue: Empty text, range loupe
-[x] Issue: Loupes should appear soon after gesture begins
-[x] Issue: Handles - Use a gesture recognizer that recognizes immediately if hit, not just when moved
 
 Deferred
 --------

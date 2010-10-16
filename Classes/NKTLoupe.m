@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "NKTLoupe.h"
 #import <QuartzCore/QuartzCore.h>
@@ -12,8 +12,7 @@
 @synthesize zoomCenter = zoomCenter_;
 @synthesize fillColor = fillColor_;
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Initializing
 
 - (id)init
@@ -89,17 +88,27 @@
     [maskData_ release];
     [overlay_ release];
     
-    if (mask_)
+    if (mask_ != NULL)
     {
         CFRelease(mask_);
     }
     
     [fillColor_ release];
+    
+    if (bitmapContext_ != NULL)
+    {
+        CGContextRelease(bitmapContext_);
+    }
+    
+    if (bitmapData_ != NULL)
+    {
+        free(bitmapData_);
+    }
+    
     [super dealloc];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Anchoring
 
 - (void)setAnchor:(CGPoint)anchor
@@ -120,8 +129,7 @@
     [super setFrame:frame];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Zooming
 
 - (void)setZoomedView:(UIView *)zoomedView
@@ -147,8 +155,7 @@
     [self setNeedsDisplay];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Setting the Fill Color
 
 - (void)setFillColor:(UIColor *)fillColor
@@ -163,8 +170,7 @@
     [self setNeedsDisplay];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Displaying
 
 - (void)setHidden:(BOOL)hidden
@@ -234,36 +240,71 @@
     [self setHidden:YES];
 }
 
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Drawing
 
 - (void)drawRect:(CGRect)rect
 {
     CGSize zoomedSize = CGSizeMake(overlay_.size.width * inverseZoomScale_, overlay_.size.height * inverseZoomScale_);
     CGSize halfZoomedSize = CGSizeMake(zoomedSize.width * 0.5, zoomedSize.height * 0.5);
-    
-    // Render the relevant zoomed view region to an image context
-    UIGraphicsBeginImageContext(CGSizeMake(zoomedSize.width, zoomedSize.height));
-	CGContextRef imageContext = UIGraphicsGetCurrentContext();
-    
-    // Fill the image context because things look whacky if the zoomed view has a clear background
-    if (fillColor_ != nil)
+        
+    // Create the bitmap context the first time we draw
+    if (bitmapContext_ == NULL)
     {
-        CGContextSetFillColorWithColor(imageContext, fillColor_.CGColor);
+        NSUInteger width = zoomedSize.width;
+        NSUInteger height = zoomedSize.height;
+        NSUInteger bitsPerComponent = 8;
+        NSUInteger bytesPerRow = width * 4;
+        NSUInteger bitmapByteCount = bytesPerRow * height;
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        
+        if (colorSpace == NULL)
+        {
+            KBCLogWarning(@"could not create device RGB color space, returning");
+            return;
+        }
+        
+        bitmapData_ = malloc(bitmapByteCount);
+        
+        if (bitmapData_ == NULL) 
+        {
+            KBCLogWarning(@"could not create bitmap data, returning");
+            CGColorSpaceRelease(colorSpace);
+            return;
+        }
+        
+        bitmapContext_ = CGBitmapContextCreate(bitmapData_,
+                                               width,
+                                               height,
+                                               bitsPerComponent,
+                                               bytesPerRow,
+                                               colorSpace,
+                                               kCGImageAlphaPremultipliedFirst);
+        
+        if (bitmapContext_ == NULL)
+        {
+            CGColorSpaceRelease(colorSpace);
+            free(bitmapData_);
+            KBCLogWarning(@"could not create bitmap context, returning");
+            return;
+        }
+        
+        CGColorSpaceRelease(colorSpace);
     }
     
-    CGContextFillRect(imageContext, CGRectMake(0.0, 0.0, zoomedSize.width, zoomedSize.height));
-    // Compute clamped origin for zoomed region in zoomed view space
+    // Render the relevant zoomed view region to an image context
+    CGContextFillRect(bitmapContext_, CGRectMake(0.0, 0.0, zoomedSize.width, zoomedSize.height));    
     CGPoint zoomOrigin = CGPointMake(zoomCenter_.x - halfZoomedSize.width, zoomCenter_.y - halfZoomedSize.height);
-// TODO: clamping wrong
-//    zoomOrigin.x = KBCClampFloat(zoomOrigin.x, 0.0, zoomedView_.bounds.size.width - zoomedSize.width);
-//    zoomOrigin.y = KBCClampFloat(zoomOrigin.y, 0.0, zoomedView_.bounds.size.height - zoomedSize.height);
     // Apply inverse zoom origin so zoomed view can render directly into the context
-    CGContextTranslateCTM(imageContext, -zoomOrigin.x, -zoomOrigin.y);
-    [zoomedView_.layer renderInContext:imageContext];
-    UIImage *zoomedRegion = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
+    CGContextSaveGState(bitmapContext_);
+    CGContextScaleCTM(bitmapContext_, 1.0, -1.0);
+    CGContextTranslateCTM(bitmapContext_, 0.0, -zoomedSize.height);
+    CGContextTranslateCTM(bitmapContext_, -zoomOrigin.x, -zoomOrigin.y);
+    [zoomedView_.layer renderInContext:bitmapContext_];
+    CGImageRef image = CGBitmapContextCreateImage(bitmapContext_);
+    UIImage *zoomedRegion = [UIImage imageWithCGImage:image];
+    CGImageRelease(image);
+    CGContextRestoreGState(bitmapContext_);
     
     // Mask out portion of zoomed region under the loupe
 	CGImageRef maskedRegion = CGImageCreateWithMask(zoomedRegion.CGImage, mask_);

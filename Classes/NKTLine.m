@@ -174,7 +174,7 @@
     }
     
     // NOTE: y-coordinate ignored
-    CGPoint localPoint = CGPointMake(point.x - baselineOrigin_.x, 0.0);
+    CGPoint localPoint = CGPointMake(point.x - baselineOrigin_.x, point.y - baselineOrigin_.y);
     NSUInteger charIndex = (NSUInteger)CTLineGetStringIndexForPosition(self.line, localPoint);
     UITextStorageDirection affinity = UITextStorageDirectionForward;
     
@@ -196,7 +196,8 @@
         }
     }
     
-    return [NKTTextPosition textPositionWithLocation:charIndex affinity:affinity];
+    NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:charIndex affinity:affinity];
+    return textPosition;
 }
 
 - (BOOL)containsCaretAtTextPosition:(NKTTextPosition *)textPosition

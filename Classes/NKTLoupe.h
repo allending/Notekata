@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------------------------------------
+//
 // Copyright 2010 Allen Ding. All rights reserved.
-//--------------------------------------------------------------------------------------------------
+//
 
 #import "KobaUI.h"
 
@@ -27,6 +27,9 @@ typedef enum
     CGFloat inverseZoomScale_;
     
     UIColor *fillColor_;
+    
+    void *bitmapData_;
+    CGContextRef bitmapContext_;
 }
 
 #pragma mark Initializing
