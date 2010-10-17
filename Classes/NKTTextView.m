@@ -157,7 +157,7 @@
     horizontalRuleColor_ = [[UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0] retain];
     horizontalRuleOffset_ = 3.0;
     verticalMarginEnabled_ = YES;
-    verticalMarginColor_ = [[UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0] retain];
+    verticalMarginColor_ = [[UIColor colorWithRed:1.0 green:0.4 blue:0.4 alpha:1.0] retain];
     verticalMarginInset_ = 60.0;
     visibleSections_ = [[NSMutableSet alloc] init];
     reusableSections_ = [[NSMutableSet alloc] init];    
@@ -295,6 +295,8 @@
     
     [super setFrame:frame];
     
+    backgroundView_.frame = self.bounds;
+    
     // HACK: when the nib loads, -setFrame: gets called, but it happens before awakeFromNib! We just check the text
     // property instead before doing any further processing.
     if (text_ != nil)
@@ -338,6 +340,7 @@
     [self regenerateTextFrame];
     [inputDelegate_ textDidChange:self];
     
+    self.contentOffset = CGPointZero;
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
@@ -668,11 +671,28 @@
     return YES;
 }
 
+- (BOOL)becomeFirstResponder
+{
+    BOOL acceptsFirstResponder = [super becomeFirstResponder];
+    
+    if (acceptsFirstResponder)
+    {
+        if (selectedTextRange_ == nil)
+        {
+            NKTTextRange *textRange = [(NKTTextPosition *)[self beginningOfDocument] textRange];
+            [self setSelectedTextRange:textRange notifyInputDelegate:YES];
+            [selectionDisplayController_ updateSelectionDisplay];
+        }
+    }
+    
+    return acceptsFirstResponder;
+}
+
 - (BOOL)resignFirstResponder
 {
-    BOOL resignsFirstResponder = [super resignFirstResponder];
+    BOOL resignedFirstResponder = [super resignFirstResponder];
     
-    if (!resignsFirstResponder)
+    if (!resignedFirstResponder)
     {
         return NO;
     }

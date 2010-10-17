@@ -22,7 +22,7 @@
 @property (nonatomic, retain) UIView *plainPaperBackgroundView;
 @property (nonatomic, retain) UIImageView *capAndEdgeView;
 @property (nonatomic, retain) UIImageView *edgeShadowView;
-
+@property (nonatomic, retain) UIView *frozenOverlay;
 #pragma mark Updating Model Views
 
 - (void)updateModelViews;
@@ -48,7 +48,7 @@
 
 - (UIButton *)borderedToolbarButton;
 - (void)populateToolbar;
-- (void)updateToolbar;
+- (void)updateToolbarStyleItems;
 
 #pragma mark Managing Text Attributes
 
@@ -113,6 +113,7 @@
 @synthesize underlineToggleButton = underlineToggleButton_;
 @synthesize fontButton = fontButton_;
 @synthesize fontToolbarItem = fontToolbarItem_;
+@synthesize frozenOverlay = frozenOverlay_;
 
 #pragma mark -
 #pragma mark Initializing
@@ -157,6 +158,7 @@
     [underlineToggleButton_ release];
     [fontButton_ release];
     [fontToolbarItem_ release];
+    [frozenOverlay_ release];
     [super dealloc];
 }
 
@@ -170,14 +172,35 @@
 
 - (void)setPage:(NKTPage *)page
 {
+    [self setPage:page saveEditedText:YES];
+}
+
+- (void)setPage:(NKTPage *)page saveEditedText:(BOOL)saveEditedText
+{
     if (page_ == page)
     {
         return;
     }
     
+    if (saveEditedText)
+    {
+        [self saveEditedPageText];
+    }
+    
+    if ([navigationPopoverController_ isPopoverVisible])
+    {
+        [navigationPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    if ([fontPopoverController_ isPopoverVisible])
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
     [page_ release];
     page_ = [page retain];
     [self updateModelViews];
+    [self updateToolbarStyleItems];
 }
 
 #pragma mark -
@@ -185,9 +208,8 @@
 
 - (void)saveEditedPageText
 {
-    if (![self isViewLoaded])
+    if (page_ == nil)
     {
-        KBCLogWarning(@"view is not loaded, ignoring");
         return;
     }
     
@@ -230,6 +252,7 @@
     }
     
     navigationPopoverController_ = pc;
+    [navigationPopoverController_ setDelegate:self];
 }
 
 - (void)splitViewController:(UISplitViewController*)svc
@@ -245,6 +268,18 @@
     }
     
     navigationPopoverController_ = nil;
+}
+
+#pragma mark Responding to Popover Controller Events
+
+- (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
+{
+    if (popoverController == navigationPopoverController_)
+    {
+        return self.view.userInteractionEnabled;
+    }
+    
+    return YES;
 }
 
 #pragma mark -
@@ -263,7 +298,7 @@
     [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
     
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
-    [self updateToolbar];
+    [self updateToolbarStyleItems];
 }
 
 - (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
@@ -332,12 +367,20 @@
     fontPickerViewController_.selectedFontSize = 16;
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 420.0);
-        
+    
+    // Frozen overlay
+    frozenOverlay_ = [[UIView alloc] initWithFrame:self.view.bounds];
+    frozenOverlay_.backgroundColor = [UIColor grayColor];
+    frozenOverlay_.userInteractionEnabled = NO;
+    frozenOverlay_.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    frozenOverlay_.alpha = 0.0;
+    [self.view addSubview:frozenOverlay_];
+    
     // Set up the text view
     textView_.delegate = self;
     [self styleTextView];
     [self populateToolbar];
-    [self updateToolbar];
+    [self updateToolbarStyleItems];
 }
 
 - (void)viewDidUnload
@@ -360,6 +403,7 @@
     self.fontToolbarItem = nil;
     self.fontPickerViewController = nil;
     self.fontPopoverController = nil;
+    self.frozenOverlay = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -487,9 +531,9 @@
             self.textView.backgroundView = plainPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;
-            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.69 green:0.73 blue:0.85 alpha:1.0];
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.75 blue:0.9 alpha:0.5];
             self.textView.verticalMarginEnabled = YES;
-            self.textView.verticalMarginColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0];
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.45 blue:0.49 alpha:0.5];
             self.textView.verticalMarginInset = 60.0;
             break;
             
@@ -512,9 +556,9 @@
             self.textView.backgroundView = creamPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;
-            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:0.5];
             self.textView.verticalMarginEnabled = YES;
-            self.textView.verticalMarginColor = [UIColor colorWithRed:0.7 green:0.3 blue:0.29 alpha:1.0];
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.45 blue:0.49 alpha:0.5];
             self.textView.verticalMarginInset = 60.0;
             break;
             
@@ -524,6 +568,28 @@
     }
 }
 
+#pragma mark -
+#pragma mark Freezing User Interaction
+
+- (void)freezeUserInteraction
+{
+    [UIView beginAnimations:@"FreezeView" context:nil];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    frozenOverlay_.alpha = 0.35;
+    [UIView commitAnimations];
+    self.view.userInteractionEnabled = NO;
+}
+
+- (void)unfreezeUserInteraction
+{
+    [UIView beginAnimations:@"UnfreezeView" context:nil];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    frozenOverlay_.alpha = 0.0;
+    [UIView commitAnimations];
+    self.view.userInteractionEnabled = YES;
+}
+
+#pragma mark -
 #pragma mark Managing the Title
 
 - (void)updateTitleLabel
@@ -642,7 +708,7 @@
     self.toolbar.items = toolbarItems;
 }
 
-- (void)updateToolbar
+- (void)updateToolbarStyleItems
 {
     if ([textView_ isFirstResponder])
     {
@@ -767,6 +833,7 @@
     }
     else
     {
+        [self.textView resignFirstResponder];
         [navigationPopoverController_ presentPopoverFromBarButtonItem:navigationButtonItem_
                                              permittedArrowDirections:UIPopoverArrowDirectionAny
                                                              animated:YES];
@@ -869,7 +936,7 @@
 
 - (void)textViewDidBeginEditing:(NKTTextView *)textView
 {
-    [self updateToolbar];
+    [self updateToolbarStyleItems];
 }
 
 - (void)textViewDidEndEditing:(NKTTextView *)textView
@@ -880,13 +947,13 @@
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
     
-    [self updateToolbar];
+    [self updateToolbarStyleItems];
     [self saveEditedPageText];
 }
 
 - (void)textViewDidChangeSelection:(NKTTextView *)textView
 {
-    [self updateToolbar];
+    [self updateToolbarStyleItems];
 }
 
 - (void)textViewDidChange:(NKTTextView *)textView

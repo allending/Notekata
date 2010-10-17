@@ -8,7 +8,7 @@ General
 
 Model
 -----
-[ ] BIG Issue: Persistance problem still present, full diagnostic sweep required
+[?] BIG Issue: Persistance problem still present, full diagnostic sweep required
 
 Controller
 ----------
@@ -17,6 +17,8 @@ Controller
 
 Text View
 ---------
+[ ] Optimization: Dirty marker, only save out when needed!
+[ ] Issue: Select empty line selection region doesn't look great
 [ ] Issue: Double tap drag should never select outside of line tapped
 [ ] Issue: Correction prompt not getting right rects (untransformed)? - Can't reproduce
 [ ] Issue: keyboard movement wonky with new changes (see screenshot)

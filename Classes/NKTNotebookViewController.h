@@ -18,17 +18,23 @@
     // Data
     NSFetchedResultsController *fetchedResultsController_;
     NKTNotebook *notebook_;
+    NKTPage *selectedPage_;
     
     // Control
     NKTPageViewController *pageViewController_;
     
     // UI
     UILabel *titleLabel_;
+    UIBarButtonItem *addPageItem_;
 }
 
 #pragma mark Accessing the Notebook
 
 @property (nonatomic, retain) NKTNotebook *notebook;
+
+#pragma mark Managing Pages
+
+- (void)addPage;
 
 #pragma mark Accessing View Controllers
 

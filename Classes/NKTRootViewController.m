@@ -225,12 +225,20 @@
     if (notebook != nil)
     {
         notebookViewController_.notebook = notebook;
-        [self.navigationController pushViewController:self.notebookViewController animated:NO];
+        
+        if (self.notebookViewController.navigationController == nil)
+        {
+            [self.navigationController pushViewController:self.notebookViewController animated:NO];
+        }
     }
 }
 
 - (void)viewDidUnload
-{}
+{
+    KBCLogWarning(@"view unloaded");
+
+    // 
+}
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -307,7 +315,7 @@
     // Style Mockup
     cell.imageView.image = [UIImage imageNamed:@"DocumentIcon.png"];
     cell.textLabel.text = notebook.title;
-    cell.detailTextLabel.text = @"12 pages, modified 3 days ago";
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%d pages", [[notebook pages] count]];
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 }
 

@@ -25,6 +25,7 @@ typedef enum
 // NKTNotebookViewController manages the editing of an NKTPage. It styles its view to provide a visual page style as
 // specified in the page parameter.
 @interface NKTPageViewController : UIViewController <UISplitViewControllerDelegate,
+                                                     UIPopoverControllerDelegate,
                                                      NKTTextViewDelegate,
                                                      NKTFontPickerViewControllerDelegate>
 {
@@ -60,11 +61,16 @@ typedef enum
     KUIToggleButton *underlineToggleButton_;
     UIButton *fontButton_;
     UIBarButtonItem *fontToolbarItem_;
+    
+    // Overlay
+    UIView *frozenOverlay_;
 }
 
 #pragma mark Accessing the Page
 
 @property (nonatomic, retain) NKTPage *page;
+
+- (void)setPage:(NKTPage *)page saveEditedText:(BOOL)saveEditedText;
 
 #pragma mark Saving the Page
 
@@ -84,6 +90,11 @@ typedef enum
 #pragma mark Configuring the Page Style
 
 @property (nonatomic) NKTPageStyle pageStyle;
+
+#pragma mark Freezing User Interaction
+
+- (void)freezeUserInteraction;
+- (void)unfreezeUserInteraction;
 
 @end
 
