@@ -13,35 +13,23 @@
 
 @property (nonatomic, retain) NKTPage *selectedPage;
 
-#pragma mark Setting the Title
-
-@property (nonatomic, retain) UILabel *titleLabel;
-
 #pragma mark Core Data Stack
 
 @property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
 
 #pragma mark Managing Pages
 
-- (NKTPage *)selectedPageBeforeViewDisappeared;
 - (NSUInteger)numberOfPages;
 - (NKTPage *)pageAtIndex:(NSUInteger)index;
+- (NKTPage *)selectedPageBeforeViewDisappeared;
 
 #pragma mark Responding to Page View Controller Events
 
 - (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView;
 
-#pragma mark Styling The Navigation Bar
+#pragma mark Managing Navigation Controller Items
 
-- (void)styleNavigationBarAndToolbar;
-
-#pragma mark Managing the Title
-
-- (void)initTitleLabel;
-- (void)updateTitleLabel;
-
-#pragma mark Managing Toolbar Items
-
+@property (nonatomic, retain) UILabel *titleLabel;
 @property (nonatomic, retain) UIBarButtonItem *addPageItem;
 
 #pragma mark Table View Data Source
@@ -62,14 +50,6 @@
 
 @synthesize titleLabel = titleLabel_;
 @synthesize addPageItem = addPageItem_;
-
-#pragma mark -
-#pragma mark Initializing
-
-- (void)awakeFromNib
-{
-    pageViewController_.delegate = self;
-}
 
 #pragma mark -
 #pragma mark Memory Management
@@ -109,20 +89,18 @@
         return fetchedResultsController_;
     }
     
+    // Create request for pages belonging to notebook sorted by pageNumber
     NSManagedObjectContext *managedObjectContext = notebook_.managedObjectContext;
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    
     NSEntityDescription *entity = [NSEntityDescription entityForName:@"Page"
                                               inManagedObjectContext:managedObjectContext];
     [fetchRequest setEntity:entity];
-    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"notebook = %@", notebook_];
     [fetchRequest setPredicate:predicate];
-    
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"pageNumber" ascending:YES];
     [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
     
-    // Create the fetched results controller
+    // Create the controller and fetch the data
     fetchedResultsController_ = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                                                     managedObjectContext:managedObjectContext
                                                                       sectionNameKeyPath:nil
@@ -130,7 +108,6 @@
     fetchedResultsController_.delegate = self;
     
     NSError *error = nil;
-    
     if (![fetchedResultsController_ performFetch:&error])
     {
         // TODO: FIX and LOG
@@ -229,66 +206,27 @@
     
     [notebook_ release];
     notebook_ = [notebook retain];
-    // Invalidate previously fetched results 
+    
+    // Invalidate previously fetched results
     self.fetchedResultsController = nil;
     
-    NKTPage *page = [self selectedPageBeforeViewDisappeared];
-    
-    if (page == nil)
+    // Find a page to treat as the selected page
+    NKTPage *pageToSelect = [self selectedPageBeforeViewDisappeared];
+    if (pageToSelect == nil)
     {
-        page = [self pageAtIndex:0];
+        pageToSelect = [self pageAtIndex:0];
     }
     
-    // TODO: improve clarity?
-    self.selectedPage = page;
-    self.pageViewController.page = page;
-    [self updateTitleLabel];
+    // 
+    self.selectedPage = pageToSelect;
+    // TODO: is this right?
+    [pageViewController_ setPage:pageToSelect saveEditedText:YES];
+    titleLabel_.text = notebook_.title;
     [self.tableView reloadData];
 }
 
 #pragma mark -
 #pragma mark Managing Pages
-
-- (void)addPage
-{
-    if (notebook_ == nil)
-    {
-        KBCLogWarning(@"notebook is nil, returning");
-        return;
-    }
-    
-    [pageViewController_.textView resignFirstResponder];
-    
-    NSManagedObjectContext *managedObjectContext = notebook_.managedObjectContext;
-    NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
-                                                  inManagedObjectContext:managedObjectContext];
-    page.pageNumber = [NSNumber numberWithInteger:[[notebook_ pages] count]];
-    page.textString = @"";
-    page.textStyleString = @"";
-    [notebook_ addPagesObject:page];
-    
-    NSError *error = nil;
-    
-    if (![managedObjectContext save:&error])
-    {
-        // TODO: FIX, LOG
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
-    
-    self.selectedPage = page;
-    NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:page];
-    [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
-    
-    pageViewController_.page = page;
-    [pageViewController_.textView becomeFirstResponder];
-}
-
-- (NKTPage *)selectedPageBeforeViewDisappeared
-{
-    NSDictionary *lastSelectedPages = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastSelectedPages"];
-    return [lastSelectedPages objectForKey:notebook_.notebookId];
-}
 
 - (NSUInteger)numberOfPages
 {
@@ -302,17 +240,54 @@
     return [self.fetchedResultsController objectAtIndexPath:indexPath];
 }
 
+- (NKTPage *)selectedPageBeforeViewDisappeared
+{
+    NSDictionary *lastSelectedPages = [[NSUserDefaults standardUserDefaults] objectForKey:@"lastSelectedPages"];
+    return [lastSelectedPages objectForKey:notebook_.notebookId];
+}
+
+- (void)addPage
+{
+    if (notebook_ == nil)
+    {
+        KBCLogWarning(@"notebook is nil, returning");
+        return;
+    }
+    
+    // Create a new page and add it to the notebook
+    NKTPage *createdPage = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
+                                                         inManagedObjectContext:notebook_.managedObjectContext];
+    createdPage.pageNumber = [NSNumber numberWithUnsignedInteger:[[notebook_ pages] count]];
+    createdPage.textString = @"";
+    createdPage.textStyleString = @"";
+    [notebook_ addPagesObject:createdPage];
+    
+    NSError *error = nil;
+    if (![notebook_.managedObjectContext save:&error])
+    {
+        // TODO: FIX, LOG
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    // Use newly created page the active page being edited
+    self.selectedPage = createdPage;
+    NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:createdPage];
+    [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
+    [pageViewController_ setPage:createdPage saveEditedText:YES];
+    // Start editing page immediately
+    [pageViewController_.textView becomeFirstResponder];
+}
+
 #pragma mark -
 #pragma mark Responding to Page View Controller Events
 
-// TODO: optimize - be lazy
 - (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView
 {
-    // TODO: this should just use the selectedPage_?
-    NSIndexPath *indexPath = [fetchedResultsController_ indexPathForObject:selectedPage_];
+    NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    // TODO: refactor
-    // Update cell with the live contents of the text view
+    // TODO: can optimize if text position is given
+    // Update cell with the contents of the text view as it changes
     [self configureCell:cell withString:[textView.text string]];
 }
 
@@ -325,11 +300,22 @@
     self.clearsSelectionOnViewWillAppear = NO;
     self.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
     
-    [self initTitleLabel];
+    // UI elements need to be updated when changes occur in the page view controller
+    pageViewController_.delegate = self;
     
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+    // Initialize custom navigation item title label
+    titleLabel_ = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
+    titleLabel_.backgroundColor = [UIColor clearColor];
+    titleLabel_.textAlignment = UITextAlignmentCenter;
+    titleLabel_.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    titleLabel_.textColor = [UIColor lightTextColor];
+    titleLabel_.text = notebook_.title;
+    self.navigationItem.titleView = titleLabel_;
+    
+    // Expose an edit button on the navigation item
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
+    // Place an add button on the toolbar
     addPageItem_ = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
                                                                         target:self
                                                                         action:@selector(addPage)];
@@ -347,10 +333,10 @@
     [super viewWillAppear:animated];
     // There seems to be a bug in UIKit where the navigation controller navigation bar and toolbar may not respect
     // the set styles after rotation animations. As a workaround, we force the style.    
-    [self styleNavigationBarAndToolbar];
-    [self updateTitleLabel];
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlackOpaque;
+    self.navigationController.toolbar.barStyle = UIBarStyleBlackOpaque;
     
-    // TODO: select and scroll selected page?
+    // Select and scroll to the selected page
     [self.tableView reloadData];
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
     [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
@@ -383,35 +369,8 @@
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
                                 duration:(NSTimeInterval)duration
 {
+    // Stop editing when rotation occurs so the page view controller is always unfrozen after rotation
     [self setEditing:NO animated:NO];
-}
-
-#pragma mark -
-#pragma mark Styling The Navigation Bar
-
-- (void)styleNavigationBarAndToolbar
-{
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlackOpaque;
-    self.navigationController.toolbar.barStyle = UIBarStyleBlackOpaque;
-}
-
-#pragma mark -
-#pragma mark Managing the Title
-
-- (void)initTitleLabel
-{
-    // Create and set the custom navigation title view
-    titleLabel_ = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
-    titleLabel_.backgroundColor = [UIColor clearColor];
-    titleLabel_.textAlignment = UITextAlignmentCenter;
-    titleLabel_.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-    titleLabel_.textColor = [UIColor lightTextColor];
-    self.navigationItem.titleView = titleLabel_;
-}
-
-- (void)updateTitleLabel
-{
-    titleLabel_.text = notebook_.title;
 }
 
 #pragma mark -
@@ -434,6 +393,7 @@
     
     if ([snippet length] == 0)
     {
+        // TODO: localization
         cell.textLabel.text = @"Untitled";
     }
     else
@@ -450,7 +410,7 @@
     
     if (cell == nil)
     {
-        
+        // No fancy styling, just a simple cell with text
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
                                        reuseIdentifier:CellIdentifier] autorelease];
         cell.showsReorderControl = YES;
@@ -470,74 +430,68 @@
 commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-     if (editingStyle == UITableViewCellEditingStyleDelete)
-     {
-         NSManagedObjectContext *managedObjectContext = [self.fetchedResultsController managedObjectContext];
-         
-         NKTPage *deletedPage = [self.fetchedResultsController objectAtIndexPath:indexPath];
-         NSUInteger deletedPageNumber = [deletedPage.pageNumber integerValue];
-         NKTNotebook *notebook = deletedPage.notebook;
-         
-         // Renumber the pages first
-         for (NSUInteger currentPageNumber = deletedPageNumber + 1;
-              currentPageNumber < [[notebook pages] count];
-              ++currentPageNumber)
-         {
-             NSIndexPath *currentIndexPath = [NSIndexPath indexPathForRow:currentPageNumber inSection:0];
-             NKTPage *currentPage = [self.fetchedResultsController objectAtIndexPath:currentIndexPath];
-             currentPage.pageNumber = [NSNumber numberWithInteger:currentPageNumber - 1];
-         }
-         
-         // Delete the page
-         [notebook removePagesObject:deletedPage];
-         [managedObjectContext deleteObject:deletedPage];
-         
-         // Add a page if the deleted page was the last one
-         if ([[notebook pages] count] == 0)
-         {
-             NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
-                                                           inManagedObjectContext:managedObjectContext];
-             page.pageNumber = [NSNumber numberWithInteger:0];
-             page.textString = @"";
-             page.textStyleString = @"";
-             [notebook addPagesObject:page];
-         }
-         
-         NSError *error = nil;
-         
-         if (![managedObjectContext save:&error])
-         {
-             // TODO: FIX, LOG
-             KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-             abort();
-         }
-         
-         // Select new page if needed
-         if (self.selectedPage == deletedPage)
-         {
-             if (deletedPageNumber < [[notebook pages] count])
-             {
-                 // Page at the index path is the one we want to select
-                 NKTPage *page = [self.fetchedResultsController objectAtIndexPath:indexPath];
-                 self.selectedPage = page;
-                 // TODO: If saveEditedText is YES, this will crash!
-                 [pageViewController_ setPage:page saveEditedText:NO];
-             }
-             else
-             {
-                 // Use the last page in the notebook as the new selected page
-                 NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:[[notebook pages] count] - 1 inSection:0];
-                 NKTPage *page = [self.fetchedResultsController objectAtIndexPath:newIndexPath];
-                 self.selectedPage = page;
-                 // TODO: If saveEditedText is YES, this will crash!
-                 [pageViewController_ setPage:page saveEditedText:NO];
-             }
-         }
-     }
-     else if (editingStyle == UITableViewCellEditingStyleInsert)
-     {
-     // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-     }
+    if (editingStyle != UITableViewCellEditingStyleDelete)
+    {
+        KBCLogWarning(@"unexpected editing style commit, returning");
+        return;
+    }
+    
+    NKTPage *pageToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    
+    // Renumber the pages first
+    NSUInteger updateRangeStart = indexPath.row + 1;
+    NSUInteger updateRangeEnd = [self numberOfPages];
+    for (NSUInteger updateIndex = updateRangeStart; updateIndex < updateRangeEnd; ++updateIndex)
+    {
+        NSIndexPath *updateIndexPath = [NSIndexPath indexPathForRow:updateIndex inSection:0];
+        NKTPage *pageToUpdate = [self.fetchedResultsController objectAtIndexPath:updateIndexPath];
+        //  Adjust offsets of pages following the deleted page by -1
+        pageToUpdate.pageNumber = [NSNumber numberWithInteger:updateIndex - 1];
+    }
+    
+    // Delete the page
+    [notebook_ removePagesObject:pageToDelete];
+    [notebook_.managedObjectContext deleteObject:pageToDelete];
+
+    // Add a page if the deleted page was the last one
+    if ([[notebook_ pages] count] == 0)
+    {
+        NKTPage *newFirstPage = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
+                                                              inManagedObjectContext:notebook_.managedObjectContext];
+        newFirstPage.pageNumber = [NSNumber numberWithInteger:0];
+        newFirstPage.textString = @"";
+        newFirstPage.textStyleString = @"";
+        [notebook_ addPagesObject:newFirstPage];
+    }
+
+    NSError *error = nil;
+    if (![notebook_.managedObjectContext save:&error])
+    {
+        // TODO: FIX, LOG
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    // Select new page if the deleted page was the selected page
+    if (self.selectedPage == pageToDelete)
+    {
+        NKTPage *pageToSelect = nil;
+
+        // Page at the index path is the one we want to select
+        if (indexPath.row < [[notebook_ pages] count])
+        {
+            pageToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        }
+        // Use the last page in the notebook as the new selected page
+        else
+        {
+            NSIndexPath *selectionIndexPath = [NSIndexPath indexPathForRow:[[notebook_ pages] count] - 1 inSection:0];
+            pageToSelect = [self.fetchedResultsController objectAtIndexPath:selectionIndexPath];
+        }
+        
+        self.selectedPage = pageToSelect;
+        [pageViewController_ setPage:pageToSelect saveEditedText:NO];
+    }
 }
 
 - (void)tableView:(UITableView *)tableView
@@ -546,46 +500,46 @@ moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
 {
     NSUInteger fromIndex = fromIndexPath.row;
     NSUInteger toIndex = toIndexPath.row;
-
+    
     if (fromIndex == toIndex)
     {
         return;
     }
     
+    // Set flag so we know to ignore changes from fetch controller since the changes are coming from the UI
     changeIsUserDriven_ = YES;
     
-    // Get sorted pages in notebook
+    // Set page number of moved page
     NKTPage *movedPage = [self.fetchedResultsController objectAtIndexPath:fromIndexPath];
     movedPage.pageNumber = [NSNumber numberWithUnsignedInteger:toIndex];
     
-    // Renumber pages
+    // Renumber rest of the pages
     NSUInteger updateRangeStart = 0;
     NSUInteger updateRangeEnd = 0;
-    NSInteger indexAdjustment = 0;
-    
+    NSInteger pageNumberAdjustment = 0;
+
     if (fromIndex < toIndex)
     {
         updateRangeStart = fromIndex + 1;
         updateRangeEnd = toIndex;
-        indexAdjustment = -1;
+        pageNumberAdjustment = -1;
     }
     else
     {
         updateRangeStart = toIndex;
         updateRangeEnd = fromIndex - 1;
-        indexAdjustment = 1;
+        pageNumberAdjustment = 1;
     }
     
     for (NSUInteger updateIndex = updateRangeStart; updateIndex <= updateRangeEnd; ++updateIndex)
     {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:updateIndex inSection:0];
-        NKTPage *pageToUpdate = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        NSUInteger currentPageNumber = [pageToUpdate.pageNumber unsignedIntegerValue];
-        pageToUpdate.pageNumber = [NSNumber numberWithUnsignedInteger:currentPageNumber + indexAdjustment];
+        NSIndexPath *updateIndexPath = [NSIndexPath indexPathForRow:updateIndex inSection:0];
+        NKTPage *pageToUpdate = [self.fetchedResultsController objectAtIndexPath:updateIndexPath];
+        NSUInteger existingPageNumber = [pageToUpdate.pageNumber unsignedIntegerValue];
+        pageToUpdate.pageNumber = [NSNumber numberWithUnsignedInteger:existingPageNumber + pageNumberAdjustment];
     }
     
     NSError *error = nil;
-    
     if (![notebook_.managedObjectContext save:&error])
     {
         // TODO: FIX, LOG
@@ -607,13 +561,13 @@ moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [pageViewController_.textView resignFirstResponder];
-    NKTPage *page = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    self.selectedPage = page;
-    pageViewController_.page = page;
+    NKTPage *pageToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    self.selectedPage = pageToSelect;
+    [pageViewController_ setPage:pageToSelect saveEditedText:YES];
 }
 
 #pragma mark -
-#pragma mark Configuring a Navigation Interface
+#pragma mark Configuring Edit State
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
 {
@@ -621,22 +575,18 @@ moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
     
     if (editing)
     {
-        // TODO: bug
-        // Hide navigation item
+        // TODO: find Core Animation bug workaround
         [self.navigationItem setHidesBackButton:YES animated:NO];
-        // Hide toolbar items
         [self setToolbarItems:nil animated:YES];
-        // TODO: this needs to be more sophisticated
         [pageViewController_.textView resignFirstResponder];
         [pageViewController_ freezeUserInteraction];
     }
     else
     {
-        // Restore navigation item
+        // TODO: find Core Animation bug workaround
         [self.navigationItem setHidesBackButton:NO animated:NO];
-        // Restore toolbar items
         [self setToolbarItems:[NSArray arrayWithObjects:addPageItem_, nil] animated:YES];
-        // When editing ends, reselect the current page
+        // The table view selection state may be dirty following edits, so reselect the selected page cell
         NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
         [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
         [pageViewController_ unfreezeUserInteraction];

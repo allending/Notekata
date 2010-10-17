@@ -177,14 +177,14 @@
 
 - (void)setPage:(NKTPage *)page saveEditedText:(BOOL)saveEditedText
 {
-    if (page_ == page)
-    {
-        return;
-    }
-    
     if (saveEditedText)
     {
         [self saveEditedPageText];
+    }
+    
+    if (page_ == page)
+    {
+        return;
     }
     
     if ([navigationPopoverController_ isPopoverVisible])
