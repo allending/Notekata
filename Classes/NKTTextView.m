@@ -341,6 +341,7 @@
     [inputDelegate_ textDidChange:self];
     
     self.contentOffset = CGPointZero;
+    self.inputTextAttributes = nil;
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
@@ -363,9 +364,9 @@
     // Use default text attributes if there is no text or selected text range
     if (![self hasText] || selectedTextRange_ == nil)
     {
-        if ([self.delegate respondsToSelector:@selector(defaultTextAttributes)])
+        if ([self.delegate respondsToSelector:@selector(defaultCoreTextAttributes)])
         {
-            return [(id <NKTTextViewDelegate>)self.delegate defaultTextAttributes];
+            return [(id <NKTTextViewDelegate>)self.delegate defaultCoreTextAttributes];
         }
     }
     
@@ -665,7 +666,6 @@
 #pragma mark -
 #pragma mark Managing the Responder Chain
 
-// Returning YES allows the view to receive keyboard input
 - (BOOL)canBecomeFirstResponder
 {
     return YES;
@@ -673,19 +673,25 @@
 
 - (BOOL)becomeFirstResponder
 {
-    BOOL acceptsFirstResponder = [super becomeFirstResponder];
+    BOOL becameFirstResponder = [super becomeFirstResponder];
     
-    if (acceptsFirstResponder)
+    if (becameFirstResponder)
     {
+        // While editing, there should always be a selected text range
         if (selectedTextRange_ == nil)
         {
             NKTTextRange *textRange = [(NKTTextPosition *)[self beginningOfDocument] textRange];
             [self setSelectedTextRange:textRange notifyInputDelegate:YES];
             [selectionDisplayController_ updateSelectionDisplay];
         }
+        
+        if ([self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDidBeginEditing:self];
+        }
     }
     
-    return acceptsFirstResponder;
+    return becameFirstResponder;
 }
 
 - (BOOL)resignFirstResponder
@@ -715,18 +721,9 @@
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
 {
-    BOOL becameFirstResponder = NO;
-    
-    if (![self isFirstResponder])
+    if (![self isFirstResponder] && ![self becomeFirstResponder])
     {
-        if ([self becomeFirstResponder])
-        {
-            becameFirstResponder = YES;
-        }
-        else
-        {
-            return;
-        }
+        return;
     }
     
     CGPoint point = [gestureRecognizer locationInView:self];
@@ -736,11 +733,6 @@
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:YES];
     selectionDisplayController_.caretVisible = YES;
     [selectionDisplayController_ updateSelectionDisplay];
-    
-    if (becameFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidBeginEditing:)])
-    {
-        [(id <NKTTextViewDelegate>)self.delegate textViewDidBeginEditing:self];
-    }
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer

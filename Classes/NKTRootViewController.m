@@ -86,7 +86,7 @@
     fetchedResultsController_ = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                                                     managedObjectContext:managedObjectContext_
                                                                       sectionNameKeyPath:nil
-                                                                               cacheName:@"Root"];
+                                                                               cacheName:nil];
     fetchedResultsController_.delegate = self;
     
     NSError *error = nil;
@@ -112,6 +112,8 @@
   didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo
            atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type
 {
+    KBCLogWarning(@"this should never be called");
+    
     switch(type)
     {
         case NSFetchedResultsChangeInsert:

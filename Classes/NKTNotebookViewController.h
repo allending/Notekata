@@ -19,6 +19,7 @@
     NSFetchedResultsController *fetchedResultsController_;
     NKTNotebook *notebook_;
     NKTPage *selectedPage_;
+    BOOL changeIsUserDriven_;
     
     // Control
     NKTPageViewController *pageViewController_;

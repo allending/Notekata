@@ -125,7 +125,7 @@
 
 #pragma mark Getting Text Attributes
 
-- (NSDictionary *)defaultTextAttributes;
+- (NSDictionary *)defaultCoreTextAttributes;
 
 #pragma mark Responding to Editing Notifications
 

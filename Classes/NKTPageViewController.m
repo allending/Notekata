@@ -366,7 +366,7 @@
     fontPickerViewController_.selectedFontFamilyName = @"Helvetica Neue";
     fontPickerViewController_.selectedFontSize = 16;
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
-    fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 420.0);
+    fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 400.0);
     
     // Frozen overlay
     frozenOverlay_ = [[UIView alloc] initWithFrame:self.view.bounds];
@@ -746,9 +746,14 @@
 #pragma mark -
 #pragma mark Managing Text Attributes
 
-- (NSDictionary *)defaultTextAttributes
+- (NSDictionary *)defaultCoreTextAttributes
 {
-    return [self currentCoreTextAttributes];
+    KBTStyleDescriptor *styleDecriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:@"Helvetica Neue"
+                                                                                      fontSize:16.0
+                                                                                          bold:NO
+                                                                                        italic:NO
+                                                                                    underlined:NO];
+    return [styleDecriptor coreTextAttributes];
 }
 
 - (NSDictionary *)currentCoreTextAttributes

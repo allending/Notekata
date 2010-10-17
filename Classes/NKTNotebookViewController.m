@@ -126,7 +126,7 @@
     fetchedResultsController_ = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
                                                                     managedObjectContext:managedObjectContext
                                                                       sectionNameKeyPath:nil
-                                                                               cacheName:@"Notebooks"];
+                                                                               cacheName:nil];
     fetchedResultsController_.delegate = self;
     
     NSError *error = nil;
@@ -145,7 +145,10 @@
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller 
 {
-    [self.tableView beginUpdates];
+    if (!changeIsUserDriven_)
+    {
+        [self.tableView beginUpdates];
+    }
 }
 
 - (void)controller:(NSFetchedResultsController *)controller
@@ -153,6 +156,7 @@
            atIndex:(NSUInteger)sectionIndex
      forChangeType:(NSFetchedResultsChangeType)type
 {
+    KBCLogWarning(@"this should never be called");
     switch(type)
     {
         case NSFetchedResultsChangeInsert:
@@ -173,6 +177,11 @@
      forChangeType:(NSFetchedResultsChangeType)type
       newIndexPath:(NSIndexPath *)newIndexPath
 {
+    if (changeIsUserDriven_)
+    {
+        return;
+    }
+    
     NKTPage *page = anObject;
     
     switch(type)
@@ -202,7 +211,10 @@
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller
 {
-    [self.tableView endUpdates];
+    if (!changeIsUserDriven_)
+    {
+        [self.tableView endUpdates];
+    }
 }
 
 #pragma mark -
@@ -265,11 +277,11 @@
     }
     
     self.selectedPage = page;
-    pageViewController_.page = page;
-    [pageViewController_.textView becomeFirstResponder];
-    
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:page];
     [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
+    
+    pageViewController_.page = page;
+    [pageViewController_.textView becomeFirstResponder];
 }
 
 - (NKTPage *)selectedPageBeforeViewDisappeared
@@ -365,7 +377,13 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    return !self.editing;
+    return YES;
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
+                                duration:(NSTimeInterval)duration
+{
+    [self setEditing:NO animated:NO];
 }
 
 #pragma mark -
@@ -416,7 +434,7 @@
     
     if ([snippet length] == 0)
     {
-        cell.textLabel.text = @"Untitled Page";
+        cell.textLabel.text = @"Untitled";
     }
     else
     {
@@ -435,6 +453,7 @@
         
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
                                        reuseIdentifier:CellIdentifier] autorelease];
+        cell.showsReorderControl = YES;
     }
     
     NKTPage *page = [self.fetchedResultsController objectAtIndexPath:indexPath];
@@ -442,17 +461,15 @@
     return cell;
 }
 
-// Override to support conditional editing of the table view.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Return NO if you do not want the specified item to be editable.
     return YES;
 }
 
 - (void)tableView:(UITableView *)tableView
 commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
 forRowAtIndexPath:(NSIndexPath *)indexPath
-{ 
+{
      if (editingStyle == UITableViewCellEditingStyleDelete)
      {
          NSManagedObjectContext *managedObjectContext = [self.fetchedResultsController managedObjectContext];
@@ -520,21 +537,69 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
      else if (editingStyle == UITableViewCellEditingStyleInsert)
      {
      // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-     }   
+     }
 }
 
-// Override to support rearranging the table view.
-// - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-//{
-//}
+- (void)tableView:(UITableView *)tableView
+moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
+      toIndexPath:(NSIndexPath *)toIndexPath
+{
+    NSUInteger fromIndex = fromIndexPath.row;
+    NSUInteger toIndex = toIndexPath.row;
 
+    if (fromIndex == toIndex)
+    {
+        return;
+    }
+    
+    changeIsUserDriven_ = YES;
+    
+    // Get sorted pages in notebook
+    NKTPage *movedPage = [self.fetchedResultsController objectAtIndexPath:fromIndexPath];
+    movedPage.pageNumber = [NSNumber numberWithUnsignedInteger:toIndex];
+    
+    // Renumber pages
+    NSUInteger updateRangeStart = 0;
+    NSUInteger updateRangeEnd = 0;
+    NSInteger indexAdjustment = 0;
+    
+    if (fromIndex < toIndex)
+    {
+        updateRangeStart = fromIndex + 1;
+        updateRangeEnd = toIndex;
+        indexAdjustment = -1;
+    }
+    else
+    {
+        updateRangeStart = toIndex;
+        updateRangeEnd = fromIndex - 1;
+        indexAdjustment = 1;
+    }
+    
+    for (NSUInteger updateIndex = updateRangeStart; updateIndex <= updateRangeEnd; ++updateIndex)
+    {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForRow:updateIndex inSection:0];
+        NKTPage *pageToUpdate = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        NSUInteger currentPageNumber = [pageToUpdate.pageNumber unsignedIntegerValue];
+        pageToUpdate.pageNumber = [NSNumber numberWithUnsignedInteger:currentPageNumber + indexAdjustment];
+    }
+    
+    NSError *error = nil;
+    
+    if (![notebook_.managedObjectContext save:&error])
+    {
+        // TODO: FIX, LOG
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    changeIsUserDriven_ = NO;
+}
 
-// Override to support conditional rearranging of the table view.
-// - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-//{
-//    // Return NO if you do not want the item to be re-orderable.
-//    return YES;
-//}
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return YES;
+}
 
 #pragma mark -
 #pragma mark Table View Delegate
