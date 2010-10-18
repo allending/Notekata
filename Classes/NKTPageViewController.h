@@ -66,6 +66,8 @@ typedef enum
     UIView *frozenOverlay_;
 }
 
+- (void)presentNavigationPopover;
+
 #pragma mark Accessing the Page
 
 @property (nonatomic, retain) NKTPage *page;
@@ -95,6 +97,10 @@ typedef enum
 
 - (void)freezeUserInteraction;
 - (void)unfreezeUserInteraction;
+
+#pragma mark Presenting the Navigation Popover
+
+- (void)dismissNavigationPopoverAnimated:(BOOL)animated;
 
 @end
 

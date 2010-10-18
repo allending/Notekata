@@ -10,7 +10,9 @@
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 			<string key="NS.object.0">123</string>
 		</object>
-		<array class="NSMutableArray" key="IBDocument.EditedObjectIDs"/>
+		<array class="NSMutableArray" key="IBDocument.EditedObjectIDs">
+			<integer value="53"/>
+		</array>
 		<array key="IBDocument.PluginDependencies">
 			<string>com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 		</array>
@@ -87,6 +89,7 @@
 					<array class="NSMutableArray" key="IBUIViewControllers">
 						<object class="IBUITableViewController" id="942471412">
 							<object class="IBUINavigationItem" key="IBUINavigationItem" id="264831797">
+								<reference key="IBUINavigationBar"/>
 								<string key="IBUITitle">Notebooks</string>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 							</object>
@@ -308,7 +311,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">71</int>
+			<int key="maxID">72</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">

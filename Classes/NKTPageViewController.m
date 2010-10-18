@@ -12,7 +12,6 @@
 
 #pragma mark Accessing View Controllers
 
-@property (nonatomic, assign) UIPopoverController *navigationPopoverController;
 @property (nonatomic, retain) UIPopoverController *fontPopoverController;
 @property (nonatomic, retain) NKTFontPickerViewController *fontPickerViewController;
 
@@ -23,6 +22,7 @@
 @property (nonatomic, retain) UIImageView *capAndEdgeView;
 @property (nonatomic, retain) UIImageView *edgeShadowView;
 @property (nonatomic, retain) UIView *frozenOverlay;
+
 #pragma mark Updating Model Views
 
 - (void)updateModelViews;
@@ -64,6 +64,9 @@
 
 #pragma mark Responding to Toolbar Actions
 
+- (void)navigationButtonPressed:(UIButton *)button;
+- (void)pageStylePressed:(UIButton *)button;
+- (void)fontButtonPressed:(UIButton *)button;
 - (void)boldToggleChanged:(KUIToggleButton *)toggleButton;
 - (void)italicToggleChanged:(KUIToggleButton *)toggleButton;
 - (void)underlineToggleChanged:(KUIToggleButton *)toggleButton;
@@ -93,7 +96,6 @@
 
 @synthesize delegate = delegate_;
 
-@synthesize navigationPopoverController = navigationPopoverController_;
 @synthesize fontPopoverController = fontPopoverController_;
 @synthesize fontPickerViewController = fontPickerViewController_;
 
@@ -187,11 +189,6 @@
         return;
     }
     
-    if ([navigationPopoverController_ isPopoverVisible])
-    {
-        [navigationPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
     if ([fontPopoverController_ isPopoverVisible])
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
@@ -270,7 +267,20 @@
     navigationPopoverController_ = nil;
 }
 
+- (void)presentNavigationPopover
+{
+    [navigationPopoverController_ presentPopoverFromBarButtonItem:navigationButtonItem_
+                                         permittedArrowDirections:UIPopoverArrowDirectionAny
+                                                         animated:NO];
+}
+
+#pragma mark -
 #pragma mark Responding to Popover Controller Events
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
+{
+    KBCLogDebug(@"popover dismissed");
+}
 
 - (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
 {
@@ -422,12 +432,12 @@
 {
     [super viewWillDisappear:animated];
     [self saveEditedPageText];
-    [self unregisterForKeyboardEvents];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
+    [self unregisterForKeyboardEvents];
 }
 
 #pragma mark -
@@ -571,8 +581,15 @@
 #pragma mark -
 #pragma mark Freezing User Interaction
 
+// TODO: store state of freeze in ivar
+
 - (void)freezeUserInteraction
 {
+    if (!self.view.userInteractionEnabled)
+    {
+        return;
+    }
+    
     [UIView beginAnimations:@"FreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
     frozenOverlay_.alpha = 0.35;
@@ -582,6 +599,11 @@
 
 - (void)unfreezeUserInteraction
 {
+    if (self.view.userInteractionEnabled)
+    {
+        return;
+    }
+    
     [UIView beginAnimations:@"UnfreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
     frozenOverlay_.alpha = 0.0;
@@ -589,12 +611,32 @@
     self.view.userInteractionEnabled = YES;
 }
 
+#pragma mark Presenting the Navigation Popover
+
+- (void)dismissNavigationPopoverAnimated:(BOOL)animated
+{
+    if (navigationPopoverController_.popoverVisible)
+    {
+        [navigationPopoverController_ dismissPopoverAnimated:YES];
+    }
+}
+
 #pragma mark -
 #pragma mark Managing the Title
 
 - (void)updateTitleLabel
 {
-    titleLabel_.text = KUITrimmedSnippetFromString([textView_.text string], 50);
+    NSString *snippet = KUITrimmedSnippetFromString([textView_.text string], 50);
+    
+    if ([snippet length] == 0)
+    {
+        // TODO: localization
+        titleLabel_.text = @"Untitled";
+    }
+    else
+    {
+        titleLabel_.text = snippet;
+    }
 }
 
 - (void)updateNavigationButtonTitle
@@ -1064,7 +1106,6 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         // Resize scroll view frame
         textViewFrame.size.height -= heightOverlap;
         textView_.frame = textViewFrame;
-        [textView_ scrollTextRangeToVisible:textView_.selectedTextRange animated:YES];
     }
 }
 

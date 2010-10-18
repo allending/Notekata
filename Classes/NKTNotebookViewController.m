@@ -22,19 +22,20 @@
 - (NSUInteger)numberOfPages;
 - (NKTPage *)pageAtIndex:(NSUInteger)index;
 - (NKTPage *)selectedPageBeforeViewDisappeared;
+- (void)addPage;
 
 #pragma mark Responding to Page View Controller Events
 
 - (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView;
 
-#pragma mark Managing Navigation Controller Items
-
-@property (nonatomic, retain) UILabel *titleLabel;
-@property (nonatomic, retain) UIBarButtonItem *addPageItem;
-
 #pragma mark Table View Data Source
 
 - (void)configureCell:(UITableViewCell *)cell withString:(NSString *)string;
+
+#pragma mark Managing Navigation Items
+
+@property (nonatomic, retain) UILabel *titleLabel;
+@property (nonatomic, retain) UIBarButtonItem *addPageItem;
 
 @end
 
@@ -122,10 +123,12 @@
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller 
 {
-    if (!changeIsUserDriven_)
+    if (changeIsUserDriven_)
     {
-        [self.tableView beginUpdates];
+        return;
     }
+    
+    [self.tableView beginUpdates];
 }
 
 - (void)controller:(NSFetchedResultsController *)controller
@@ -188,10 +191,12 @@
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller
 {
-    if (!changeIsUserDriven_)
+    if (changeIsUserDriven_)
     {
-        [self.tableView endUpdates];
+        return;
     }
+    
+    [self.tableView endUpdates];
 }
 
 #pragma mark -
@@ -199,6 +204,8 @@
 
 - (void)setNotebook:(NKTNotebook *)notebook
 {
+    // This should do nothing much
+    
     if (notebook_ == notebook)
     {
         return;
@@ -209,6 +216,8 @@
     
     // Invalidate previously fetched results
     self.fetchedResultsController = nil;
+
+    // TODO: move this to viewWillAppear
     
     // Find a page to treat as the selected page
     NKTPage *pageToSelect = [self selectedPageBeforeViewDisappeared];
@@ -217,7 +226,6 @@
         pageToSelect = [self pageAtIndex:0];
     }
     
-    // 
     self.selectedPage = pageToSelect;
     // TODO: is this right?
     [pageViewController_ setPage:pageToSelect saveEditedText:YES];
@@ -275,6 +283,7 @@
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:createdPage];
     [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
     [pageViewController_ setPage:createdPage saveEditedText:YES];
+    [pageViewController_ dismissNavigationPopoverAnimated:YES];
     // Start editing page immediately
     [pageViewController_.textView becomeFirstResponder];
 }
@@ -312,7 +321,7 @@
     titleLabel_.text = notebook_.title;
     self.navigationItem.titleView = titleLabel_;
     
-    // Expose an edit button on the navigation item
+    // Expose an edit button
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
     // Place an add button on the toolbar
@@ -324,6 +333,7 @@
 
 - (void)viewDidUnload
 {
+    [super viewDidUnload];
     self.titleLabel = nil;
     self.addPageItem = nil;
 }
@@ -438,6 +448,9 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
     
     NKTPage *pageToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
     
+    // if page view is showing page to be deleted, set the page to nil first
+    
+    
     // Renumber the pages first
     NSUInteger updateRangeStart = indexPath.row + 1;
     NSUInteger updateRangeEnd = [self numberOfPages];
@@ -463,7 +476,7 @@ forRowAtIndexPath:(NSIndexPath *)indexPath
         newFirstPage.textStyleString = @"";
         [notebook_ addPagesObject:newFirstPage];
     }
-
+    
     NSError *error = nil;
     if (![notebook_.managedObjectContext save:&error])
     {
@@ -564,6 +577,7 @@ moveRowAtIndexPath:(NSIndexPath *)fromIndexPath
     NKTPage *pageToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
     self.selectedPage = pageToSelect;
     [pageViewController_ setPage:pageToSelect saveEditedText:YES];
+    [pageViewController_ dismissNavigationPopoverAnimated:YES];
 }
 
 #pragma mark -

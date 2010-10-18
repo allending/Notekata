@@ -4,22 +4,32 @@
 
 #import "KobaUI.h"
 #import <CoreData/CoreData.h>
+#import "NKTEditNotebookViewController.h"
 
 @class NKTNotebook;
 @class NKTNotebookViewController;
 @class NKTPageViewController;
 
 // NKTNotebookViewController manages the editing of a library of NKTNotebooks.
-@interface NKTRootViewController : UITableViewController <NSFetchedResultsControllerDelegate>
+@interface NKTRootViewController : UITableViewController <NSFetchedResultsControllerDelegate,
+                                                          UIActionSheetDelegate,
+                                                          NKTEditNotebookViewControllerDelegate>
 {
 @private
     // Data
     NSManagedObjectContext *managedObjectContext_;
     NSFetchedResultsController *fetchedResultsController_;
+    BOOL changeIsUserDriven_;
     
     // Control
     NKTNotebookViewController *notebookViewController_;
     NKTPageViewController *pageViewController_;
+    NKTEditNotebookViewController *editNotebookViewController_;
+    
+    // UI
+    UILabel *titleLabel_;
+    UIBarButtonItem *addItem_;
+    UIActionSheet *addActionSheet_;
 }
 
 #pragma mark Core Data Stack

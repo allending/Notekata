@@ -33,10 +33,6 @@
 
 @property (nonatomic, retain) NKTNotebook *notebook;
 
-#pragma mark Managing Pages
-
-- (void)addPage;
-
 #pragma mark Accessing View Controllers
 
 @property (nonatomic, retain) IBOutlet NKTPageViewController *pageViewController;

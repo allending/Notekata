@@ -86,11 +86,6 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    // HACK: force page view controller to save contents until I figure out what condition causes the page view not
-    // to receive end text editing messages leading to a page text save
-//    KBCLogDebug(@"forcing page view controller to save edited page text");
-//    [pageViewController_ saveEditedPageText];
-    
     // Save changes in the application's managed object context before the application terminates
     if (managedObjectContext_ != nil)
     {
@@ -240,11 +235,12 @@
     
     if ([notebooks count] == 0)
     {
+        // Default notebook
         NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:[entity name]
                                                               inManagedObjectContext:managedObjectContext_];
         notebook.title = @"My Notebook";
         notebook.notebookId = [NSNumber numberWithInteger:0];
-        
+        // Empty first page
         NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
                                                       inManagedObjectContext:managedObjectContext_];
         page.pageNumber = [NSNumber numberWithInteger:0];
@@ -253,7 +249,6 @@
         [notebook addPagesObject:page];
         
         error = nil;
-        
         if (![managedObjectContext_ save:&error])
         {
             // TODO: FIX, LOG
