@@ -54,7 +54,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
         
         if (error != nil)
         {
-            // TODO: FIX and LOG
+            // PENDING: fix and log
             KBCLogWarning(@"While serializing JSON data, Unresolved error %@, %@", error, [error userInfo]);
             abort();
         }
@@ -109,7 +109,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
         
         if (error != nil)
         {
-            // TODO: FIX and LOG
+            // PENDING: fix and log
             KBCLogWarning(@"While deserializing JSON data, Unresolved error %@, %@", error, [error userInfo]);
             abort();
         }

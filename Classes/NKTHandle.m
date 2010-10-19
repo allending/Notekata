@@ -37,7 +37,7 @@
 
 - (void)layoutSubviews
 {
-    // TODO: unmagic constant this code
+    // PENDING: unmagic constant this code
     if (style_ == NKTHandleStyleTopTip)
     {
         handleTip_.center = CGPointMake(self.bounds.size.width * 0.5, -3.0);

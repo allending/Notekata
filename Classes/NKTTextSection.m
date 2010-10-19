@@ -119,7 +119,7 @@
     [self drawTypesettedLinesInContext:context];
 }
 
-// TODO: this should not assume where the first baseline is. Instead it should get it from the
+// PENDING: this should not assume where the first baseline is. Instead it should get it from the
 // framesetter.
 //
 - (void)drawHorizontalRulesInContext:(CGContextRef)context
@@ -195,7 +195,7 @@
 // Computes the range for lines that should be drawn in this text section based on the current
 // bounds of the text section.
 //
-// TODO: clean this up
+// PENDING: clean this up
 //
 - (NSRange)typesettedLineRangeForDrawing
 {

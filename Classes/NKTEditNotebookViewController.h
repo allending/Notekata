@@ -16,7 +16,7 @@ typedef enum
 } NKTEditNotebookViewControllerMode;
 
 // NKTEditNotebookViewController
-@interface NKTEditNotebookViewController : UIViewController <UITableViewDataSource, UITableViewDelegate>
+@interface NKTEditNotebookViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
 {
 @private
     // Data    
@@ -73,7 +73,6 @@ typedef enum
 
 #pragma mark Responding to Edit Notebook View Controller Events
 
-- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController
-                    didAddNotebook:(NKTNotebook *)notebook;
+- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didAddNotebook:(NKTNotebook *)notebook;
 
 @end

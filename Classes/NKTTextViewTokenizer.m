@@ -536,7 +536,7 @@
         direction == UITextLayoutDirectionRight ||
         direction == UITextLayoutDirectionDown)
     {
-        // No boundary position after the end index TODO:?
+        // PENDING: No boundary position after the end index?
         if (textPosition.location == [string length])
         {
             return textPosition;
@@ -673,7 +673,7 @@
 //    }
 //    else if (granularity == UITextGranularityLine)
 //    {
-//        // TODO: it looks like this is never used, so leave it unimplemented for now
+//        // PENDING: it looks like this is never used, so leave it unimplemented for now
 //        result = nil;
 //    }
 //    else

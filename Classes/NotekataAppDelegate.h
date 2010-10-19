@@ -12,38 +12,39 @@
 @interface NotekataAppDelegate : NSObject <UIApplicationDelegate>
 {
 @private
-    // Data
     NSManagedObjectContext *managedObjectContext_;
     NSManagedObjectModel *managedObjectModel_;
     NSPersistentStoreCoordinator *persistentStoreCoordinator_;
     
-    // Control
     UISplitViewController *splitViewController_;
     NKTRootViewController *rootViewController_;
     NKTPageViewController *pageViewController_;    
     
-    // UI
     UIWindow *window_;
 }
 
-#pragma mark Core Data Stack
+#pragma mark Notebooks
 
-@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+- (void)primeNotebookData;
 
-#pragma mark Application's Documents Directory
+#pragma mark Directories
 
 - (NSString *)applicationDocumentsDirectory;
 
-#pragma mark Accessing View Controllers
+#pragma mark View Controllers
 
 @property (nonatomic, retain) IBOutlet UISplitViewController *splitViewController;
 @property (nonatomic, retain) IBOutlet NKTRootViewController *rootViewController;
 @property (nonatomic, retain) IBOutlet NKTPageViewController *pageViewController;
 
-#pragma mark Accessing the Window
+#pragma mark Views
 
 @property (nonatomic, retain) IBOutlet UIWindow *window;
+
+#pragma mark Core Data
+
+@property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, retain, readonly) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, retain, readonly) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 @end

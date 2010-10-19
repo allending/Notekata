@@ -2,7 +2,7 @@
 //  NKTNotebook.m
 //  Notekata
 //
-//  Created by Allen Ding on 10/11/10.
+//  Created by Allen Ding on 10/18/10.
 //  Copyright 2010 Allen Ding. All rights reserved.
 //
 

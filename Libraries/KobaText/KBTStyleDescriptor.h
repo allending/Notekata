@@ -37,7 +37,7 @@
                              underlined:(BOOL)underlined;
 + (id)styleDescriptorWithPortableRepresentation:(NSDictionary *)portableRepresentation;
 
-// TODO: break out fonts into separate descriptor?
+// PENDING: break out fonts into separate descriptor?
 
 #pragma mark Getting Font Style Information
 

@@ -178,7 +178,7 @@
     [self setHidden:hidden animated:NO];
 }
 
-// TODO: explain logic
+// PENDING: explain logic
 - (void)setHidden:(BOOL)hidden animated:(BOOL)animated
 {
     if (self.hidden == hidden)

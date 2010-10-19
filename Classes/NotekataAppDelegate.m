@@ -8,17 +8,6 @@
 #import "NKTPageViewController.h"
 #import "NKTRootViewController.h"
 
-// NotekataAppDelegate private interface
-@interface NotekataAppDelegate()
-
-#pragma mark Creating a Default Notebook
-
-- (void)ensureNotebookExists;
-
-@end
-
-#pragma mark -
-
 @implementation NotekataAppDelegate
 
 @synthesize splitViewController = splitViewController_;
@@ -28,7 +17,7 @@
 @synthesize window = window_;
 
 #pragma mark -
-#pragma mark Memory management
+#pragma mark Memory
 
 - (void)dealloc
 {
@@ -49,7 +38,7 @@
 }
 
 #pragma mark -
-#pragma mark Application Lifecycle
+#pragma mark Application
 
 - (void)awakeFromNib
 {
@@ -58,9 +47,9 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    [self ensureNotebookExists];
-    
+    [self primeNotebookData];
     [window_ addSubview:splitViewController_.view];
+    [rootViewController_ selectInitialNotebook];
     [window_ makeKeyAndVisible];
     return YES;
 }
@@ -90,10 +79,9 @@
     if (managedObjectContext_ != nil)
     {
         NSError *error = nil;
-        
         if ([managedObjectContext_ hasChanges] && ![managedObjectContext_ save:&error])
         {
-            // TODO: FIX and LOG
+            // PENDING: fix and log
             NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
             abort();
         }
@@ -101,7 +89,72 @@
 }
 
 #pragma mark -
-#pragma mark Core Data Stack
+#pragma mark Notebooks
+
+- (void)primeNotebookData
+{
+    // Fetch at least one notebooks
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+    [fetchRequest setEntity:entity];
+    // We only care that at least one notebook exists
+    [fetchRequest setFetchLimit:1];
+    
+    NSError *error = nil;
+    NSArray *notebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
+    [fetchRequest release];
+    
+    if (error != nil)
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    // Create default notebook if none exist
+    if ([notebooks count] == 0)
+    {
+        // Create notebook
+        NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+        // TODO: localize
+        notebook.title = @"My Notebook";
+        
+        // Generate random uuid as the notebook id
+        CFUUIDRef uuid = CFUUIDCreate(NULL);
+        CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
+        notebook.notebookId = (NSString *)uuidString;
+        CFRelease(uuid);
+        CFRelease(uuidString);
+        
+        // Default display order
+        notebook.displayOrder = [NSNumber numberWithUnsignedInt:0];
+        // Create first page
+        NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:managedObjectContext_];
+        page.pageNumber = [NSNumber numberWithInteger:0];
+        page.textString = @"";
+        page.textStyleString = @"";
+        [notebook addPagesObject:page];
+        
+        error = nil;
+        if (![managedObjectContext_ save:&error])
+        {
+            // PENDING: fix and log
+            KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+            abort();
+        }
+    }
+}
+
+#pragma mark -
+#pragma mark Directories
+
+- (NSString *)applicationDocumentsDirectory
+{
+    return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+}
+
+#pragma mark -
+#pragma mark Core Data
 
 - (NSManagedObjectContext *)managedObjectContext
 {    
@@ -146,11 +199,7 @@
     persistentStoreCoordinator_ = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
     NSError *error = nil;
     
-    if (![persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType
-                                                   configuration:nil
-                                                             URL:storeURL
-                                                         options:nil
-                                                           error:&error])
+    if (![persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
     {
         /*
          Replace this implementation with code to handle the error appropriately.
@@ -174,15 +223,15 @@
          
          * Performing automatic lightweight migration by passing the following dictionary as the options parameter: 
          [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES],NSMigratePersistentStoresAutomaticallyOption,
-                                                    [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption,
-                                                    nil];
+         [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption,
+         nil];
          
          Lightweight migration will only work for a limited set of schema changes; consult "Core Data Model Versioning
          and Data Migration Programming Guide" for details.
          
          */
         
-        // TODO: FIX, REMOVE AFTER DEVELOPMENT
+        // PENDING: fix and remove after development
         if ([error code] == NSPersistentStoreIncompatibleVersionHashError)
         {
             KBCLogWarning(@"core data error %@, deleting store and retrying", [error description]);
@@ -200,62 +249,6 @@
     }
     
     return persistentStoreCoordinator_;
-}
-
-#pragma mark -
-#pragma mark Application's Documents Directory
-
-- (NSString *)applicationDocumentsDirectory
-{
-    return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
-}
-
-#pragma mark -
-#pragma mark Creating a Default Notebook
-
-// If no notebooks exist in the managed object context, creates one with a default title and page.
-- (void)ensureNotebookExists
-{
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Notebook"
-                                              inManagedObjectContext:managedObjectContext_];
-    [fetchRequest setEntity:entity];
-    
-    NSError *error = nil;
-    NSArray *notebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
-    
-    if (error != nil)
-    {
-        // TODO: FIX, LOG
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
-    
-    if ([notebooks count] == 0)
-    {
-        // Default notebook
-        NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:[entity name]
-                                                              inManagedObjectContext:managedObjectContext_];
-        notebook.title = @"My Notebook";
-        notebook.notebookId = [NSNumber numberWithInteger:0];
-        // Empty first page
-        NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
-                                                      inManagedObjectContext:managedObjectContext_];
-        page.pageNumber = [NSNumber numberWithInteger:0];
-        page.textString = @"";
-        page.textStyleString = @"";
-        [notebook addPagesObject:page];
-        
-        error = nil;
-        if (![managedObjectContext_ save:&error])
-        {
-            // TODO: FIX, LOG
-            KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }
 }
 
 @end

@@ -7,93 +7,9 @@
 #import "NKTPage.h"
 #import "NKTNotebook.h"
 
-// NKTNotebookViewController private interface
-@interface NKTPageViewController()
-
-#pragma mark Accessing View Controllers
-
-@property (nonatomic, retain) UIPopoverController *fontPopoverController;
-@property (nonatomic, retain) NKTFontPickerViewController *fontPickerViewController;
-
-#pragma mark Managing Views
-
-@property (nonatomic, retain) UIView *creamPaperBackgroundView;
-@property (nonatomic, retain) UIView *plainPaperBackgroundView;
-@property (nonatomic, retain) UIImageView *capAndEdgeView;
-@property (nonatomic, retain) UIImageView *edgeShadowView;
-@property (nonatomic, retain) UIView *frozenOverlay;
-
-#pragma mark Updating Model Views
-
-- (void)updateModelViews;
-
-#pragma mark Configuring the Page Style
-
-- (void)styleTextView;
-
-#pragma mark Managing the Title
-
-- (void)updateTitleLabel;
-- (void)updateNavigationButtonTitle;
-
-#pragma mark Managing the Toolbar
-
-@property (nonatomic, retain) UIButton *navigationButton;
-@property (nonatomic, retain) UIBarButtonItem *navigationButtonItem;
-@property (nonatomic, retain) KUIToggleButton *boldToggleButton;
-@property (nonatomic, retain) KUIToggleButton *italicToggleButton;
-@property (nonatomic, retain) KUIToggleButton *underlineToggleButton;
-@property (nonatomic, retain) UIButton *fontButton;
-@property (nonatomic, retain) UIBarButtonItem *fontToolbarItem;
-
-- (UIButton *)borderedToolbarButton;
-- (void)populateToolbar;
-- (void)updateToolbarStyleItems;
-
-#pragma mark Managing Text Attributes
-
-- (NSDictionary *)currentCoreTextAttributes;
-- (NSDictionary *)attributesByAddingBoldTraitToAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesByRemovingBoldTraitFromAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesByAddingItalicTraitToAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesByRemovingItalicTraitFromAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesByAddingUnderlineToAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesByRemovingUnderlineFromAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesBySettingFontSizeOfAttributes:(NSDictionary *)attributes;
-- (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes;
-
-#pragma mark Responding to Toolbar Actions
-
-- (void)navigationButtonPressed:(UIButton *)button;
-- (void)pageStylePressed:(UIButton *)button;
-- (void)fontButtonPressed:(UIButton *)button;
-- (void)boldToggleChanged:(KUIToggleButton *)toggleButton;
-- (void)italicToggleChanged:(KUIToggleButton *)toggleButton;
-- (void)underlineToggleChanged:(KUIToggleButton *)toggleButton;
-- (void)fontButtonPressed:(UIButton *)button;
-
-#pragma mark Registering for Keyboard Events
-
-- (void)registerForKeyboardEvents;
-- (void)unregisterForKeyboardEvents;
-
-#pragma mark Responding to Keyboard Events
-
-- (void)keyboardWillShow:(NSNotification *)notification;
-- (void)keyboardDidShow:(NSNotification *)notification;
-- (void)keyboardWillHide:(NSNotification *)notification;
-- (CGRect)keyboardFrameFromNotification:(NSNotification *)notification;
-- (void)growTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
-- (void)shrinkTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
-
-@end
-
-#pragma mark -
-
 @implementation NKTPageViewController
 
 @synthesize page = page_;
-
 @synthesize delegate = delegate_;
 
 @synthesize fontPopoverController = fontPopoverController_;
@@ -136,7 +52,7 @@
 }
 
 #pragma mark -
-#pragma mark Memory Management
+#pragma mark Memory
 
 - (void)dealloc
 {
@@ -170,164 +86,7 @@
 }
 
 #pragma mark -
-#pragma mark Accessing the Page
-
-- (void)setPage:(NKTPage *)page
-{
-    [self setPage:page saveEditedText:YES];
-}
-
-- (void)setPage:(NKTPage *)page saveEditedText:(BOOL)saveEditedText
-{
-    if (saveEditedText)
-    {
-        [self saveEditedPageText];
-    }
-    
-    if (page_ == page)
-    {
-        return;
-    }
-    
-    if ([fontPopoverController_ isPopoverVisible])
-    {
-        [fontPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
-    [page_ release];
-    page_ = [page retain];
-    [self updateModelViews];
-    [self updateToolbarStyleItems];
-}
-
-#pragma mark -
-#pragma mark Saving the Page
-
-- (void)saveEditedPageText
-{
-    if (page_ == nil)
-    {
-        return;
-    }
-    
-    KBCLogDebug(@"***********************************************\nstart saving edited text");
-    
-    // Set the text of the page from the text view's text and save the page
-    NSAttributedString *text = textView_.text;
-    KBTAttributedStringIntermediate *intermediate = [[KBTAttributedStringIntermediate alloc] initWithAttributedString:text];
-    KBCLogDebug(@"text string:\n%@", [intermediate string]);
-    page_.textString = [intermediate string];
-    page_.textStyleString = [intermediate styleString];
-    [intermediate release];
-    
-    NSError *error = nil;
-    
-    if (![page_.managedObjectContext save:&error])
-    {
-        // TODO: FIX and LOG
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
-    
-    KBCLogDebug(@"***********************************************\nend saving edited text");
-}
-
-#pragma mark -
-#pragma mark Responding to Split View Controller Events
-
-- (void)splitViewController:(UISplitViewController*)svc
-     willHideViewController:(UIViewController *)aViewController
-          withBarButtonItem:(UIBarButtonItem*)barButtonItem
-       forPopoverController:(UIPopoverController*)pc
-{
-    NSMutableArray *items = [NSMutableArray arrayWithArray:self.toolbar.items];
-    
-    if (![items containsObject:navigationButtonItem_])
-    {
-        [items insertObject:navigationButtonItem_ atIndex:0];
-        [self.toolbar setItems:items animated:NO];
-    }
-    
-    navigationPopoverController_ = pc;
-    [navigationPopoverController_ setDelegate:self];
-}
-
-- (void)splitViewController:(UISplitViewController*)svc
-     willShowViewController:(UIViewController *)aViewController
-  invalidatingBarButtonItem:(UIBarButtonItem *)button
-{
-    NSMutableArray *items = [NSMutableArray arrayWithArray:self.toolbar.items];
-    
-    if ([items containsObject:navigationButtonItem_])
-    {
-        [items removeObject:navigationButtonItem_];
-        [self.toolbar setItems:items animated:NO];
-    }
-    
-    navigationPopoverController_ = nil;
-}
-
-- (void)presentNavigationPopover
-{
-    [navigationPopoverController_ presentPopoverFromBarButtonItem:navigationButtonItem_
-                                         permittedArrowDirections:UIPopoverArrowDirectionAny
-                                                         animated:NO];
-}
-
-#pragma mark -
-#pragma mark Responding to Popover Controller Events
-
-- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
-{
-    KBCLogDebug(@"popover dismissed");
-}
-
-- (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
-{
-    if (popoverController == navigationPopoverController_)
-    {
-        return self.view.userInteractionEnabled;
-    }
-    
-    return YES;
-}
-
-#pragma mark -
-#pragma mark Responding to Font Picker View Controller Events
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-         didSelectFontFamilyName:(NSString *)fontFamilyName
-{
-    [textView_ styleTextRange:textView_.selectedTextRange
-                   withTarget:self
-                     selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
-    
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
-                                 fontPickerViewController.selectedFontFamilyName,
-                                 (NSInteger)fontPickerViewController.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
-    
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-    [self updateToolbarStyleItems];
-}
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController
-               didSelectFontSize:(CGFloat)fontSize
-{
-    [textView_ styleTextRange:textView_.selectedTextRange
-                   withTarget:self
-                     selector:@selector(attributesBySettingFontSizeOfAttributes:)];
-    
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
-                                 fontPickerViewController.selectedFontFamilyName,
-                                 (NSInteger)fontPickerViewController.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
-    
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-}
-
-#pragma mark -
-#pragma mark View Lifecycle
+#pragma mark View Controller
 
 - (void)viewDidLoad
 {
@@ -335,7 +94,7 @@
     
     self.view.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
     
-    // TODO: is this right?
+    // PENDING: is this right?
     self.textView.opaque = YES;
     self.textView.clearsContextBeforeDrawing = NO;
     
@@ -380,7 +139,7 @@
     
     // Frozen overlay
     frozenOverlay_ = [[UIView alloc] initWithFrame:self.view.bounds];
-    frozenOverlay_.backgroundColor = [UIColor grayColor];
+    frozenOverlay_.backgroundColor = [UIColor blackColor];
     frozenOverlay_.userInteractionEnabled = NO;
     frozenOverlay_.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     frozenOverlay_.alpha = 0.0;
@@ -388,9 +147,8 @@
     
     // Set up the text view
     textView_.delegate = self;
-    [self styleTextView];
-    [self populateToolbar];
-    [self updateToolbarStyleItems];
+    [self applyPageStyle];
+    [self addToolbarItems];
 }
 
 - (void)viewDidUnload
@@ -420,18 +178,13 @@
 {
     [super viewWillAppear:animated];
     [self registerForKeyboardEvents];
-    [self updateModelViews];
-}
-
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
+    [self updateViews];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    [self saveEditedPageText];
+    [self savePendingChanges];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -439,9 +192,6 @@
     [super viewDidDisappear:animated];
     [self unregisterForKeyboardEvents];
 }
-
-#pragma mark -
-#pragma mark Handling Rotations
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
@@ -484,28 +234,58 @@
 }
 
 #pragma mark -
-#pragma mark Managing Loupes
+#pragma mark Page
 
-- (UIColor *)loupeFillColor
+- (void)setPage:(NKTPage *)page
 {
-    return textView_.backgroundView.backgroundColor;
+    if (page_ == page)
+    {
+        return;
+    }
+    
+    if ([fontPopoverController_ isPopoverVisible])
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    // PENDING: store a flag so this does not call delegate
+    // NOTE: this causes a save to occur on the previous page!
+    //[self resignFirstResponder];
+    //[self savePendingChanges];
+    
+    [page_ release];
+    page_ = [page retain];
+    
+    [self updateViews];
+}
+
+// PENDING: this should be unnecessary
+- (void)savePendingChanges
+{
+    if (page_ == nil)
+    {
+        return;
+    }
+ 
+    // PENDING: store a dirty flag to avoid needless saving
+    // Set the text of the page from the text view's text and save the page
+    NSAttributedString *text = textView_.text;
+    KBTAttributedStringIntermediate *intermediate = [[KBTAttributedStringIntermediate alloc] initWithAttributedString:text];
+    page_.textString = [intermediate string];
+    page_.textStyleString = [intermediate styleString];
+    [intermediate release];
+    
+    NSError *error = nil;
+    if (![page_.managedObjectContext save:&error])
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
 }
 
 #pragma mark -
-#pragma mark Updating Model Views
-
-- (void)updateModelViews
-{
-    KBTAttributedStringIntermediate *intermediate = [KBTAttributedStringIntermediate attributedStringIntermediateWithString:page_.textString
-                                                                                                                styleString:page_.textStyleString];
-    // NOTE: needs to be in this order because the title label is read from the text view text
-    textView_.text = [intermediate attributedString];
-    [self updateTitleLabel];
-    [self updateNavigationButtonTitle];
-}
-
-#pragma mark -
-#pragma mark Configuring the Page Style
+#pragma mark Styles
 
 - (void)setPageStyle:(NKTPageStyle)pageStyle
 {
@@ -515,10 +295,10 @@
     }
     
     pageStyle_ = pageStyle;
-    [self styleTextView];
+    [self applyPageStyle];
 }
 
-- (void)styleTextView
+- (void)applyPageStyle
 {
     switch (pageStyle_)
     {
@@ -579,10 +359,9 @@
 }
 
 #pragma mark -
-#pragma mark Freezing User Interaction
+#pragma mark User Interaction
 
-// TODO: store state of freeze in ivar
-
+// PENDING: store state of freeze in ivar
 - (void)freezeUserInteraction
 {
     if (!self.view.userInteractionEnabled)
@@ -592,7 +371,7 @@
     
     [UIView beginAnimations:@"FreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
-    frozenOverlay_.alpha = 0.35;
+    frozenOverlay_.alpha = 0.37;
     [UIView commitAnimations];
     self.view.userInteractionEnabled = NO;
 }
@@ -611,9 +390,10 @@
     self.view.userInteractionEnabled = YES;
 }
 
-#pragma mark Presenting the Navigation Popover
+#pragma mark -
+#pragma mark Navigation
 
-- (void)dismissNavigationPopoverAnimated:(BOOL)animated
+- (void)dismissNavigationPopoverAnimated
 {
     if (navigationPopoverController_.popoverVisible)
     {
@@ -621,31 +401,79 @@
     }
 }
 
-#pragma mark -
-#pragma mark Managing the Title
-
-- (void)updateTitleLabel
+- (void)dismissNavigationPopoverAnimated:(BOOL)animated
 {
-    NSString *snippet = KUITrimmedSnippetFromString([textView_.text string], 50);
-    
-    if ([snippet length] == 0)
+    if (navigationPopoverController_.popoverVisible)
     {
-        // TODO: localization
-        titleLabel_.text = @"Untitled";
+        [navigationPopoverController_ dismissPopoverAnimated:animated];
+    }
+}
+
+- (void)handleNavigationButtonTapped:(UIButton *)button
+{
+    if (navigationPopoverController_.popoverVisible)
+    {
+        [navigationPopoverController_ dismissPopoverAnimated:YES];
     }
     else
     {
-        titleLabel_.text = snippet;
+        [self.textView resignFirstResponder];
+        [navigationPopoverController_ presentPopoverFromBarButtonItem:navigationButtonItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
 }
 
-- (void)updateNavigationButtonTitle
+#pragma mark -
+#pragma mark Split View Controller
+
+- (void)splitViewController:(UISplitViewController*)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem*)barButtonItem forPopoverController:(UIPopoverController*)pc
 {
-    [navigationButton_ setTitle:page_.notebook.title forState:UIControlStateNormal];
+    NSMutableArray *items = [self.toolbar.items mutableCopy];
+    
+    // Add the navigation item to the toolbar if needed
+    if (![items containsObject:navigationButtonItem_])
+    {
+        [items insertObject:navigationButtonItem_ atIndex:0];
+        [self.toolbar setItems:items animated:NO];
+    }
+    
+    [items release];
+    navigationPopoverController_ = pc;
+    [navigationPopoverController_ setDelegate:self];
+}
+
+- (void)splitViewController:(UISplitViewController*)svc willShowViewController:(UIViewController *)aViewController invalidatingBarButtonItem:(UIBarButtonItem *)button
+{
+    NSMutableArray *items = [self.toolbar.items mutableCopy];
+    
+    // Remove the navigation item from the toolbar
+    if ([items containsObject:navigationButtonItem_])
+    {
+        [items removeObject:navigationButtonItem_];
+        [self.toolbar setItems:items animated:NO];
+    }
+    
+    [items release];
+    navigationPopoverController_ = nil;
 }
 
 #pragma mark -
-#pragma mark Managing the Toolbar
+#pragma mark Popover Controller
+
+- (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
+{
+    if (popoverController == navigationPopoverController_)
+    {
+        // PENDING: this is kinda leaky ... maybe ask delegate?
+        // If the controller is frozen, then we must not dismiss the popover, or there might be no way
+        // to unfreeze the controller
+        return self.view.userInteractionEnabled;
+    }
+    
+    return YES;
+}
+
+#pragma mark -
+#pragma mark Views
 
 - (UIButton *)borderedToolbarButton
 {
@@ -658,7 +486,6 @@
     UIColor *disabledColor = [UIColor darkGrayColor];
     UIFont *buttonFont = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
     UIEdgeInsets buttonInsets = UIEdgeInsetsMake(6.0, 8.0, 6.0, 8.0);
-    
     // Create and return the button
     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
     [button setBackgroundImage:buttonBackground forState:UIControlStateNormal];
@@ -672,50 +499,40 @@
     return button;
 }
 
-- (void)populateToolbar
+- (void)addToolbarItems
 {
     NSMutableArray *toolbarItems = [NSMutableArray array];
     
     // Navigation button
     navigationButton_ = [[self borderedToolbarButton] retain];
-    [navigationButton_ addTarget:self
-                          action:@selector(navigationButtonPressed:)
-                forControlEvents:UIControlEventTouchUpInside];
+    [navigationButton_ addTarget:self action:@selector(handleNavigationButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     navigationButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
     navigationButtonItem_ = [[UIBarButtonItem alloc] initWithCustomView:navigationButton_];
     
     // Page style item
     UIButton *pageStyleButton = [self borderedToolbarButton];
     [pageStyleButton setTitle:@"Page Style" forState:UIControlStateNormal];
-    [pageStyleButton addTarget:self
-                        action:@selector(pageStylePressed:)
-              forControlEvents:UIControlEventTouchUpInside];
+    [pageStyleButton addTarget:self action:@selector(handlePageStyleTapped:) forControlEvents:UIControlEventTouchUpInside];
     pageStyleButton.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
     UIBarButtonItem *pageStyleItem = [[UIBarButtonItem alloc] initWithCustomView:pageStyleButton];
     [toolbarItems addObject:pageStyleItem];
     [pageStyleItem release];
     
     // Left flexible space
-    UIBarButtonItem *spacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-                                                                            target:nil
-                                                                            action:nil];
+    UIBarButtonItem *spacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
     [toolbarItems addObject:spacer];
     [spacer release];
     
     // Font item
     fontButton_ = [[self borderedToolbarButton] retain];
-    [fontButton_ addTarget:self
-                    action:@selector(fontButtonPressed:)
-          forControlEvents:UIControlEventTouchUpInside];
+    [fontButton_ addTarget:self action:@selector(handleFontButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     fontButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
     fontToolbarItem_ = [[UIBarButtonItem alloc] initWithCustomView:fontButton_];
     [toolbarItems addObject:fontToolbarItem_];
     
     // Bold item
     boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [boldToggleButton_ addTarget:self
-                          action:@selector(boldToggleChanged:)
-                forControlEvents:UIControlEventValueChanged];
+    [boldToggleButton_ addTarget:self action:@selector(handleBoldToggleTapped:) forControlEvents:UIControlEventValueChanged];
     [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
     boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
     boldToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
@@ -725,9 +542,7 @@
     
     // Italic item
     italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [italicToggleButton_ addTarget:self
-                            action:@selector(italicToggleChanged:)
-                  forControlEvents:UIControlEventValueChanged];
+    [italicToggleButton_ addTarget:self action:@selector(handleItalicToggleTapped:) forControlEvents:UIControlEventValueChanged];
     [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
     italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0];
     italicToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
@@ -737,9 +552,7 @@
     
     // Underline item
     underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [underlineToggleButton_ addTarget:self
-                               action:@selector(underlineToggleChanged:)
-                     forControlEvents:UIControlEventValueChanged];
+    [underlineToggleButton_ addTarget:self action:@selector(handleUnderlineToggleTapped:) forControlEvents:UIControlEventValueChanged];
     [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
     underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
     underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
@@ -750,8 +563,55 @@
     self.toolbar.items = toolbarItems;
 }
 
-- (void)updateToolbarStyleItems
+#pragma mark -
+#pragma mark Updating Views
+
+- (void)updateViews
 {
+    // Text view needs to be updated first because title label update depends on it
+    [self updateTextView];
+    [self updateTitleLabel];
+    [self updateNavigationButtonTitle];
+    [self updateTextEditingItems];
+}
+
+- (void)updateTextView
+{
+    if (page_ == nil)
+    {
+        textView_.text = nil;
+    }
+    else
+    {
+        KBTAttributedStringIntermediate *intermediate = [KBTAttributedStringIntermediate attributedStringIntermediateWithString:page_.textString styleString:page_.textStyleString];
+        textView_.text = [intermediate attributedString];
+    }
+}
+
+- (void)updateTitleLabel
+{
+    NSString *snippet = KUITrimmedSnippetFromString([textView_.text string], 50);
+    
+    if ([snippet length] == 0)
+    {
+        // PENDING: localization
+        titleLabel_.text = @"Untitled";
+    }
+    else
+    {
+        titleLabel_.text = snippet;
+    }
+}
+
+- (void)updateNavigationButtonTitle
+{
+    [navigationButton_ setTitle:page_.notebook.title forState:UIControlStateNormal];
+}
+
+- (void)updateTextEditingItems
+{
+    // PENDING: improve poor clarity of behavior
+    
     if ([textView_ isFirstResponder])
     {
         UITextRange *selectedTextRange = textView_.selectedTextRange;
@@ -779,39 +639,81 @@
     }
     
     // Update the font button title regardless of editing state
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d",
-                                 fontPickerViewController_.selectedFontFamilyName,
-                                 fontPickerViewController_.selectedFontSize];
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontPickerViewController_.selectedFontFamilyName, fontPickerViewController_.selectedFontSize];
     [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
 }
 
 #pragma mark -
-#pragma mark Managing Text Attributes
+#pragma mark Text View
 
 - (NSDictionary *)defaultCoreTextAttributes
 {
-    KBTStyleDescriptor *styleDecriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:@"Helvetica Neue"
-                                                                                      fontSize:16.0
-                                                                                          bold:NO
-                                                                                        italic:NO
-                                                                                    underlined:NO];
+    KBTStyleDescriptor *styleDecriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:@"Helvetica Neue" fontSize:16.0 bold:NO italic:NO underlined:NO];
     return [styleDecriptor coreTextAttributes];
 }
 
+- (UIColor *)loupeFillColor
+{
+    // The loupe 
+    return textView_.backgroundView.backgroundColor;
+}
+
+- (void)textViewDidBeginEditing:(NKTTextView *)textView
+{
+    [self updateTextEditingItems];
+}
+
+- (void)textViewDidEndEditing:(NKTTextView *)textView
+{
+    if (fontPopoverController_.popoverVisible)
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    [self updateTextEditingItems];
+    [self savePendingChanges];
+}
+
+- (void)textViewDidChangeSelection:(NKTTextView *)textView
+{
+    [self updateTextEditingItems];
+}
+
+- (void)textViewDidChange:(NKTTextView *)textView
+{
+    if (navigationPopoverController_.popoverVisible)
+    {
+        [navigationPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    if (fontPopoverController_.popoverVisible)
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    if ([delegate_ respondsToSelector:@selector(pageViewController:textViewDidChange:)])
+    {
+        [delegate_ pageViewController:self textViewDidChange:textView_];
+    }
+    
+    [self updateTitleLabel];
+}
+
+#pragma mark -
+#pragma mark Text Editing
+
 - (NSDictionary *)currentCoreTextAttributes
 {
-    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:fontPickerViewController_.selectedFontFamilyName
-                                                                                       fontSize:fontPickerViewController_.selectedFontSize
-                                                                                           bold:boldToggleButton_.selected
-                                                                                         italic:italicToggleButton_.selected
-                                                                                     underlined:underlineToggleButton_.selected];
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    CGFloat fontSize = fontPickerViewController_.selectedFontSize;
+    BOOL bold = boldToggleButton_.selected;
+    BOOL italic = italicToggleButton_.selected;
+    BOOL underlined = underlineToggleButton_.selected;
+    KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:familyName fontSize:fontSize bold:bold italic:italic underlined:underlined];
     return [styleDescriptor coreTextAttributes];
 }
 
-// TODO: move to class method of helper class?
-//
-// These methods below are meant to be used as callbacks by the NKTTextView in its
-// -styleTextRange:withTarget:selector: method.
+// These methods are meant to be used as callbacks by the NKTTextView in its -styleTextRange:withTarget:selector: method.
 
 - (NSDictionary *)attributesByAddingBoldTraitToAttributes:(NSDictionary *)attributes
 {
@@ -869,30 +771,13 @@
     return [newStyleDescriptor coreTextAttributes];
 }
 
-#pragma mark -
-#pragma mark Responding to Toolbar Actions
-
-- (void)navigationButtonPressed:(UIButton *)button
+- (void)handlePageStyleTapped:(UIButton *)button
 {
-    if (navigationPopoverController_.popoverVisible)
-    {
-        [navigationPopoverController_ dismissPopoverAnimated:YES];
-    }
-    else
-    {
-        [self.textView resignFirstResponder];
-        [navigationPopoverController_ presentPopoverFromBarButtonItem:navigationButtonItem_
-                                             permittedArrowDirections:UIPopoverArrowDirectionAny
-                                                             animated:YES];
-    }
-}
-
-- (void)pageStylePressed:(UIButton *)button
-{
+    // PENDING: Clarity!
     self.pageStyle = (self.pageStyle + 1) % 6;
 }
 
-- (void)fontButtonPressed:(UIButton *)button
+- (void)handleFontButtonTapped:(UIButton *)button
 {
     if (fontPopoverController_.popoverVisible)
     {
@@ -900,16 +785,14 @@
     }
     else
     {
-        [fontPopoverController_ presentPopoverFromBarButtonItem:fontToolbarItem_
-                                       permittedArrowDirections:UIPopoverArrowDirectionAny
-                                                       animated:YES];
+        [fontPopoverController_ presentPopoverFromBarButtonItem:fontToolbarItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
 }
 
-- (void)boldToggleChanged:(KUIToggleButton *)toggleButton
+- (void)handleBoldToggleTapped:(KUIToggleButton *)toggleButton
 {
-    NSString *fontFamilyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:fontFamilyName];
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
     
     // Deselect the italic button if the font family supports bold or italic traits exclusively
     if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
@@ -919,21 +802,17 @@
     
     if (toggleButton.selected)
     {
-        [textView_ styleTextRange:textView_.selectedTextRange
-                       withTarget:self
-                         selector:@selector(attributesByAddingBoldTraitToAttributes:)];
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingBoldTraitToAttributes:)];
     }
     else
     {
-        [textView_ styleTextRange:textView_.selectedTextRange
-                       withTarget:self
-                         selector:@selector(attributesByRemovingBoldTraitFromAttributes:)];
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingBoldTraitFromAttributes:)];
     }
     
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
 }
 
-- (void)italicToggleChanged:(KUIToggleButton *)toggleButton
+- (void)handleItalicToggleTapped:(KUIToggleButton *)toggleButton
 {
     NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
     KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
@@ -946,106 +825,65 @@
     
     if (toggleButton.selected)
     {
-        [textView_ styleTextRange:textView_.selectedTextRange
-                       withTarget:self
-                         selector:@selector(attributesByAddingItalicTraitToAttributes:)];
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingItalicTraitToAttributes:)];
     }
     else
     {
-        [textView_ styleTextRange:textView_.selectedTextRange
-                       withTarget:self
-                         selector:@selector(attributesByRemovingItalicTraitFromAttributes:)];
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingItalicTraitFromAttributes:)];
     }
     
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
 }
 
-- (void)underlineToggleChanged:(KUIToggleButton *)toggleButton
+- (void)handleUnderlineToggleTapped:(KUIToggleButton *)toggleButton
 {
     if (underlineToggleButton_.selected)
     {
-        [textView_ styleTextRange:textView_.selectedTextRange
-                       withTarget:self
-                         selector:@selector(attributesByAddingUnderlineToAttributes:)];
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingUnderlineToAttributes:)];
     }
     else
     {
-        [textView_ styleTextRange:textView_.selectedTextRange
-                       withTarget:self
-                         selector:@selector(attributesByRemovingUnderlineFromAttributes:)];
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingUnderlineFromAttributes:)];
     }
     
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
 }
 
 #pragma mark -
-#pragma mark Responding to Text View Events
+#pragma mark Font Picker View Controller
 
-- (void)textViewDidBeginEditing:(NKTTextView *)textView
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontFamilyName:(NSString *)fontFamilyName
 {
-    [self updateToolbarStyleItems];
+    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontPickerViewController.selectedFontFamilyName, (NSInteger)fontPickerViewController.selectedFontSize];
+    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+    [self updateTextEditingItems];
 }
 
-- (void)textViewDidEndEditing:(NKTTextView *)textView
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontSize:(CGFloat)fontSize
 {
-    // The popover might still be visible when editing ends
-    if (fontPopoverController_.popoverVisible)
-    {
-        [fontPopoverController_ dismissPopoverAnimated:YES];
-    }
+    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontSizeOfAttributes:)];
     
-    [self updateToolbarStyleItems];
-    [self saveEditedPageText];
-}
-
-- (void)textViewDidChangeSelection:(NKTTextView *)textView
-{
-    [self updateToolbarStyleItems];
-}
-
-- (void)textViewDidChange:(NKTTextView *)textView
-{
-    if (fontPopoverController_.popoverVisible)
-    {
-        [fontPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
-    if (navigationPopoverController_.popoverVisible)
-    {
-        [navigationPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
-    if ([delegate_ respondsToSelector:@selector(pageViewController:textViewDidChange:)])
-    {
-        [delegate_ pageViewController:self textViewDidChange:textView_];
-    }
-    
-    [self updateTitleLabel];
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontPickerViewController.selectedFontFamilyName, (NSInteger)fontPickerViewController.selectedFontSize];
+    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
 }
 
 #pragma mark -
-#pragma mark Registering for Keyboard Events
+#pragma mark Keyboard
 
 - (void)registerForKeyboardEvents
 {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardDidShow:)
-                                                 name:UIKeyboardDidShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)unregisterForKeyboardEvents
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+//    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
-
-#pragma mark -
-#pragma mark Responding to Keyboard Events
 
 static const CGFloat KeyboardOverlapTolerance = 1.0;
 

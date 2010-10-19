@@ -13,7 +13,6 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */; };
 		28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD735F0D9D9599002E5188 /* MainWindow.xib */; };
-		9F0D0C811262D03F00348E1B /* NKTNotebook.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */; };
 		9F0D0EB61263069A00348E1B /* CDataScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0E9E1263069A00348E1B /* CDataScanner.m */; };
 		9F0D0EB71263069A00348E1B /* CExtensibleJSONDataSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA11263069A00348E1B /* CExtensibleJSONDataSerializer.m */; };
 		9F0D0EB81263069A00348E1B /* CDataScanner_Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EA41263069A00348E1B /* CDataScanner_Extensions.m */; };
@@ -36,7 +35,8 @@
 		9F1665271255B9B800AEA16F /* Notes.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F1665261255B9B800AEA16F /* Notes.txt */; };
 		9F29982D1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */; };
 		9F327E6E125951A50026DCA7 /* NSString+KobaCoreAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */; };
-		9F339C50126A091F004C8E3E /* NKTPage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F339C4F126A091F004C8E3E /* NKTPage.m */; };
+		9F34A32B126C92390067CC61 /* NKTPage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F34A328126C92390067CC61 /* NKTPage.m */; };
+		9F34A32C126C92390067CC61 /* NKTNotebook.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F34A32A126C92390067CC61 /* NKTNotebook.m */; };
 		9F381028126378D800C1CBF7 /* RandomCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F381027126378D800C1CBF7 /* RandomCap.png */; };
 		9F3D04951261C73A00AB9903 /* NKTRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D04941261C73A00AB9903 /* NKTRootViewController.m */; };
 		9F3D079B1261F71F00AB9903 /* DocumentIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F3D079A1261F71F00AB9903 /* DocumentIcon.png */; };
@@ -106,8 +106,6 @@
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Notekata-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Notekata-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		9F0ACBA0124228750050CFAE /* KobaText.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaText.h; sourceTree = "<group>"; };
-		9F0D0C7E1262D03F00348E1B /* NKTNotebook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebook.h; sourceTree = "<group>"; };
-		9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebook.m; sourceTree = "<group>"; };
 		9F0D0E9D1263069A00348E1B /* CDataScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDataScanner.h; sourceTree = "<group>"; };
 		9F0D0E9E1263069A00348E1B /* CDataScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDataScanner.m; sourceTree = "<group>"; };
 		9F0D0EA01263069A00348E1B /* CExtensibleJSONDataSerializer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CExtensibleJSONDataSerializer.h; sourceTree = "<group>"; };
@@ -148,8 +146,10 @@
 		9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = NKTFontPickerViewTableViewBorder.png; sourceTree = "<group>"; };
 		9F327E6C125951A50026DCA7 /* NSString+KobaCoreAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+KobaCoreAdditions.h"; sourceTree = "<group>"; };
 		9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+KobaCoreAdditions.m"; sourceTree = "<group>"; };
-		9F339C4E126A091F004C8E3E /* NKTPage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPage.h; sourceTree = "<group>"; };
-		9F339C4F126A091F004C8E3E /* NKTPage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPage.m; sourceTree = "<group>"; };
+		9F34A327126C92390067CC61 /* NKTPage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPage.h; sourceTree = "<group>"; };
+		9F34A328126C92390067CC61 /* NKTPage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTPage.m; sourceTree = "<group>"; };
+		9F34A329126C92390067CC61 /* NKTNotebook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebook.h; sourceTree = "<group>"; };
+		9F34A32A126C92390067CC61 /* NKTNotebook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebook.m; sourceTree = "<group>"; };
 		9F381027126378D800C1CBF7 /* RandomCap.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = RandomCap.png; sourceTree = "<group>"; };
 		9F3D04931261C73A00AB9903 /* NKTRootViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTRootViewController.h; sourceTree = "<group>"; };
 		9F3D04941261C73A00AB9903 /* NKTRootViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTRootViewController.m; sourceTree = "<group>"; };
@@ -490,10 +490,10 @@
 		F5632AAB11DD92D800868F7B /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				9F0D0C7E1262D03F00348E1B /* NKTNotebook.h */,
-				9F0D0C7F1262D03F00348E1B /* NKTNotebook.m */,
-				9F339C4E126A091F004C8E3E /* NKTPage.h */,
-				9F339C4F126A091F004C8E3E /* NKTPage.m */,
+				9F34A327126C92390067CC61 /* NKTPage.h */,
+				9F34A328126C92390067CC61 /* NKTPage.m */,
+				9F34A329126C92390067CC61 /* NKTNotebook.h */,
+				9F34A32A126C92390067CC61 /* NKTNotebook.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -655,7 +655,6 @@
 				9F47F0FE1260C57F00E5E6BB /* Notekata.xcdatamodel in Sources */,
 				9F3D04951261C73A00AB9903 /* NKTRootViewController.m in Sources */,
 				9F3D08D012620AF200AB9903 /* NKTNotebookViewController.m in Sources */,
-				9F0D0C811262D03F00348E1B /* NKTNotebook.m in Sources */,
 				9F0D0EB61263069A00348E1B /* CDataScanner.m in Sources */,
 				9F0D0EB71263069A00348E1B /* CExtensibleJSONDataSerializer.m in Sources */,
 				9F0D0EB81263069A00348E1B /* CDataScanner_Extensions.m in Sources */,
@@ -674,8 +673,9 @@
 				9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */,
 				9FFD84FB1264A34400CB082D /* KUIUtilities.m in Sources */,
 				9FC1D46C1267F34000443368 /* NKTSelectedTextRegion.m in Sources */,
-				9F339C50126A091F004C8E3E /* NKTPage.m in Sources */,
 				9FAF0C2F126BD52800B58D59 /* NKTEditNotebookViewController.m in Sources */,
+				9F34A32B126C92390067CC61 /* NKTPage.m in Sources */,
+				9F34A32C126C92390067CC61 /* NKTNotebook.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

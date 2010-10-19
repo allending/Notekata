@@ -345,7 +345,6 @@
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
-
 #pragma mark -
 #pragma mark Styling Text
 
@@ -1129,7 +1128,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         loupe.zoomCenter = [self convertPoint:zoomCenter toView:loupe.zoomedView];
         // Anchor loupe to a point just on top of the line
         CGPoint anchor = CGPointMake(point.x, baselineOrigin.y - (lineHeight_ * 0.75));
-        // TODO: clamping wrong
+        // PENDING: clamping wrong
         //anchor = KBCClampPointToRect(anchor, self.bounds);
         loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
     }
@@ -1137,7 +1136,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     {
         // No adjusting of point, just use it as both the zoom center and anchor
         loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];
-        // TODO: clamping wrong
+        // PENDING: clamping wrong
         //CGPoint anchor = KBCClampPointToRect(point, self.bounds);
         loupe.anchor = [self convertPoint:point toView:loupe.superview];
     }
@@ -1155,7 +1154,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     loupe.zoomCenter = [self convertPoint:point toView:loupe.zoomedView];
     // Anchor loupe to a point just on top of the text position
     CGPoint anchor = CGPointMake(point.x, point.y - (lineHeight_ * 0.75));
-    // TODO: clamping wrong
+    // PENDING: clamping wrong
     //anchor = KBCClampPointToRect(anchor, self.bounds);
     loupe.anchor = [self convertPoint:anchor toView:loupe.superview];
 }
@@ -1218,7 +1217,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [attributedString release];
     }
     
-    // TODO: extract a method for this block
+    // PENDING: extract a method for this block
     [self.framesetter textChangedFromTextPosition:insertionTextRange.start];
     [self untileVisibleSections];
     [self tileSections];
@@ -1252,7 +1251,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     
     NKTTextRange *deletionTextRange = nil;
     
-    // TODO: figure out a clearer refactor for this block
+    // PENDING: figure out a clearer refactor for this block
     if (markedTextRange_ != nil)
     {
         if (markedTextRange_.start.location != 0)
@@ -1277,7 +1276,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     
     [text_ deleteCharactersInRange:deletionTextRange.nsRange];
-    // TODO: frameset intelligently
+    // PENDING: frameset intelligently
     [self regenerateTextFrame];
     
     if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
@@ -1317,7 +1316,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
 {
     KBCLogDebug(@"%@ : %@", textRange, replacementText);
     [text_ replaceCharactersInRange:textRange.nsRange withString:replacementText];
-    // TODO: frameset intelligently
+    // PENDING: frameset intelligently
     [self regenerateTextFrame];
     
     // The text range to be replaced lies fully before the selected text range
@@ -1451,7 +1450,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)relativeSelectedRange
 {
     KBCLogDebug(@"%@ : %@", markedText, NSStringFromRange(relativeSelectedRange));
-    // TODO: accessor for marked text property
+    // PENDING: accessor for marked text property
     [markedText_ autorelease];
     markedText_ = [markedText copy];
     
@@ -1468,7 +1467,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
     [attributedString release];
     
-    // TODO: frameset intelligently
+    // PENDING: frameset intelligently
     [self regenerateTextFrame];
     
     // Update the marked and selected text ranges
@@ -1506,7 +1505,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
 // UITextInput method
 - (UITextStorageDirection)selectionAffinity
 {
-    // TODO: this is a bogus computation right now, replace with something that makes sense
+    // PENDING: this is a bogus computation right now, replace with something that makes sense
     return (selectedTextRange_ != nil) ? selectedTextRange_.start.affinity : UITextStorageDirectionForward;
 }
 
@@ -1765,7 +1764,7 @@ static const CGFloat CaretWidth = 2.0;
 static const CGFloat CaretTopPadding = 1.0;
 static const CGFloat CaretBottomPadding = 1.0;
 
-// TODO: move to selection display controller?
+// PENDING: move to selection display controller?
 - (CGRect)caretRectWithOrigin:(CGPoint)origin font:(UIFont *)font
 {
     CGRect caretFrame = CGRectZero;
@@ -1780,7 +1779,7 @@ static const CGFloat CaretBottomPadding = 1.0;
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point
 {
     KBCLogDebug(@"%@", NSStringFromCGPoint(point));
-    // TODO: figure out when this is called by UITextInput, and implement accordingly
+    // PENDING: figure out when this is called by UITextInput, and implement accordingly
     return [self.framesetter closestTextPositionForCaretToPoint:point];
 }
 
@@ -1788,7 +1787,7 @@ static const CGFloat CaretBottomPadding = 1.0;
 - (UITextPosition *)closestPositionToPoint:(CGPoint)point withinRange:(NKTTextRange *)textRange
 {
     KBCLogDebug(@"%@ : %@", NSStringFromCGPoint(point), textRange);
-    // TODO: figure out when this is called by UITextInput, and implement accordingly
+    // PENDING: figure out when this is called by UITextInput, and implement accordingly
     return nil;
 }
 
@@ -1796,7 +1795,7 @@ static const CGFloat CaretBottomPadding = 1.0;
 - (UITextRange *)characterRangeAtPoint:(CGPoint)point
 {
     KBCLogDebug(@"%@", NSStringFromCGPoint(point));    
-    // TODO: figure out when this is called by UITextInput, and implement accordingly
+    // PENDING: figure out when this is called by UITextInput, and implement accordingly
     NKTTextPosition *textPosition = (NKTTextPosition *)[self closestPositionToPoint:point];
     return [textPosition textRange];
 }

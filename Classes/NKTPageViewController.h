@@ -20,38 +20,25 @@ typedef enum
     NKTPageStyleCollegeRuledCream
 } NKTPageStyle;
 
-#pragma mark -
-
 // NKTNotebookViewController manages the editing of an NKTPage. It styles its view to provide a visual page style as
 // specified in the page parameter.
-@interface NKTPageViewController : UIViewController <UISplitViewControllerDelegate,
-                                                     UIPopoverControllerDelegate,
-                                                     NKTTextViewDelegate,
-                                                     NKTFontPickerViewControllerDelegate>
+@interface NKTPageViewController : UIViewController <UISplitViewControllerDelegate, UIPopoverControllerDelegate, NKTTextViewDelegate, NKTFontPickerViewControllerDelegate>
 {
 @private
-    // Data
     NKTPage *page_;
-    
-    // Delegate
     id <NKTPageViewControllerDelegate> delegate_;
-    
-    // Control
+
     UIPopoverController *navigationPopoverController_;
     UIPopoverController *fontPopoverController_;
     NKTFontPickerViewController *fontPickerViewController_;
     
-    // UI
     NKTTextView *textView_;
-    // Styling
     UIView *creamPaperBackgroundView_;
     UIView *plainPaperBackgroundView_;
     NKTPageStyle pageStyle_;
-    // Adornments
     UIView *coverEdgeView_;
     UIImageView *capAndEdgeView_;
     UIImageView *edgeShadowView_;
-    // Toolbar
     UIToolbar *toolbar_;
     UILabel *titleLabel_;
     UIButton *navigationButton_;
@@ -61,50 +48,103 @@ typedef enum
     KUIToggleButton *underlineToggleButton_;
     UIButton *fontButton_;
     UIBarButtonItem *fontToolbarItem_;
-    
-    // Overlay
     UIView *frozenOverlay_;
 }
 
-- (void)presentNavigationPopover;
-
-#pragma mark Accessing the Page
+#pragma mark Page
 
 @property (nonatomic, retain) NKTPage *page;
 
-- (void)setPage:(NKTPage *)page saveEditedText:(BOOL)saveEditedText;
+- (void)setPage:(NKTPage *)page;
+// PENDING: the page view controller should know when the page goes away, and save on its own
+- (void)savePendingChanges;
 
-#pragma mark Saving the Page
-
-- (void)saveEditedPageText;
-
-#pragma mark Setting the Delegate
+#pragma mark Delegate
 
 @property (nonatomic, assign) id <NKTPageViewControllerDelegate> delegate;
 
-#pragma mark Accessing Views
+#pragma mark Styles
+
+@property (nonatomic) NKTPageStyle pageStyle;
+
+- (void)applyPageStyle;
+
+#pragma mark User Interaction
+
+- (void)freezeUserInteraction;
+- (void)unfreezeUserInteraction;
+
+#pragma mark Navigation
+
+- (void)dismissNavigationPopoverAnimated:(BOOL)animated;
+- (void)handleNavigationButtonTapped:(UIButton *)button;
+
+#pragma mark View Controllers
+
+@property (nonatomic, retain) UIPopoverController *fontPopoverController;
+@property (nonatomic, retain) NKTFontPickerViewController *fontPickerViewController;
+
+#pragma mark Views
 
 @property (nonatomic, retain) IBOutlet NKTTextView *textView;
 @property (nonatomic, retain) IBOutlet UIView *coverEdgeView;
 @property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, retain) IBOutlet UILabel *titleLabel;
+@property (nonatomic, retain) UIView *creamPaperBackgroundView;
+@property (nonatomic, retain) UIView *plainPaperBackgroundView;
+@property (nonatomic, retain) UIImageView *capAndEdgeView;
+@property (nonatomic, retain) UIImageView *edgeShadowView;
+@property (nonatomic, retain) UIView *frozenOverlay;
+@property (nonatomic, retain) UIButton *navigationButton;
+@property (nonatomic, retain) UIBarButtonItem *navigationButtonItem;
+@property (nonatomic, retain) KUIToggleButton *boldToggleButton;
+@property (nonatomic, retain) KUIToggleButton *italicToggleButton;
+@property (nonatomic, retain) KUIToggleButton *underlineToggleButton;
+@property (nonatomic, retain) UIButton *fontButton;
+@property (nonatomic, retain) UIBarButtonItem *fontToolbarItem;
 
-#pragma mark Configuring the Page Style
+- (UIButton *)borderedToolbarButton;
+- (void)addToolbarItems;
 
-@property (nonatomic) NKTPageStyle pageStyle;
+#pragma mark Updating Views
 
-#pragma mark Freezing User Interaction
+- (void)updateViews;
+- (void)updateTextView;
+- (void)updateTitleLabel;
+- (void)updateNavigationButtonTitle;
+- (void)updateTextEditingItems;
 
-- (void)freezeUserInteraction;
-- (void)unfreezeUserInteraction;
+#pragma mark Text Editing
 
-#pragma mark Presenting the Navigation Popover
+- (NSDictionary *)currentCoreTextAttributes;
+- (NSDictionary *)attributesByAddingBoldTraitToAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByRemovingBoldTraitFromAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByAddingItalicTraitToAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByRemovingItalicTraitFromAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByAddingUnderlineToAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesByRemovingUnderlineFromAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesBySettingFontSizeOfAttributes:(NSDictionary *)attributes;
+- (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes;
 
-- (void)dismissNavigationPopoverAnimated:(BOOL)animated;
+- (void)handlePageStyleTapped:(UIButton *)button;
+- (void)handleFontButtonTapped:(UIButton *)button;
+- (void)handleBoldToggleTapped:(KUIToggleButton *)toggleButton;
+- (void)handleItalicToggleTapped:(KUIToggleButton *)toggleButton;
+- (void)handleUnderlineToggleTapped:(KUIToggleButton *)toggleButton;
+- (void)handleFontButtonTapped:(UIButton *)button;
+
+#pragma mark Keyboard
+
+- (void)registerForKeyboardEvents;
+- (void)unregisterForKeyboardEvents;
+- (void)keyboardWillShow:(NSNotification *)notification;
+- (void)keyboardDidShow:(NSNotification *)notification;
+- (void)keyboardWillHide:(NSNotification *)notification;
+- (CGRect)keyboardFrameFromNotification:(NSNotification *)notification;
+- (void)growTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
+- (void)shrinkTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
 
 @end
-
-#pragma mark -
 
 // NKTPageViewControllerDelegate is a protocol that allows clients to receive editing related messages from an
 // NKTPageViewController.

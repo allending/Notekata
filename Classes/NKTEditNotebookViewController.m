@@ -57,7 +57,7 @@
     NSArray *sortedNotebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
     if (error != nil)
     {
-        // TODO: FIX, LOG
+        // PENDING: fix and log
         KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
@@ -149,13 +149,13 @@
 - (void)configureToAddNotebook
 {
     mode_ = NKTEditNotebookViewControllerModeAdd;
+    titleField_.text = nil;
     navigationBar_.topItem.title = @"Add Notebook";
     doneButton_.title = @"Add";
 }
 
 #pragma mark -
 #pragma mark Responding to User Actions
-
 
 - (void)cancel
 {
@@ -164,15 +164,15 @@
 }
 
 - (void)save
-{
-    [self.titleField resignFirstResponder];
-    
+{    
     if (managedObjectContext_ == nil)
     {
         KBCLogWarning(@"managed object context is nil, returning");
         [self.parentViewController dismissModalViewControllerAnimated:YES];
         return;
     }
+    
+    [self.titleField resignFirstResponder];
     
     // Get the last notebook that exists
     NSArray *sortedNotebooks = [self sortedNotebooks];
@@ -186,7 +186,14 @@
     NKTNotebook *addedNotebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook"
                                                                inManagedObjectContext:managedObjectContext_];
     addedNotebook.title = [titleField_.text length] == 0 ? @"Untitled" : titleField_.text;
-    addedNotebook.notebookId = [NSNumber numberWithInteger:0];
+    
+    // Generate random uuid as the notebook id
+    CFUUIDRef uuid = CFUUIDCreate(NULL);
+    CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
+    addedNotebook.notebookId = (NSString *)uuidString;
+    CFRelease(uuid);
+    CFRelease(uuidString);
+    
     NSInteger displayOrder = [lastNotebook.displayOrder integerValue] + 1;
     addedNotebook.displayOrder = [NSNumber numberWithInteger:displayOrder];
     // Create first page
@@ -200,7 +207,7 @@
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
     {
-        // TODO: FIX, LOG
+        // PENDING: fix and log
         KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
@@ -209,8 +216,16 @@
     {
         [delegate_ editNotebookViewController:self didAddNotebook:addedNotebook];
     }
-    
-    [self.parentViewController dismissModalViewControllerAnimated:YES];
+}
+
+#pragma mark -
+#pragma mark Text Field
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [textField resignFirstResponder];
+    [self save];
+    return YES;
 }
 
 @end

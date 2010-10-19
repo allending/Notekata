@@ -213,7 +213,7 @@ static const CGFloat HandleRectWidth = 2.0;
         
         if (targetTextRange != nil && !targetTextRange.empty)
         {
-            // TODO: make sure delegate must return valid rects
+            // PENDING: make sure delegate must return valid rects
             CGRect firstRect = [delegate_ firstRectForTextRange:targetTextRange];
             CGRect lastRect = [delegate_ lastRectForTextRange:targetTextRange];
             
