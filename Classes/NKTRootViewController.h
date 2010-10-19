@@ -34,6 +34,7 @@
 
 - (void)selectInitialNotebook;
 
+- (NSUInteger)numberOfNotebooks;
 - (NKTNotebook *)notebookAtIndex:(NSUInteger)index;
 
 #pragma mark View Controllers

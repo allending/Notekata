@@ -183,9 +183,8 @@
     }
     
     // Create notebook
-    NKTNotebook *addedNotebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook"
-                                                               inManagedObjectContext:managedObjectContext_];
-    addedNotebook.title = [titleField_.text length] == 0 ? @"Untitled" : titleField_.text;
+    NKTNotebook *addedNotebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+    addedNotebook.title = [titleField_.text length] == 0 ? @"Untitled Notebook" : titleField_.text;
     
     // Generate random uuid as the notebook id
     CFUUIDRef uuid = CFUUIDCreate(NULL);

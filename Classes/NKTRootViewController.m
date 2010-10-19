@@ -209,6 +209,11 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [self.navigationController pushViewController:notebookViewController_ animated:NO];
 }
 
+- (NSUInteger)numberOfNotebooks
+{
+    return [[[self.fetchedResultsController sections] objectAtIndex:0] numberOfObjects];
+}
+
 - (NKTNotebook *)notebookAtIndex:(NSUInteger)index
 {
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
@@ -283,8 +288,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    id <NSFetchedResultsSectionInfo> sectionInfo = [[self.fetchedResultsController sections] objectAtIndex:section];
-    return [sectionInfo numberOfObjects];
+    return [[[self.fetchedResultsController sections] objectAtIndex:section] numberOfObjects];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -330,6 +334,96 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     return YES;
 }
 */
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle != UITableViewCellEditingStyleDelete)
+    {
+        KBCLogWarning(@"unexpected editing style commit, returning");
+        return;
+    }
+    
+    NKTNotebook *notebookToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    NSUInteger numberOfNotebooks = [self numberOfNotebooks];
+    
+    // Stop editing page if we are about to delete it
+    if (notebookToDelete == selectedNotebook_)
+    {
+        self.selectedNotebook = nil;
+        [notebookViewController_ setNotebook:nil restoreLastSelectedPage:NO];
+    }
+    
+    // Renumber the notebooks first
+    NSUInteger renumberRangeStart = indexPath.row + 1;
+    NSUInteger renumberRangeEnd = numberOfNotebooks;
+    for (NSUInteger index = renumberRangeStart; index < renumberRangeEnd; ++index)
+    {
+        NSIndexPath *renumberIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        NKTNotebook *notebookToRenumber = [self.fetchedResultsController objectAtIndexPath:renumberIndexPath];
+        //  Adjust offsets of pages following the deleted page by -1
+        NSUInteger displayOrder = index - 1;
+        notebookToRenumber.displayOrder = [NSNumber numberWithInteger:displayOrder];
+    }
+    
+    // Delete the notebook
+    [managedObjectContext_ deleteObject:notebookToDelete];
+    
+    // Add a page if the deleted page was the last one
+    if (numberOfNotebooks == 1)
+    {
+        // Create notebook
+        NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+        // TODO: localize
+        notebook.title = @"My Notebook";
+        
+        // Generate random uuid as the notebook id
+        CFUUIDRef uuid = CFUUIDCreate(NULL);
+        CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
+        notebook.notebookId = (NSString *)uuidString;
+        CFRelease(uuid);
+        CFRelease(uuidString);
+        
+        // Default display order
+        notebook.displayOrder = [NSNumber numberWithUnsignedInt:0];
+        // Create first page
+        NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:managedObjectContext_];
+        page.pageNumber = [NSNumber numberWithInteger:0];
+        page.textString = @"";
+        page.textStyleString = @"";
+        [notebook addPagesObject:page];
+    }
+    
+    NSError *error = nil;
+    if (![managedObjectContext_ save:&error])
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+        
+    // Select new notebook if the deleted notebook was the selected notebook
+    /*
+    if (notebookToDelete == selectedNotebook_)
+    {
+        // Select the new page occupying the deleted page number's spot, or the last page of the notebook
+        NKTNotebook *notebookToSelect = nil;
+        NSUInteger numberOfNotebooks = [self numberOfNotebooks];
+        
+        if (indexPath.row < numberOfNotebooks)
+        {
+            notebookToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        }
+        else
+        {
+            NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:numberOfNotebooks - 1 inSection:0];
+            notebookToSelect = [self.fetchedResultsController objectAtIndexPath:newIndexPath];
+        }
+        
+        self.selectedNotebook = notebookToSelect;
+        [notebookViewController_ setNotebook:notebookToSelect restoreLastSelectedPage:YES];
+    }
+    */
+}
 
 /*
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
@@ -399,7 +493,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller 
 {
-    if (!changeIsUserDriven_)
+    if (changeIsUserDriven_)
     {
         return;
     }
@@ -429,26 +523,24 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     {
         return;
     }
-    
-    UITableView *tableView = self.tableView;
-    
+        
     switch(type)
     {
         case NSFetchedResultsChangeInsert:
-            [tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
             break;
             
         case NSFetchedResultsChangeDelete:
-            [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
             break;
             
         case NSFetchedResultsChangeUpdate:
-            [self configureCell:[tableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
+            [self configureCell:[self.tableView cellForRowAtIndexPath:indexPath] atIndexPath:indexPath];
             break;
             
         case NSFetchedResultsChangeMove:
-            [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-            [tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
+            [self.tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newIndexPath] withRowAnimation:UITableViewRowAnimationFade];
             break;
     }
 }

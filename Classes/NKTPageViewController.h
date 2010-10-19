@@ -26,6 +26,7 @@ typedef enum
 {
 @private
     NKTPage *page_;
+    BOOL userInteractionFrozen_;
     id <NKTPageViewControllerDelegate> delegate_;
 
     UIPopoverController *navigationPopoverController_;
@@ -41,8 +42,11 @@ typedef enum
     UIImageView *edgeShadowView_;
     UIToolbar *toolbar_;
     UILabel *titleLabel_;
+    UILabel *nilPageTitleLabel_;
     UIButton *navigationButton_;
     UIBarButtonItem *navigationButtonItem_;
+    UIButton *pageStyleButton_;
+    UIBarButtonItem *pageStyleButtonItem_;    
     KUIToggleButton *boldToggleButton_;
     KUIToggleButton *italicToggleButton_;
     KUIToggleButton *underlineToggleButton_;
@@ -50,6 +54,11 @@ typedef enum
     UIBarButtonItem *fontToolbarItem_;
     UIView *frozenOverlay_;
 }
+
+#pragma mark View Controller
+
+- (UIButton *)borderedToolbarButton;
+- (void)addToolbarItems;
 
 #pragma mark Page
 
@@ -90,6 +99,8 @@ typedef enum
 @property (nonatomic, retain) IBOutlet UIView *coverEdgeView;
 @property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, retain) IBOutlet UILabel *titleLabel;
+@property (nonatomic, retain) IBOutlet UILabel *nilPageTitleLabel;
+
 @property (nonatomic, retain) UIView *creamPaperBackgroundView;
 @property (nonatomic, retain) UIView *plainPaperBackgroundView;
 @property (nonatomic, retain) UIImageView *capAndEdgeView;
@@ -97,17 +108,18 @@ typedef enum
 @property (nonatomic, retain) UIView *frozenOverlay;
 @property (nonatomic, retain) UIButton *navigationButton;
 @property (nonatomic, retain) UIBarButtonItem *navigationButtonItem;
+@property (nonatomic, retain) UIButton *pageStyleButton;
+@property (nonatomic, retain) UIBarButtonItem *pageStyleButtonItem;
 @property (nonatomic, retain) KUIToggleButton *boldToggleButton;
 @property (nonatomic, retain) KUIToggleButton *italicToggleButton;
 @property (nonatomic, retain) KUIToggleButton *underlineToggleButton;
 @property (nonatomic, retain) UIButton *fontButton;
 @property (nonatomic, retain) UIBarButtonItem *fontToolbarItem;
 
-- (UIButton *)borderedToolbarButton;
-- (void)addToolbarItems;
-
 #pragma mark Updating Views
 
+- (void)disableViewsForNilPage;
+- (void)enableViewsForNonNilPage;
 - (void)updateViews;
 - (void)updateTextView;
 - (void)updateTitleLabel;

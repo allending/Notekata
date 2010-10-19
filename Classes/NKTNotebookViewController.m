@@ -208,6 +208,8 @@ static const NSUInteger AddPageButtonIndex = 0;
     }
     
     self.selectedPage = page;
+    // PENDING:
+    // Common Issue: what if the page view controller's page is no longer valid?
     [pageViewController_ savePendingChanges];
     pageViewController_.page = page;
 }

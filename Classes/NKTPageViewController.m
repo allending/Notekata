@@ -24,8 +24,11 @@
 @synthesize pageStyle = pageStyle_;
 @synthesize toolbar = toolbar_;
 @synthesize titleLabel = titleLabel_;
+@synthesize nilPageTitleLabel = nilPageTitleLabel_;
 @synthesize navigationButton = navigationButton_;
 @synthesize navigationButtonItem = navigationButtonItem_;
+@synthesize pageStyleButton = pageStyleButton_;
+@synthesize pageStyleButtonItem = pageStyleButtonItem_;
 @synthesize boldToggleButton = boldToggleButton_;
 @synthesize italicToggleButton = italicToggleButton_;
 @synthesize underlineToggleButton = underlineToggleButton_;
@@ -71,8 +74,11 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     [edgeShadowView_ release];
     [toolbar_ release];
     [titleLabel_ release];
+    [nilPageTitleLabel_ release];
     [navigationButton_ release];
     [navigationButtonItem_ release];
+    [pageStyleButton_ release];
+    [pageStyleButtonItem_ release];
     [boldToggleButton_ release];
     [italicToggleButton_ release];
     [underlineToggleButton_ release];
@@ -153,6 +159,93 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     [self addToolbarItems];
 }
 
+- (UIButton *)borderedToolbarButton
+{
+    // Various bits and pieces of the button
+    UIImage *buttonImage = [UIImage imageNamed:@"DarkButton.png"];
+    UIImage *buttonBackground = [buttonImage stretchableImageWithLeftCapWidth:4.0 topCapHeight:5.0];
+    UIColor *highlightedColor = [UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0];
+    UIColor *selectedColor = [UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0];
+    UIColor *titleColor = [UIColor lightTextColor];
+    UIColor *disabledColor = [UIColor darkGrayColor];
+    UIFont *buttonFont = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
+    UIEdgeInsets buttonInsets = UIEdgeInsetsMake(6.0, 8.0, 6.0, 8.0);
+    // Create and return the button
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    [button setBackgroundImage:buttonBackground forState:UIControlStateNormal];
+    [button setTitleColor:highlightedColor forState:UIControlStateHighlighted|UIControlStateNormal];
+    [button setTitleColor:highlightedColor forState:UIControlStateHighlighted|UIControlStateSelected];
+    [button setTitleColor:selectedColor forState:UIControlStateSelected];
+    [button setTitleColor:titleColor forState:UIControlStateNormal];
+    [button setTitleColor:disabledColor forState:UIControlStateDisabled];
+    button.titleLabel.font = buttonFont;
+    button.titleEdgeInsets = buttonInsets;
+    return button;
+}
+
+- (void)addToolbarItems
+{
+    NSMutableArray *toolbarItems = [NSMutableArray array];
+    
+    // Navigation button
+    navigationButton_ = [[self borderedToolbarButton] retain];
+    [navigationButton_ addTarget:self action:@selector(handleNavigationButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    navigationButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
+    navigationButtonItem_ = [[UIBarButtonItem alloc] initWithCustomView:navigationButton_];
+    
+    // Page style item
+    pageStyleButton_ = [self borderedToolbarButton];
+    [pageStyleButton_ setTitle:@"Page Style" forState:UIControlStateNormal];
+    [pageStyleButton_ addTarget:self action:@selector(handlePageStyleTapped:) forControlEvents:UIControlEventTouchUpInside];
+    pageStyleButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
+    pageStyleButtonItem_ = [[UIBarButtonItem alloc] initWithCustomView:pageStyleButton_];
+    [toolbarItems addObject:pageStyleButtonItem_];
+    
+    // Left flexible space
+    UIBarButtonItem *spacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+    [toolbarItems addObject:spacer];
+    [spacer release];
+    
+    // Font item
+    fontButton_ = [[self borderedToolbarButton] retain];
+    [fontButton_ addTarget:self action:@selector(handleFontButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    fontButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
+    fontToolbarItem_ = [[UIBarButtonItem alloc] initWithCustomView:fontButton_];
+    [toolbarItems addObject:fontToolbarItem_];
+    
+    // Bold item
+    boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
+    [boldToggleButton_ addTarget:self action:@selector(handleBoldToggleTapped:) forControlEvents:UIControlEventValueChanged];
+    [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
+    boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    boldToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
+    UIBarButtonItem *boldToggleItem = [[UIBarButtonItem alloc] initWithCustomView:boldToggleButton_];
+    [toolbarItems addObject:boldToggleItem];
+    [boldToggleItem release];
+    
+    // Italic item
+    italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
+    [italicToggleButton_ addTarget:self action:@selector(handleItalicToggleTapped:) forControlEvents:UIControlEventValueChanged];
+    [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
+    italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0];
+    italicToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
+    UIBarButtonItem *italicToggleItem = [[UIBarButtonItem alloc] initWithCustomView:italicToggleButton_];
+    [toolbarItems addObject:italicToggleItem];
+    [italicToggleItem release];
+    
+    // Underline item
+    underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
+    [underlineToggleButton_ addTarget:self action:@selector(handleUnderlineToggleTapped:) forControlEvents:UIControlEventValueChanged];
+    [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
+    underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
+    underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
+    UIBarButtonItem *underlineToggleItem = [[UIBarButtonItem alloc] initWithCustomView:underlineToggleButton_];
+    [toolbarItems addObject:underlineToggleItem];
+    [underlineToggleItem release];
+    
+    self.toolbar.items = toolbarItems;
+}
+
 - (void)viewDidUnload
 {
     [super viewDidUnload];
@@ -164,8 +257,11 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     self.edgeShadowView = nil;
     self.toolbar = nil;
     self.titleLabel = nil;
+    self.nilPageTitleLabel = nil;
     self.navigationButton = nil;
     self.navigationButtonItem = nil;
+    self.pageStyleButton = nil;
+    self.pageStyleButtonItem = nil;
     self.boldToggleButton = nil;
     self.italicToggleButton = nil;
     self.underlineToggleButton = nil;
@@ -248,15 +344,30 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
     
+    // PENDING: figure this out .. save or not?
     // PENDING: store a flag so this does not call delegate
     // NOTE: this causes a save to occur on the previous page!
     //[self resignFirstResponder];
     //[self savePendingChanges];
     
+    BOOL pageWasNil = (page_ == nil);
     [page_ release];
     page_ = [page retain];
     
-    [self updateViews];
+    // When the page is set to nil, the page view controller goes into a special informational state
+    if (page_ == nil)
+    {
+        [self disableViewsForNilPage];
+    }
+    else
+    {
+        if (pageWasNil)
+        {
+            [self enableViewsForNonNilPage];
+        }
+        
+        [self updateViews];
+    }
 }
 
 // PENDING: this should be unnecessary
@@ -266,7 +377,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     {
         return;
     }
- 
+    
     // PENDING: store a dirty flag to avoid needless saving
     // Set the text of the page from the text view's text and save the page
     NSAttributedString *text = textView_.text;
@@ -361,14 +472,14 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 #pragma mark -
 #pragma mark User Interaction
 
-// PENDING: store state of freeze in ivar
 - (void)freezeUserInteraction
 {
-    if (!self.view.userInteractionEnabled)
+    if (userInteractionFrozen_)
     {
         return;
     }
     
+    userInteractionFrozen_ = YES;
     [UIView beginAnimations:@"FreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
     frozenOverlay_.alpha = 0.37;
@@ -378,11 +489,12 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 
 - (void)unfreezeUserInteraction
 {
-    if (self.view.userInteractionEnabled)
+    if (!userInteractionFrozen_)
     {
         return;
     }
     
+    userInteractionFrozen_ = NO;
     [UIView beginAnimations:@"UnfreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
     frozenOverlay_.alpha = 0.0;
@@ -473,119 +585,69 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 }
 
 #pragma mark -
-#pragma mark Views
-
-- (UIButton *)borderedToolbarButton
-{
-    // Various bits and pieces of the button
-    UIImage *buttonImage = [UIImage imageNamed:@"DarkButton.png"];
-    UIImage *buttonBackground = [buttonImage stretchableImageWithLeftCapWidth:4.0 topCapHeight:5.0];
-    UIColor *highlightedColor = [UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0];
-    UIColor *selectedColor = [UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0];
-    UIColor *titleColor = [UIColor lightTextColor];
-    UIColor *disabledColor = [UIColor darkGrayColor];
-    UIFont *buttonFont = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
-    UIEdgeInsets buttonInsets = UIEdgeInsetsMake(6.0, 8.0, 6.0, 8.0);
-    // Create and return the button
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    [button setBackgroundImage:buttonBackground forState:UIControlStateNormal];
-    [button setTitleColor:highlightedColor forState:UIControlStateHighlighted|UIControlStateNormal];
-    [button setTitleColor:highlightedColor forState:UIControlStateHighlighted|UIControlStateSelected];
-    [button setTitleColor:selectedColor forState:UIControlStateSelected];
-    [button setTitleColor:titleColor forState:UIControlStateNormal];
-    [button setTitleColor:disabledColor forState:UIControlStateDisabled];
-    button.titleLabel.font = buttonFont;
-    button.titleEdgeInsets = buttonInsets;
-    return button;
-}
-
-- (void)addToolbarItems
-{
-    NSMutableArray *toolbarItems = [NSMutableArray array];
-    
-    // Navigation button
-    navigationButton_ = [[self borderedToolbarButton] retain];
-    [navigationButton_ addTarget:self action:@selector(handleNavigationButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    navigationButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
-    navigationButtonItem_ = [[UIBarButtonItem alloc] initWithCustomView:navigationButton_];
-    
-    // Page style item
-    UIButton *pageStyleButton = [self borderedToolbarButton];
-    [pageStyleButton setTitle:@"Page Style" forState:UIControlStateNormal];
-    [pageStyleButton addTarget:self action:@selector(handlePageStyleTapped:) forControlEvents:UIControlEventTouchUpInside];
-    pageStyleButton.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
-    UIBarButtonItem *pageStyleItem = [[UIBarButtonItem alloc] initWithCustomView:pageStyleButton];
-    [toolbarItems addObject:pageStyleItem];
-    [pageStyleItem release];
-    
-    // Left flexible space
-    UIBarButtonItem *spacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-    [toolbarItems addObject:spacer];
-    [spacer release];
-    
-    // Font item
-    fontButton_ = [[self borderedToolbarButton] retain];
-    [fontButton_ addTarget:self action:@selector(handleFontButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    fontButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
-    fontToolbarItem_ = [[UIBarButtonItem alloc] initWithCustomView:fontButton_];
-    [toolbarItems addObject:fontToolbarItem_];
-    
-    // Bold item
-    boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [boldToggleButton_ addTarget:self action:@selector(handleBoldToggleTapped:) forControlEvents:UIControlEventValueChanged];
-    [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
-    boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-    boldToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-    UIBarButtonItem *boldToggleItem = [[UIBarButtonItem alloc] initWithCustomView:boldToggleButton_];
-    [toolbarItems addObject:boldToggleItem];
-    [boldToggleItem release];
-    
-    // Italic item
-    italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [italicToggleButton_ addTarget:self action:@selector(handleItalicToggleTapped:) forControlEvents:UIControlEventValueChanged];
-    [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
-    italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0];
-    italicToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-    UIBarButtonItem *italicToggleItem = [[UIBarButtonItem alloc] initWithCustomView:italicToggleButton_];
-    [toolbarItems addObject:italicToggleItem];
-    [italicToggleItem release];
-    
-    // Underline item
-    underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [underlineToggleButton_ addTarget:self action:@selector(handleUnderlineToggleTapped:) forControlEvents:UIControlEventValueChanged];
-    [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
-    underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
-    underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-    UIBarButtonItem *underlineToggleItem = [[UIBarButtonItem alloc] initWithCustomView:underlineToggleButton_];
-    [toolbarItems addObject:underlineToggleItem];
-    [underlineToggleItem release];
-    
-    self.toolbar.items = toolbarItems;
-}
-
-#pragma mark -
 #pragma mark Updating Views
+
+- (void)disableViewsForNilPage
+{
+    textView_.text = nil;
+    textView_.hidden = YES;
+    nilPageTitleLabel_.hidden = NO;
+    coverEdgeView_.hidden = YES;
+    capAndEdgeView_.hidden = YES;
+    edgeShadowView_.hidden = YES;
+    frozenOverlay_.hidden = YES;
+    textView_.userInteractionEnabled = NO;
+    pageStyleButton_.hidden = YES;
+    titleLabel_.hidden = YES;
+    [navigationButton_ setTitle:@"Notebooks" forState:UIControlStateNormal];
+    fontButton_.hidden = YES;
+    boldToggleButton_.hidden= YES;
+    boldToggleButton_.hidden = YES;
+    italicToggleButton_.hidden = YES;
+    italicToggleButton_.hidden = YES;
+    underlineToggleButton_.hidden = YES;
+    underlineToggleButton_.hidden = YES;
+}
+
+- (void)enableViewsForNonNilPage
+{
+    textView_.hidden = NO;
+    nilPageTitleLabel_.hidden = YES;
+    coverEdgeView_.hidden = NO;
+    capAndEdgeView_.hidden = NO;
+    edgeShadowView_.hidden = NO;
+    frozenOverlay_.hidden = NO;
+    textView_.userInteractionEnabled = YES;
+    pageStyleButton_.hidden = NO;
+    titleLabel_.hidden = NO;
+    fontButton_.hidden = NO;
+    boldToggleButton_.hidden= NO;
+    boldToggleButton_.hidden = NO;
+    italicToggleButton_.hidden = NO;
+    italicToggleButton_.hidden = NO;
+    underlineToggleButton_.hidden = NO;
+    underlineToggleButton_.hidden = NO;
+}
 
 - (void)updateViews
 {
+    if (page_ == nil)
+    {
+        return;
+    }
+    
     // Text view needs to be updated first because title label update depends on it
     [self updateTextView];
     [self updateTitleLabel];
     [self updateNavigationButtonTitle];
     [self updateTextEditingItems];
+
 }
 
 - (void)updateTextView
 {
-    if (page_ == nil)
-    {
-        textView_.text = nil;
-    }
-    else
-    {
-        KBTAttributedStringIntermediate *intermediate = [KBTAttributedStringIntermediate attributedStringIntermediateWithString:page_.textString styleString:page_.textStyleString];
-        textView_.text = [intermediate attributedString];
-    }
+    KBTAttributedStringIntermediate *intermediate = [KBTAttributedStringIntermediate attributedStringIntermediateWithString:page_.textString styleString:page_.textStyleString];
+    textView_.text = [intermediate attributedString];
 }
 
 - (void)updateTitleLabel
@@ -610,8 +672,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 
 - (void)updateTextEditingItems
 {
-    // PENDING: improve poor clarity of behavior
-    
+    // PENDING: improve poor clarity of behavior    
     if ([textView_ isFirstResponder])
     {
         UITextRange *selectedTextRange = textView_.selectedTextRange;
