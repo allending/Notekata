@@ -328,13 +328,6 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     }
 }
 
-/*
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    return YES;
-}
-*/
-
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (editingStyle != UITableViewCellEditingStyleDelete)
@@ -400,48 +393,61 @@ static const NSUInteger AddNotebookButtonIndex = 0;
         KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
-        
-    // Select new notebook if the deleted notebook was the selected notebook
-    /*
-    if (notebookToDelete == selectedNotebook_)
-    {
-        // Select the new page occupying the deleted page number's spot, or the last page of the notebook
-        NKTNotebook *notebookToSelect = nil;
-        NSUInteger numberOfNotebooks = [self numberOfNotebooks];
-        
-        if (indexPath.row < numberOfNotebooks)
-        {
-            notebookToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        }
-        else
-        {
-            NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:numberOfNotebooks - 1 inSection:0];
-            notebookToSelect = [self.fetchedResultsController objectAtIndexPath:newIndexPath];
-        }
-        
-        self.selectedNotebook = notebookToSelect;
-        [notebookViewController_ setNotebook:notebookToSelect restoreLastSelectedPage:YES];
-    }
-    */
 }
 
-/*
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    
-    if (editingStyle == UITableViewCellEditingStyleDelete)
-    {
-        // Delete the row from the data source
-        //[tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-}
-*/
-
-/*
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
 {
+    NSUInteger fromIndex = fromIndexPath.row;
+    NSUInteger toIndex = toIndexPath.row;
+    
+    if (fromIndex == toIndex)
+    {
+        return;
+    }
+    
+    // Set flag so we know to ignore changes from the fetch results controller
+    changeIsUserDriven_ = YES;
+    
+    // Set display order of moved notebook
+    NKTNotebook *notebook = [self.fetchedResultsController objectAtIndexPath:fromIndexPath];
+    notebook.displayOrder = [NSNumber numberWithUnsignedInteger:toIndex];
+    
+    // Renumber rest of the notebooks
+    NSUInteger renumberRangeStart = 0;
+    NSUInteger renumberRangeEnd = 0;
+    NSInteger displayOrderAdjustment = 0;
+    
+    if (fromIndex < toIndex)
+    {
+        renumberRangeStart = fromIndex + 1;
+        renumberRangeEnd = toIndex + 1;
+        displayOrderAdjustment = -1;
+    }
+    else
+    {
+        renumberRangeStart = toIndex;
+        renumberRangeEnd = fromIndex;
+        displayOrderAdjustment = 1;
+    }
+    
+    for (NSUInteger index = renumberRangeStart; index < renumberRangeEnd; ++index)
+    {
+        NSIndexPath *renumberIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        NKTNotebook *notebookToRenumber = [self.fetchedResultsController objectAtIndexPath:renumberIndexPath];
+        NSInteger displayOrder = [notebookToRenumber.displayOrder integerValue] + displayOrderAdjustment;
+        notebookToRenumber.displayOrder = [NSNumber numberWithInteger:displayOrder];
+    }
+    
+    NSError *error = nil;
+    if (![managedObjectContext_ save:&error])
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    changeIsUserDriven_ = NO;
 }
-*/
 
 #pragma mark -
 #pragma mark Table View Delegate
