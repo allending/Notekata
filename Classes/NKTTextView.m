@@ -1380,7 +1380,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
 // UITextInput method
 - (void)setSelectedTextRange:(NKTTextRange *)textRange
 {
-    // TODO/HACK/NOTE:
+    // PENDING/HACK/NOTE:
     // Always notify the input delegate when this method is called. The UITextInput system seem
     // to expect this method to notify the system when the selected text range is set. For
     // example, the UITextInput autocorrection prompts do not dismiss when the keyboard navigates

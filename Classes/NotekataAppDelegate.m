@@ -116,7 +116,7 @@
     {
         // Create notebook
         NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
-        // TODO: localize
+        // PENDING: localize
         notebook.title = @"My Notebook";
         
         // Generate random uuid as the notebook id

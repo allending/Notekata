@@ -13,7 +13,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="14"/>
-			<integer value="2"/>
+			<integer value="5"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -82,10 +82,10 @@
 									<int key="IBUISystemItemIdentifier">1</int>
 								</object>
 								<object class="IBUIBarButtonItem" key="IBUIRightBarButtonItem" id="291754922">
+									<string key="IBUITitle">Done</string>
 									<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 									<int key="IBUIStyle">2</int>
 									<reference key="IBUINavigationItem" ref="53426990"/>
-									<int key="IBUISystemItemIdentifier">0</int>
 								</object>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 							</object>

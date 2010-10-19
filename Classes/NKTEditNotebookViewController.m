@@ -8,6 +8,7 @@
 
 @implementation NKTEditNotebookViewController
 
+@synthesize notebook = notebook_;
 @synthesize managedObjectContext = managedObjectContext_;
 
 @synthesize delegate = delegate_;
@@ -33,7 +34,21 @@
 }
 
 #pragma mark -
-#pragma mark Memory Mangement
+#pragma mark Memory
+
+- (void)dealloc
+{
+    [notebook_ release];
+    [managedObjectContext_ release];
+    
+    [navigationBar_ release];
+    [doneButton_ release];
+    [cancelButton_ release];
+    [tableView_ release];
+    [titleCell_ release];
+    [titleField_ release];
+    [super dealloc];
+}
 
 - (void)didReceiveMemoryWarning
 {
@@ -41,54 +56,13 @@
 }
 
 #pragma mark -
-#pragma mark Accessing Notebooks
-
-- (NSArray *)sortedNotebooks
-{
-    // Create request for all notebooks sorted by display order
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Notebook"
-                                              inManagedObjectContext:managedObjectContext_];
-    [fetchRequest setEntity:entity];
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayOrder" ascending:YES];
-    [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-    
-    NSError *error = nil;
-    NSArray *sortedNotebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
-    if (error != nil)
-    {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
-    }
-    
-    [fetchRequest release];
-    [sortDescriptor release];
-    return sortedNotebooks;
-}
-
-#pragma mark -
-#pragma mark View Lifecycle
+#pragma mark View Controller
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     tableView_.dataSource = self;
     tableView_.delegate = self;
-    [self configureToAddNotebook];
-}
-
-- (void)dealloc
-{
-    [managedObjectContext_ release];
-    
-    [navigationBar_ release];
-    [doneButton_  release];
-    [cancelButton_ release];
-    [tableView_ release];
-    [titleCell_ release];
-    [titleField_ release];
-    [super dealloc];
 }
 
 - (void)viewDidUnload
@@ -105,15 +79,23 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    // PENDING: localize
+    if (mode_ == NKTEditNotebookViewControllerModeAdd)
+    {
+        titleField_.text = nil;
+        navigationBar_.topItem.title = @"Add Notebook";
+        doneButton_.title = @"Add";
+    }
+    else
+    {
+        titleField_.text = notebook_.title;
+        navigationBar_.topItem.title = ([notebook_.title length] != 0) ? notebook_.title : @"Notebook";
+        doneButton_.title = @"Save";
+    }
+    
     [titleField_ becomeFirstResponder];
 }
-
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-}
-
-#pragma mark Handling Rotations
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
@@ -121,41 +103,45 @@
 }
 
 #pragma mark -
-#pragma mark Table View Data Source
+#pragma mark Notebooks
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+- (NSArray *)sortedNotebooks
 {
-    return 1;
+    // Create request for all notebooks sorted by display order
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+    [fetchRequest setEntity:entity];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"displayOrder" ascending:YES];
+    [fetchRequest setSortDescriptors:[NSArray arrayWithObject:sortDescriptor]];
+    
+    NSError *error = nil;
+    NSArray *notebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
+    if (error != nil)
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    [fetchRequest release];
+    [sortDescriptor release];
+    return notebooks;
 }
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return 1;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    return titleCell_;
-}
-
-#pragma mark -
-#pragma mark Table View Delegate
-
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{}
-
-#pragma mark Configuring the View Controller
 
 - (void)configureToAddNotebook
 {
     mode_ = NKTEditNotebookViewControllerModeAdd;
-    titleField_.text = nil;
-    navigationBar_.topItem.title = @"Add Notebook";
-    doneButton_.title = @"Add";
+    self.notebook = nil;
+}
+
+- (void)configureToEditNotebook:(NKTNotebook *)notebook
+{
+    mode_ = NKTEditNotebookViewControllerModeEdit;
+    self.notebook = notebook;
 }
 
 #pragma mark -
-#pragma mark Responding to User Actions
+#pragma mark Actions
 
 - (void)cancel
 {
@@ -164,7 +150,19 @@
 }
 
 - (void)save
-{    
+{
+    if (mode_ == NKTEditNotebookViewControllerModeAdd)
+    {
+        [self addNotebook];
+    }
+    else
+    {
+        [self editNotebook];
+    }
+}
+
+- (void)addNotebook
+{
     if (managedObjectContext_ == nil)
     {
         KBCLogWarning(@"managed object context is nil, returning");
@@ -217,6 +215,27 @@
     }
 }
 
+- (void)editNotebook
+{
+    [self.titleField resignFirstResponder];
+    notebook_.title = titleField_.text;
+    
+    NSError *error = nil;
+    if (![managedObjectContext_ save:&error])
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    if ([delegate_ respondsToSelector:@selector(editNotebookViewController:didEditNotebook:)])
+    {
+        [delegate_ editNotebookViewController:self didEditNotebook:notebook_];
+    }
+    
+    self.notebook = nil;
+}
+
 #pragma mark -
 #pragma mark Text Field
 
@@ -226,5 +245,29 @@
     [self save];
     return YES;
 }
+
+#pragma mark -
+#pragma mark Table View Data Source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return titleCell_;
+}
+
+#pragma mark -
+#pragma mark Table View Delegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{}
 
 @end

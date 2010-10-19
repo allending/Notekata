@@ -278,6 +278,11 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [pageViewController_.textView performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.1];
 }
 
+- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didEditNotebook:(NKTNotebook *)notebook
+{
+    [self dismissModalViewControllerAnimated:YES];    
+}
+
 #pragma mark -
 #pragma mark Table View Data Source
 
@@ -300,24 +305,28 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     if (cell == nil)
     {
         cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier] autorelease];
+        cell.showsReorderControl = YES;
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+        cell.editingAccessoryType = UITableViewCellAccessoryDetailDisclosureButton;
     }
     
     [self configureCell:cell atIndexPath:indexPath];
     return cell;
 }
 
-- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
-    // PENDING: Styling
     NKTNotebook *notebook = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.showsReorderControl = YES;
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    cell.editingAccessoryType = UITableViewCellAccessoryDetailDisclosureButton;
+
+    // HACK: the automatic width of the text label is different if set during editing vs. if it was
+    // set prior to editing. This hack makes the presentation of the text label consistent no
+    // matter what state it is in.
+    BOOL wasEditing = cell.editing;
+    [cell setEditing:NO animated:NO];
     cell.textLabel.text = notebook.title;
+    [cell setEditing:wasEditing animated:NO];
     
     NSUInteger numberOfPages = [[notebook pages] count];
-    
-    // PENDING: LOCALIZATION
     if (numberOfPages > 1)
     {
         cell.detailTextLabel.text = [NSString stringWithFormat:@"%d pages", numberOfPages];
@@ -366,7 +375,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     {
         // Create notebook
         NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
-        // TODO: localize
+        // PENDING: localize
         notebook.title = @"My Notebook";
         
         // Generate random uuid as the notebook id
@@ -462,14 +471,12 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [pageViewController_.textView resignFirstResponder];
 }
 
-/*
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
 {
-    NKTEditNotebookViewController *vc = [[NKTEditNotebookViewController alloc] init];
-    vc.modalPresentationStyle = UIModalPresentationFormSheet;
-    [self presentModalViewController:vc animated:YES];
+    NKTNotebook *notebook = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    [editNotebookViewController_ configureToEditNotebook:notebook];
+    [self presentModalViewController:editNotebookViewController_ animated:YES];
 }
-*/
 
 #pragma mark -
 #pragma mark Fetched Results Controller

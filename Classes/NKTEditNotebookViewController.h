@@ -21,6 +21,7 @@ typedef enum
 @private
     // Data    
     NKTEditNotebookViewControllerMode mode_;
+    NKTNotebook *notebook_;
     NSManagedObjectContext *managedObjectContext_;
     
     // Delegate
@@ -35,15 +36,19 @@ typedef enum
     UITextField *titleField_;
 }
 
-#pragma mark Core Data Stack
-
-@property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
-
-#pragma mark Accessing the Delegate
+#pragma mark Delegate
 
 @property (nonatomic, assign) id <NKTEditNotebookViewControllerDelegate> delegate;
 
-#pragma mark Accessing Views
+#pragma mark Notebooks
+
+@property (nonatomic, retain) NKTNotebook *notebook;
+
+- (NSArray *)sortedNotebooks;
+- (void)configureToAddNotebook;
+- (void)configureToEditNotebook:(NKTNotebook *)notebook;
+
+#pragma mark Views
 
 @property (nonatomic, retain) IBOutlet UINavigationBar *navigationBar;
 @property (nonatomic, retain) IBOutlet UIBarButtonItem *doneButton;
@@ -52,18 +57,18 @@ typedef enum
 @property (nonatomic, retain) IBOutlet UITableViewCell *titleCell;
 @property (nonatomic, retain) IBOutlet UITextField *titleField;
 
-#pragma mark Configuring the View Controller
-
-- (void)configureToAddNotebook;
-
-#pragma mark Responding to User Actions
+#pragma mark Actions
 
 - (IBAction)save;
 - (IBAction)cancel;
+- (void)addNotebook;
+- (void)editNotebook;
+
+#pragma mark Core Data
+
+@property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
 
 @end
-
-#pragma mark -
 
 // NKTEditNotebookViewControllerDelegate is a protocol that allows clients to receive editing related messages from an
 // NKTEditNotebookViewController.
@@ -74,5 +79,6 @@ typedef enum
 #pragma mark Responding to Edit Notebook View Controller Events
 
 - (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didAddNotebook:(NKTNotebook *)notebook;
+- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didEditNotebook:(NKTNotebook *)notebook;
 
 @end
