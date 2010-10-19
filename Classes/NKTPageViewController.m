@@ -33,6 +33,8 @@
 @synthesize fontToolbarItem = fontToolbarItem_;
 @synthesize frozenOverlay = frozenOverlay_;
 
+static const CGFloat KeyboardOverlapTolerance = 1.0;
+
 #pragma mark -
 #pragma mark Initializing
 
@@ -177,7 +179,6 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [self registerForKeyboardEvents];
     [self updateViews];
 }
 
@@ -190,7 +191,6 @@
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    [self unregisterForKeyboardEvents];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -660,6 +660,7 @@
 
 - (void)textViewDidBeginEditing:(NKTTextView *)textView
 {
+    [self registerForKeyboardEvents];
     [self updateTextEditingItems];
 }
 
@@ -672,6 +673,7 @@
     
     [self updateTextEditingItems];
     [self savePendingChanges];
+    [self unregisterForKeyboardEvents];
 }
 
 - (void)textViewDidChangeSelection:(NKTTextView *)textView
@@ -875,17 +877,15 @@
 
 - (void)registerForKeyboardEvents
 {
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
-//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidShow:) name:UIKeyboardDidShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)unregisterForKeyboardEvents
 {
-//    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
-
-static const CGFloat KeyboardOverlapTolerance = 1.0;
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
@@ -944,6 +944,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         // Resize scroll view frame
         textViewFrame.size.height -= heightOverlap;
         textView_.frame = textViewFrame;
+        [textView_ scrollTextRangeToVisible:textView_.selectedTextRange animated:YES];
     }
 }
 

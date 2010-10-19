@@ -1051,6 +1051,11 @@ static const CGFloat EdgeScrollThreshold = 40.0;
 
 - (void)scrollTextRangeToVisible:(NKTTextRange *)textRange animated:(BOOL)animated
 {
+    if (textRange == nil)
+    {
+        return;
+    }
+    
     CGRect firstCaretRect = [self caretRectForTextPosition:textRange.start applyInputTextAttributes:YES];
     CGRect lastCaretRect = [self caretRectForTextPosition:textRange.end applyInputTextAttributes:YES];
     CGRect combinedRect = CGRectUnion(firstCaretRect, lastCaretRect);
