@@ -1505,6 +1505,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     [self setMarkedTextRange:nil notifyInputDelegate:NO];
     [markedText_ release];
     markedText_ = nil;
+    [selectionDisplayController_ updateSelectionDisplay];
 }
 
 // UITextInput method
