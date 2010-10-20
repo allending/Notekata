@@ -64,7 +64,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     titleLabel_.backgroundColor = [UIColor clearColor];
     titleLabel_.textAlignment = UITextAlignmentCenter;
     titleLabel_.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-    titleLabel_.textColor = [UIColor lightTextColor];
+    titleLabel_.textColor = [UIColor whiteColor];
     titleLabel_.text = notebook_.title;
     self.navigationItem.titleView = titleLabel_;
 
@@ -89,8 +89,8 @@ static const NSUInteger AddPageButtonIndex = 0;
     
     // There seems to be a bug in UIKit where the navigation controller navigation bar and toolbar
     // may not respect the set styles after rotation animations. As a workaround, we force the style.    
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlackOpaque;
-    self.navigationController.toolbar.barStyle = UIBarStyleBlackOpaque;
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    self.navigationController.toolbar.barStyle = UIBarStyleBlack;
     
     titleLabel_.text = notebook_.title;
     
@@ -156,7 +156,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     {
         [self setToolbarItems:nil animated:YES];
         [pageViewController_.textView resignFirstResponder];
-        [pageViewController_ freezeUserInteraction];
+        [pageViewController_ freeze];
     }
     else
     {
@@ -165,7 +165,7 @@ static const NSUInteger AddPageButtonIndex = 0;
         // The table view selection state is potentially out of date
         NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
         [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
-        [pageViewController_ unfreezeUserInteraction];
+        [pageViewController_ unfreeze];
     }
 }
 
@@ -195,7 +195,7 @@ static const NSUInteger AddPageButtonIndex = 0;
             NSDictionary *dictionary = [[NSUserDefaults standardUserDefaults] objectForKey:SelectedPageNumbersDictionaryKey];
             NSUInteger pageNumber = [[dictionary objectForKey:notebook.notebookId] unsignedIntegerValue];
             
-            if (pageNumber < [[notebook pages] count])
+            if (pageNumber < [[notebook_ pages] count])
             {
                 page = [self pageAtIndex:pageNumber];
             }
@@ -288,7 +288,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     // Start editing immediately
     [pageViewController_ savePendingChanges];
     pageViewController_.page = page;
-    [pageViewController_ dismissNavigationPopoverAnimated:YES];
+    [pageViewController_ dismissNotebookPopoverAnimated:YES];
     [pageViewController_.textView becomeFirstResponder];
 }
 
@@ -498,7 +498,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     self.selectedPage = page;
     [pageViewController_ savePendingChanges];
     pageViewController_.page = page;
-    [pageViewController_ dismissNavigationPopoverAnimated:YES];
+    [pageViewController_ dismissNotebookPopoverAnimated:YES];
 }
 
 #pragma mark -

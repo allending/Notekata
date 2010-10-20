@@ -64,6 +64,8 @@
 		9FAF0C2F126BD52800B58D59 /* NKTEditNotebookViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAF0C2D126BD52800B58D59 /* NKTEditNotebookViewController.m */; };
 		9FAF0C30126BD52800B58D59 /* NKTEditNotebookViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FAF0C2E126BD52800B58D59 /* NKTEditNotebookViewController.xib */; };
 		9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB1465312402B26001EEB7B /* KUIToggleButton.m */; };
+		9FBBF117126E84240036C17F /* whiteButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FBBF116126E84240036C17F /* whiteButton.png */; };
+		9FBBF145126E856D0036C17F /* blueButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FBBF144126E856D0036C17F /* blueButton.png */; };
 		9FBD594A126E0A5C00B52D97 /* Tools.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FBD5949126E0A5C00B52D97 /* Tools.png */; };
 		9FC1D46C1267F34000443368 /* NKTSelectedTextRegion.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC1D46B1267F34000443368 /* NKTSelectedTextRegion.m */; };
 		9FC2B787123776A8002FD8BA /* NKTHighlightRegion.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2B786123776A8002FD8BA /* NKTHighlightRegion.m */; };
@@ -190,6 +192,8 @@
 		9FB1465212402B26001EEB7B /* KUIToggleButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KUIToggleButton.h; sourceTree = "<group>"; };
 		9FB1465312402B26001EEB7B /* KUIToggleButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KUIToggleButton.m; sourceTree = "<group>"; };
 		9FB1466012402C1D001EEB7B /* KobaUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaUI.h; sourceTree = "<group>"; };
+		9FBBF116126E84240036C17F /* whiteButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = whiteButton.png; sourceTree = "<group>"; };
+		9FBBF144126E856D0036C17F /* blueButton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blueButton.png; sourceTree = "<group>"; };
 		9FBD5949126E0A5C00B52D97 /* Tools.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Tools.png; sourceTree = "<group>"; };
 		9FC1D46A1267F34000443368 /* NKTSelectedTextRegion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTSelectedTextRegion.h; sourceTree = "<group>"; };
 		9FC1D46B1267F34000443368 /* NKTSelectedTextRegion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTSelectedTextRegion.m; sourceTree = "<group>"; };
@@ -395,6 +399,7 @@
 			children = (
 				9FA5410A122A59530005323E /* BandLoupe.png */,
 				9FA5410B122A59530005323E /* BandLoupeMask.png */,
+				9FBBF144126E856D0036C17F /* blueButton.png */,
 				9FA5410C122A59530005323E /* CaretHandle.png */,
 				9FA5410D122A59530005323E /* CaretLoupe.png */,
 				9FA5410E122A59530005323E /* CaretLoupeMask.png */,
@@ -413,6 +418,7 @@
 				F54453B111ED6371009D392B /* RedCoverPattern.png */,
 				9F65A41A1249A24A0006BD17 /* ScrollBorder.png */,
 				9FBD5949126E0A5C00B52D97 /* Tools.png */,
+				9FBBF116126E84240036C17F /* whiteButton.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -617,6 +623,8 @@
 				9FFD800A1264031800CB082D /* EdgeShadow.png in Resources */,
 				9FAF0C30126BD52800B58D59 /* NKTEditNotebookViewController.xib in Resources */,
 				9FBD594A126E0A5C00B52D97 /* Tools.png in Resources */,
+				9FBBF117126E84240036C17F /* whiteButton.png in Resources */,
+				9FBBF145126E856D0036C17F /* blueButton.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

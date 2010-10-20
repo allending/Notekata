@@ -10,6 +10,7 @@
 @implementation NKTPageViewController
 
 @synthesize page = page_;
+@synthesize pageStyle = pageStyle_;
 @synthesize delegate = delegate_;
 
 @synthesize fontPopoverController = fontPopoverController_;
@@ -18,23 +19,23 @@
 @synthesize textView = textView_;
 @synthesize creamPaperBackgroundView = creamPaperBackgroundView_;
 @synthesize plainPaperBackgroundView = plainPaperBackgroundView_;
-@synthesize coverEdgeView = coverEdgeView_;
-@synthesize capAndEdgeView = capAndEdgeView_;
-@synthesize edgeShadowView = edgeShadowView_;
-@synthesize pageStyle = pageStyle_;
+@synthesize rightEdgeView = rightEdgeView_;
+@synthesize leftEdgeView = leftEdgeView_;
+@synthesize edgeShadowView = leftEdgeShadowView_;
+@synthesize frozenOverlayView = frozenOverlayView_;
+
 @synthesize toolbar = toolbar_;
+@synthesize notebookItem = notebookItem_;
+@synthesize actionItem = actionItem_;
+@synthesize fontItem = fontItem_;
+@synthesize spacerItem = spacerItem_;
+@synthesize boldItem = boldItem_;
+@synthesize italicItem = italicItem_;
+@synthesize underlineItem = underlineItem_;
 @synthesize titleLabel = titleLabel_;
-@synthesize nilPageTitleLabel = nilPageTitleLabel_;
-@synthesize navigationButton = navigationButton_;
-@synthesize navigationButtonItem = navigationButtonItem_;
-@synthesize pageStyleButton = pageStyleButton_;
-@synthesize pageStyleButtonItem = pageStyleButtonItem_;
 @synthesize boldToggleButton = boldToggleButton_;
 @synthesize italicToggleButton = italicToggleButton_;
 @synthesize underlineToggleButton = underlineToggleButton_;
-@synthesize fontButton = fontButton_;
-@synthesize fontToolbarItem = fontToolbarItem_;
-@synthesize frozenOverlay = frozenOverlay_;
 
 static const CGFloat KeyboardOverlapTolerance = 1.0;
 
@@ -62,29 +63,33 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 - (void)dealloc
 {
     [page_ release];
-
+    
+    [notebookPopoverController_ release];
     [fontPopoverController_ release];
     [fontPickerViewController_ release];
-
+    
     [textView_ release];
     [creamPaperBackgroundView_ release];
     [plainPaperBackgroundView_ release];
-    [coverEdgeView_ release];
-    [capAndEdgeView_ release];
-    [edgeShadowView_ release];
+    [rightEdgeView_ release];
+    [leftEdgeView_ release];
+    [leftEdgeShadowView_ release];
+    [frozenOverlayView_ release];
+    
     [toolbar_ release];
+    [notebookItem_ release];
+    [actionItem_ release];
+    [spacerItem_ release];
+    [fontItem_ release];
+    [boldItem_ release];
+    [italicItem_ release];
+    [underlineItem_ release];
+    
     [titleLabel_ release];
-    [nilPageTitleLabel_ release];
-    [navigationButton_ release];
-    [navigationButtonItem_ release];
-    [pageStyleButton_ release];
-    [pageStyleButtonItem_ release];
     [boldToggleButton_ release];
     [italicToggleButton_ release];
     [underlineToggleButton_ release];
-    [fontButton_ release];
-    [fontToolbarItem_ release];
-    [frozenOverlay_ release];
+    
     [super dealloc];
 }
 
@@ -100,44 +105,66 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor scrollViewTexturedBackgroundColor];
-    
-    // PENDING: is this right?
-    self.textView.opaque = YES;
-    self.textView.clearsContextBeforeDrawing = NO;
-    
-    // Set the background pattern for the edge view
-    UIImage *edgePattern = [UIImage imageNamed:@"RedCoverPattern.png"];
-    self.coverEdgeView.backgroundColor = [UIColor colorWithPatternImage:edgePattern];
-    
-    // Create background views
-    UIImage *creamPaperPattern = [UIImage imageNamed:@"CreamPaperPattern.png"];
+    toolbar_.barStyle = UIBarStyleBlack;
+        
+    // Configure background views
     creamPaperBackgroundView_ = [[UIView alloc] init];
     creamPaperBackgroundView_.opaque = YES;
     creamPaperBackgroundView_.userInteractionEnabled = NO;
-    creamPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:creamPaperPattern];
-    
-    UIImage *plainPaperPattern = [UIImage imageNamed:@"PlainPaperPattern2.png"];
+    creamPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamPaperPattern.png"]];
     plainPaperBackgroundView_ = [[UIView alloc] init];
     plainPaperBackgroundView_.opaque = YES;
     plainPaperBackgroundView_.userInteractionEnabled = NO;
-    plainPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:plainPaperPattern];
+    plainPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainPaperPattern2.png"]];
     
-    // Create a cap and edge image view to apply to the left edge of the text view
-    UIImage *capAndEdgeImage = [UIImage imageNamed:@"DarkBgCap.png"];
-    capAndEdgeImage = [capAndEdgeImage stretchableImageWithLeftCapWidth:6.0 topCapHeight:3.0];
-    capAndEdgeView_ = [[UIImageView alloc] initWithImage:capAndEdgeImage];
-    capAndEdgeView_.userInteractionEnabled = NO;
-    capAndEdgeView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
+    // Configure right edge view
+    rightEdgeView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"RedCoverPattern.png"]];
     
-    // Finally, apply a shadow to the left edge of the text view
-    UIImage *edgeShadowImage = [UIImage imageNamed:@"EdgeShadow.png"];
-    edgeShadowView_ = [[UIImageView alloc] initWithImage:edgeShadowImage];
-    edgeShadowView_.userInteractionEnabled = NO;
-    edgeShadowView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
-    edgeShadowView_.frame = CGRectMake(5.0, 0.0, 10.0, 0.0);
+    // Configure left edge view
+    UIImage *leftEdgeImage = [[UIImage imageNamed:@"DarkBgCap.png"] stretchableImageWithLeftCapWidth:6.0 topCapHeight:3.0];
+    leftEdgeView_ = [[UIImageView alloc] initWithImage:leftEdgeImage];
+    leftEdgeView_.userInteractionEnabled = NO;
+    leftEdgeView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     
-    // Create the font picker view controllers
+    // Configure left edge shadow view
+    leftEdgeShadowView_ = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"EdgeShadow.png"]];
+    leftEdgeShadowView_.userInteractionEnabled = NO;
+    leftEdgeShadowView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
+    leftEdgeShadowView_.frame = CGRectMake(5.0, 0.0, 10.0, 0.0);
+    
+    // Configure frozen overlay view
+    frozenOverlayView_ = [[UIView alloc] initWithFrame:self.view.bounds];
+    frozenOverlayView_.backgroundColor = [UIColor blackColor];
+    frozenOverlayView_.userInteractionEnabled = NO;
+    frozenOverlayView_.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    frozenOverlayView_.alpha = 0.0;
+    [self.view addSubview:frozenOverlayView_];
+    
+    // Configure bold item
+    boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
+    [boldToggleButton_ addTarget:self action:@selector(boldItemTapped:) forControlEvents:UIControlEventValueChanged];
+    [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
+    boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
+    boldToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
+    boldItem_.customView = boldToggleButton_;
+
+    // Configure italic item
+    italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
+    [italicToggleButton_ addTarget:self action:@selector(italicItemTapped:) forControlEvents:UIControlEventValueChanged];
+    [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
+    italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0];
+    italicToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
+    italicItem_.customView = italicToggleButton_;
+    
+    // Configure underline item
+    underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
+    [underlineToggleButton_ addTarget:self action:@selector(underlineItemTapped:) forControlEvents:UIControlEventValueChanged];
+    [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
+    underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
+    underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
+    underlineItem_.customView = underlineToggleButton_;
+    
+    // Create the font picker view
     fontPickerViewController_ = [[NKTFontPickerViewController alloc] init];
     fontPickerViewController_.delegate = self;
     fontPickerViewController_.selectedFontFamilyName = @"Helvetica Neue";
@@ -145,137 +172,52 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 400.0);
     
-    // Frozen overlay
-    frozenOverlay_ = [[UIView alloc] initWithFrame:self.view.bounds];
-    frozenOverlay_.backgroundColor = [UIColor blackColor];
-    frozenOverlay_.userInteractionEnabled = NO;
-    frozenOverlay_.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    frozenOverlay_.alpha = 0.0;
-    [self.view addSubview:frozenOverlay_];
-    
     // Set up the text view
     textView_.delegate = self;
     [self applyPageStyle];
-    [self addToolbarItems];
-}
-
-- (UIButton *)borderedToolbarButton
-{
-    // Various bits and pieces of the button
-    UIImage *buttonImage = [UIImage imageNamed:@"DarkButton.png"];
-    UIImage *buttonBackground = [buttonImage stretchableImageWithLeftCapWidth:4.0 topCapHeight:5.0];
-    UIColor *highlightedColor = [UIColor colorWithRed:0.12 green:0.57 blue:0.92 alpha:1.0];
-    UIColor *selectedColor = [UIColor colorWithRed:0.1 green:0.5 blue:0.9 alpha:1.0];
-    UIColor *titleColor = [UIColor lightTextColor];
-    UIColor *disabledColor = [UIColor darkGrayColor];
-    UIFont *buttonFont = [UIFont fontWithName:@"HelveticaNeue-Bold" size:12.0];
-    UIEdgeInsets buttonInsets = UIEdgeInsetsMake(6.0, 8.0, 6.0, 8.0);
-    // Create and return the button
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-    [button setBackgroundImage:buttonBackground forState:UIControlStateNormal];
-    [button setTitleColor:highlightedColor forState:UIControlStateHighlighted|UIControlStateNormal];
-    [button setTitleColor:highlightedColor forState:UIControlStateHighlighted|UIControlStateSelected];
-    [button setTitleColor:selectedColor forState:UIControlStateSelected];
-    [button setTitleColor:titleColor forState:UIControlStateNormal];
-    [button setTitleColor:disabledColor forState:UIControlStateDisabled];
-    button.titleLabel.font = buttonFont;
-    button.titleEdgeInsets = buttonInsets;
-    return button;
-}
-
-- (void)addToolbarItems
-{
-    NSMutableArray *toolbarItems = [NSMutableArray array];
     
-    // Navigation button
-    navigationButton_ = [[self borderedToolbarButton] retain];
-    [navigationButton_ addTarget:self action:@selector(handleNavigationButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    navigationButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
-    navigationButtonItem_ = [[UIBarButtonItem alloc] initWithCustomView:navigationButton_];
-    
-    // Page style item
-    pageStyleButton_ = [self borderedToolbarButton];
-    [pageStyleButton_ setTitle:@"Page Style" forState:UIControlStateNormal];
-    [pageStyleButton_ addTarget:self action:@selector(handlePageStyleTapped:) forControlEvents:UIControlEventTouchUpInside];
-    pageStyleButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
-    pageStyleButtonItem_ = [[UIBarButtonItem alloc] initWithCustomView:pageStyleButton_];
-    [toolbarItems addObject:pageStyleButtonItem_];
-    
-    // Left flexible space
-    UIBarButtonItem *spacer = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
-    [toolbarItems addObject:spacer];
-    [spacer release];
-    
-    // Font item
-    fontButton_ = [[self borderedToolbarButton] retain];
-    [fontButton_ addTarget:self action:@selector(handleFontButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    fontButton_.frame = CGRectMake(0.0, 0.0, 120.0, 30.0);
-    fontToolbarItem_ = [[UIBarButtonItem alloc] initWithCustomView:fontButton_];
-    [toolbarItems addObject:fontToolbarItem_];
-    
-    // Bold item
-    boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [boldToggleButton_ addTarget:self action:@selector(handleBoldToggleTapped:) forControlEvents:UIControlEventValueChanged];
-    [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
-    boldToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-    boldToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-    UIBarButtonItem *boldToggleItem = [[UIBarButtonItem alloc] initWithCustomView:boldToggleButton_];
-    [toolbarItems addObject:boldToggleItem];
-    [boldToggleItem release];
-    
-    // Italic item
-    italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [italicToggleButton_ addTarget:self action:@selector(handleItalicToggleTapped:) forControlEvents:UIControlEventValueChanged];
-    [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
-    italicToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0];
-    italicToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-    UIBarButtonItem *italicToggleItem = [[UIBarButtonItem alloc] initWithCustomView:italicToggleButton_];
-    [toolbarItems addObject:italicToggleItem];
-    [italicToggleItem release];
-    
-    // Underline item
-    underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
-    [underlineToggleButton_ addTarget:self action:@selector(handleUnderlineToggleTapped:) forControlEvents:UIControlEventValueChanged];
-    [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
-    underlineToggleButton_.titleLabel.font = [UIFont fontWithName:@"HelveticaNeue" size:14.0];
-    underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
-    UIBarButtonItem *underlineToggleItem = [[UIBarButtonItem alloc] initWithCustomView:underlineToggleButton_];
-    [toolbarItems addObject:underlineToggleItem];
-    [underlineToggleItem release];
-    
-    self.toolbar.items = toolbarItems;
+    if (page_ != nil)
+    {
+        [self configureForNonNilPageAnimated:NO];
+    }
+    else
+    {
+        [self configureForNilPageAnimated:NO];
+    }
 }
 
 - (void)viewDidUnload
 {
     [super viewDidUnload];
+    self.fontPickerViewController = nil;
+    self.fontPopoverController = nil;
+    
     self.textView = nil;
     self.creamPaperBackgroundView = nil;
     self.plainPaperBackgroundView = nil;
-    self.coverEdgeView = nil;
-    self.capAndEdgeView = nil;
+    self.rightEdgeView = nil;
+    self.leftEdgeView = nil;
     self.edgeShadowView = nil;
+    self.frozenOverlayView = nil;
+    
     self.toolbar = nil;
+    self.notebookItem = nil;
+    self.actionItem = nil;
+    self.spacerItem = nil;
+    self.fontItem = nil;
+    self.boldItem = nil;
+    self.italicItem = nil;
+    self.underlineItem = nil;
     self.titleLabel = nil;
-    self.nilPageTitleLabel = nil;
-    self.navigationButton = nil;
-    self.navigationButtonItem = nil;
-    self.pageStyleButton = nil;
-    self.pageStyleButtonItem = nil;
     self.boldToggleButton = nil;
     self.italicToggleButton = nil;
     self.underlineToggleButton = nil;
-    self.fontButton = nil;
-    self.fontToolbarItem = nil;
-    self.fontPickerViewController = nil;
-    self.fontPopoverController = nil;
-    self.frozenOverlay = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [self updateViews];
+    [self updatePageViews];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -307,13 +249,13 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         // Place and add adorment views
         frame.origin.x = 15.0;
         frame.size.width = 6.0;
-        capAndEdgeView_.frame = frame;
-        [self.view addSubview:capAndEdgeView_];
+        leftEdgeView_.frame = frame;
+        [self.view addSubview:leftEdgeView_];
         
         frame.origin.x = 5.0;
         frame.size.width = 10.0;
-        edgeShadowView_.frame = frame;
-        [self.view addSubview:edgeShadowView_];
+        leftEdgeShadowView_.frame = frame;
+        [self.view addSubview:leftEdgeShadowView_];
     }
     else
     {
@@ -324,8 +266,8 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         textView_.frame = frame;
         
         // Remove adornment views
-        [capAndEdgeView_ removeFromSuperview];
-        [edgeShadowView_ removeFromSuperview];
+        [leftEdgeView_ removeFromSuperview];
+        [leftEdgeShadowView_ removeFromSuperview];
     }
 }
 
@@ -350,23 +292,18 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     //[self resignFirstResponder];
     //[self savePendingChanges];
     
-    BOOL pageWasNil = (page_ == nil);
     [page_ release];
     page_ = [page retain];
     
-    // When the page is set to nil, the page view controller goes into a special informational state
-    if (page_ == nil)
+    // When the page is set to nil, the page view controller goes into a special state
+    if (page_ != nil)
     {
-        [self disableViewsForNilPage];
+        [self configureForNonNilPageAnimated:NO];
+        [self updatePageViews];
     }
     else
     {
-        if (pageWasNil)
-        {
-            [self enableViewsForNonNilPage];
-        }
-        
-        [self updateViews];
+        [self configureForNilPageAnimated:NO];
     }
 }
 
@@ -470,67 +407,56 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 }
 
 #pragma mark -
-#pragma mark User Interaction
+#pragma mark Freezing
 
-- (void)freezeUserInteraction
+- (void)freeze
 {
-    if (userInteractionFrozen_)
+    if (frozen_)
     {
         return;
     }
     
-    userInteractionFrozen_ = YES;
+    frozen_ = YES;
     [UIView beginAnimations:@"FreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
-    frozenOverlay_.alpha = 0.37;
+    frozenOverlayView_.alpha = 0.37;
     [UIView commitAnimations];
     self.view.userInteractionEnabled = NO;
+    self.toolbar.userInteractionEnabled = NO;
 }
 
-- (void)unfreezeUserInteraction
+- (void)unfreeze
 {
-    if (!userInteractionFrozen_)
+    if (!frozen_)
     {
         return;
     }
     
-    userInteractionFrozen_ = NO;
+    frozen_ = NO;
     [UIView beginAnimations:@"UnfreezeView" context:nil];
     [UIView setAnimationBeginsFromCurrentState:YES];
-    frozenOverlay_.alpha = 0.0;
+    frozenOverlayView_.alpha = 0.0;
     [UIView commitAnimations];
     self.view.userInteractionEnabled = YES;
+    self.toolbar.userInteractionEnabled = YES;
 }
 
 #pragma mark -
 #pragma mark Navigation
 
-- (void)dismissNavigationPopoverAnimated
+- (void)dismissNotebookPopoverAnimated
 {
-    if (navigationPopoverController_.popoverVisible)
+    if (notebookPopoverController_.popoverVisible)
     {
-        [navigationPopoverController_ dismissPopoverAnimated:YES];
+        [notebookPopoverController_ dismissPopoverAnimated:YES];
     }
 }
 
-- (void)dismissNavigationPopoverAnimated:(BOOL)animated
+- (void)dismissNotebookPopoverAnimated:(BOOL)animated
 {
-    if (navigationPopoverController_.popoverVisible)
+    if (notebookPopoverController_.popoverVisible)
     {
-        [navigationPopoverController_ dismissPopoverAnimated:animated];
-    }
-}
-
-- (void)handleNavigationButtonTapped:(UIButton *)button
-{
-    if (navigationPopoverController_.popoverVisible)
-    {
-        [navigationPopoverController_ dismissPopoverAnimated:YES];
-    }
-    else
-    {
-        [self.textView resignFirstResponder];
-        [navigationPopoverController_ presentPopoverFromBarButtonItem:navigationButtonItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        [notebookPopoverController_ dismissPopoverAnimated:animated];
     }
 }
 
@@ -539,97 +465,206 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 
 - (void)splitViewController:(UISplitViewController*)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem*)barButtonItem forPopoverController:(UIPopoverController*)pc
 {
-    NSMutableArray *items = [self.toolbar.items mutableCopy];
-    
-    // Add the navigation item to the toolbar if needed
-    if (![items containsObject:navigationButtonItem_])
-    {
-        [items insertObject:navigationButtonItem_ atIndex:0];
-        [self.toolbar setItems:items animated:NO];
-    }
-    
-    [items release];
-    navigationPopoverController_ = pc;
-    [navigationPopoverController_ setDelegate:self];
+    notebookPopoverController_ = pc;
+    [notebookPopoverController_ setDelegate:self];
+    [self updateToolbarAnimated:NO];
 }
 
 - (void)splitViewController:(UISplitViewController*)svc willShowViewController:(UIViewController *)aViewController invalidatingBarButtonItem:(UIBarButtonItem *)button
 {
-    NSMutableArray *items = [self.toolbar.items mutableCopy];
-    
-    // Remove the navigation item from the toolbar
-    if ([items containsObject:navigationButtonItem_])
-    {
-        [items removeObject:navigationButtonItem_];
-        [self.toolbar setItems:items animated:NO];
-    }
-    
-    [items release];
-    navigationPopoverController_ = nil;
+    notebookPopoverController_ = nil;
+    [self updateToolbarAnimated:NO];
 }
 
 #pragma mark -
-#pragma mark Popover Controller
+#pragma mark Notebook Popover Controller
 
 - (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
 {
-    if (popoverController == navigationPopoverController_)
+    if (popoverController == notebookPopoverController_)
     {
         // PENDING: this is kinda leaky ... maybe ask delegate?
-        // If the controller is frozen, then we must not dismiss the popover, or there might be no way
-        // to unfreeze the controller
-        return self.view.userInteractionEnabled;
+        // If the controller is frozen, then we must not dismiss the popover, or there might be no
+        // way to unfreeze the controller
+        return !frozen_;
     }
     
     return YES;
 }
 
 #pragma mark -
+#pragma mark Font Picker View Controller
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontFamilyName:(NSString *)fontFamilyName
+{
+    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+    [self updateTextEditingItems];
+}
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontSize:(CGFloat)fontSize
+{
+    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontSizeOfAttributes:)];
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+    [self updateTextEditingItems];
+}
+
+#pragma mark -
+#pragma mark Actions
+
+- (void)notebookItemTapped:(id)sender
+{
+    if (notebookPopoverController_.popoverVisible && !frozen_)
+    {
+        [notebookPopoverController_ dismissPopoverAnimated:YES];
+    }
+    else
+    {
+        [self.textView resignFirstResponder];
+        [notebookPopoverController_ presentPopoverFromBarButtonItem:notebookItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+}
+
+- (void)actionItemTapped:(id)sender
+{
+    self.pageStyle = (self.pageStyle + 1) % 6;
+}
+
+- (void)fontItemTapped:(id)sender
+{
+    if (fontPopoverController_.popoverVisible)
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    else
+    {
+        [fontPopoverController_ presentPopoverFromBarButtonItem:fontItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    }
+}
+
+- (void)boldItemTapped:(id)sender
+{
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
+    
+    // Deselect the italic button if the font family supports bold or italic traits exclusively
+    if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
+    {
+        italicToggleButton_.selected = NO;
+    }
+    
+    if (boldToggleButton_.selected)
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingBoldTraitToAttributes:)];
+    }
+    else
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingBoldTraitFromAttributes:)];
+    }
+    
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+}
+
+- (void)italicItemTapped:(id)sender
+{
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
+    
+    // Deselect the bold button if the font family supports bold or italic traits exclusively
+    if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
+    {
+        boldToggleButton_.selected = NO;
+    }
+    
+    if (italicToggleButton_.selected)
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingItalicTraitToAttributes:)];
+    }
+    else
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingItalicTraitFromAttributes:)];
+    }
+    
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+}
+
+- (void)underlineItemTapped:(id)sender
+{
+    if (underlineToggleButton_.selected)
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingUnderlineToAttributes:)];
+    }
+    else
+    {
+        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingUnderlineFromAttributes:)];
+    }
+    
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+}
+
+#pragma mark -
 #pragma mark Updating Views
 
-- (void)disableViewsForNilPage
+- (void)configureForNonNilPageAnimated:(BOOL)animated
+{
+    textView_.hidden = NO;
+    textView_.userInteractionEnabled = YES;
+    rightEdgeView_.hidden = NO;
+    leftEdgeView_.hidden = NO;
+    leftEdgeShadowView_.hidden = NO;
+    titleLabel_.text = @"";
+    CGRect bounds = titleLabel_.bounds;
+    bounds.size.width = 120.0;
+    titleLabel_.bounds = bounds;
+    [self updateToolbarAnimated:animated];
+}
+
+- (void)configureForNilPageAnimated:(BOOL)animated
 {
     textView_.text = nil;
     textView_.hidden = YES;
-    nilPageTitleLabel_.hidden = NO;
-    coverEdgeView_.hidden = YES;
-    capAndEdgeView_.hidden = YES;
-    edgeShadowView_.hidden = YES;
-    frozenOverlay_.hidden = YES;
     textView_.userInteractionEnabled = NO;
-    pageStyleButton_.hidden = YES;
-    titleLabel_.hidden = YES;
-    [navigationButton_ setTitle:@"Notebooks" forState:UIControlStateNormal];
-    fontButton_.hidden = YES;
-    boldToggleButton_.hidden= YES;
-    boldToggleButton_.hidden = YES;
-    italicToggleButton_.hidden = YES;
-    italicToggleButton_.hidden = YES;
-    underlineToggleButton_.hidden = YES;
-    underlineToggleButton_.hidden = YES;
+    rightEdgeView_.hidden = YES;
+    leftEdgeView_.hidden = YES;
+    leftEdgeShadowView_.hidden = YES;
+    titleLabel_.text = @"Please Select A Notebook";
+    notebookItem_.title = @"Notebooks";
+    CGRect bounds = titleLabel_.bounds;
+    bounds.size.width = 300.0;
+    titleLabel_.bounds = bounds;
+    [self updateToolbarAnimated:animated];
 }
 
-- (void)enableViewsForNonNilPage
+- (void)updateToolbarAnimated:(BOOL)animated
 {
-    textView_.hidden = NO;
-    nilPageTitleLabel_.hidden = YES;
-    coverEdgeView_.hidden = NO;
-    capAndEdgeView_.hidden = NO;
-    edgeShadowView_.hidden = NO;
-    frozenOverlay_.hidden = NO;
-    textView_.userInteractionEnabled = YES;
-    pageStyleButton_.hidden = NO;
-    titleLabel_.hidden = NO;
-    fontButton_.hidden = NO;
-    boldToggleButton_.hidden= NO;
-    boldToggleButton_.hidden = NO;
-    italicToggleButton_.hidden = NO;
-    italicToggleButton_.hidden = NO;
-    underlineToggleButton_.hidden = NO;
-    underlineToggleButton_.hidden = NO;
+    if (page_ != nil)
+    {
+        if (notebookPopoverController_ != nil)
+        {
+            NSArray *items = [NSArray arrayWithObjects:notebookItem_, actionItem_, spacerItem_, fontItem_, boldItem_, italicItem_, underlineItem_, nil];
+            [toolbar_ setItems:items animated:animated];
+        }
+        else
+        {
+            NSArray *items = [NSArray arrayWithObjects:actionItem_, spacerItem_, fontItem_, boldItem_, italicItem_, underlineItem_, nil];
+            [toolbar_ setItems:items animated:animated];
+        }
+    }
+    else
+    {
+        if (notebookPopoverController_ != nil)
+        {
+            NSArray *items = [NSArray arrayWithObject:notebookItem_];
+            [toolbar_ setItems:items animated:animated];
+        }
+        else
+        {
+            [toolbar_ setItems:nil animated:animated];
+        }
+    }
 }
 
-- (void)updateViews
+- (void)updatePageViews
 {
     if (page_ == nil)
     {
@@ -639,9 +674,8 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     // Text view needs to be updated first because title label update depends on it
     [self updateTextView];
     [self updateTitleLabel];
-    [self updateNavigationButtonTitle];
+    [self updateNotebookItem];
     [self updateTextEditingItems];
-
 }
 
 - (void)updateTextView
@@ -665,9 +699,9 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     }
 }
 
-- (void)updateNavigationButtonTitle
+- (void)updateNotebookItem
 {
-    [navigationButton_ setTitle:page_.notebook.title forState:UIControlStateNormal];
+    notebookItem_.title = page_.notebook.title;
 }
 
 - (void)updateTextEditingItems
@@ -678,7 +712,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         UITextRange *selectedTextRange = textView_.selectedTextRange;
         NSDictionary *inputTextAttributes = self.textView.inputTextAttributes;
         KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:inputTextAttributes];
-        fontButton_.enabled = YES;
+        fontItem_.enabled = YES;
         fontPickerViewController_.selectedFontFamilyName = styleDescriptor.fontFamilyName;
         fontPickerViewController_.selectedFontSize = styleDescriptor.fontSize;
         boldToggleButton_.enabled = !selectedTextRange.empty || styleDescriptor.fontFamilySupportsBoldTrait;
@@ -690,7 +724,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     }
     else
     {
-        fontButton_.enabled = NO;
+        fontItem_.enabled = NO;
         boldToggleButton_.enabled = NO;
         boldToggleButton_.selected = NO;
         italicToggleButton_.enabled = NO;
@@ -699,9 +733,17 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         underlineToggleButton_.selected = NO;
     }
     
-    // Update the font button title regardless of editing state
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontPickerViewController_.selectedFontFamilyName, fontPickerViewController_.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
+    // Update the font item title regardless of editing state
+    NSString *fontName = fontPickerViewController_.selectedFontFamilyName;
+    
+    if ([fontName length] > 14)
+    {
+        fontName = [fontName substringToIndex:10];
+        fontName = [fontName stringByAppendingString:@"..."];
+    }
+    
+    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontName, fontPickerViewController_.selectedFontSize];
+    fontItem_.title = fontButtonTitle;
 }
 
 #pragma mark -
@@ -744,9 +786,9 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 
 - (void)textViewDidChange:(NKTTextView *)textView
 {
-    if (navigationPopoverController_.popoverVisible)
+    if (notebookPopoverController_.popoverVisible)
     {
-        [navigationPopoverController_ dismissPopoverAnimated:YES];
+        [notebookPopoverController_ dismissPopoverAnimated:YES];
     }
     
     if (fontPopoverController_.popoverVisible)
@@ -832,105 +874,6 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:attributes];
     KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorBySettingFontFamilyName:fontPickerViewController_.selectedFontFamilyName];
     return [newStyleDescriptor coreTextAttributes];
-}
-
-- (void)handlePageStyleTapped:(UIButton *)button
-{
-    // PENDING: Clarity!
-    self.pageStyle = (self.pageStyle + 1) % 6;
-}
-
-- (void)handleFontButtonTapped:(UIButton *)button
-{
-    if (fontPopoverController_.popoverVisible)
-    {
-        [fontPopoverController_ dismissPopoverAnimated:YES];
-    }
-    else
-    {
-        [fontPopoverController_ presentPopoverFromBarButtonItem:fontToolbarItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-    }
-}
-
-- (void)handleBoldToggleTapped:(KUIToggleButton *)toggleButton
-{
-    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
-    
-    // Deselect the italic button if the font family supports bold or italic traits exclusively
-    if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
-    {
-        italicToggleButton_.selected = NO;
-    }
-    
-    if (toggleButton.selected)
-    {
-        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingBoldTraitToAttributes:)];
-    }
-    else
-    {
-        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingBoldTraitFromAttributes:)];
-    }
-    
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-}
-
-- (void)handleItalicToggleTapped:(KUIToggleButton *)toggleButton
-{
-    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
-    
-    // Deselect the bold button if the font family supports bold or italic traits exclusively
-    if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
-    {
-        boldToggleButton_.selected = NO;
-    }
-    
-    if (toggleButton.selected)
-    {
-        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingItalicTraitToAttributes:)];
-    }
-    else
-    {
-        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingItalicTraitFromAttributes:)];
-    }
-    
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-}
-
-- (void)handleUnderlineToggleTapped:(KUIToggleButton *)toggleButton
-{
-    if (underlineToggleButton_.selected)
-    {
-        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingUnderlineToAttributes:)];
-    }
-    else
-    {
-        [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingUnderlineFromAttributes:)];
-    }
-    
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-}
-
-#pragma mark -
-#pragma mark Font Picker View Controller
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontFamilyName:(NSString *)fontFamilyName
-{
-    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontPickerViewController.selectedFontFamilyName, (NSInteger)fontPickerViewController.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-    [self updateTextEditingItems];
-}
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontSize:(CGFloat)fontSize
-{
-    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontSizeOfAttributes:)];
-    
-    NSString *fontButtonTitle = [NSString stringWithFormat:@"%@ %d", fontPickerViewController.selectedFontFamilyName, (NSInteger)fontPickerViewController.selectedFontSize];
-    [fontButton_ setTitle:fontButtonTitle forState:UIControlStateNormal];
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
 }
 
 #pragma mark -

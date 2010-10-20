@@ -314,13 +314,16 @@ static NSString *UnderlinedKey = @"Underlined";
     
     if (bestFont == NULL)
     {
-        KBCLogWarning(@"could not create Core Text font with font name %@", bestFontName);
+        KBCLogWarning(@"could not create Core Text font with font name %@. returning nil.", bestFontName);
+        return nil;
     }
     
     NSInteger underlineStyle = underlined_ ? kCTUnderlineStyleSingle : kCTUnderlineStyleNone;
     coreTextAttributes_ = [[NSDictionary alloc] initWithObjectsAndKeys:(id)bestFont, (id)kCTFontAttributeName,
                                                                        [NSNumber numberWithInt:underlineStyle], (id)kCTUnderlineStyleAttributeName,
                                                                        nil];
+    CFRelease(bestFont);
+    
     return coreTextAttributes_;
 }
 

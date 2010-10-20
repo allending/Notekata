@@ -64,7 +64,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
 }
 
 - (id)initWithString:(NSString *)string styleString:(NSString *)styleString
-{
+{    
     if ((self = [super init]))
     {
         string_ = [string copy];

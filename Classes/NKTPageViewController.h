@@ -26,39 +26,35 @@ typedef enum
 {
 @private
     NKTPage *page_;
-    BOOL userInteractionFrozen_;
+    NKTPageStyle pageStyle_;
+    BOOL frozen_;
     id <NKTPageViewControllerDelegate> delegate_;
-
-    UIPopoverController *navigationPopoverController_;
+    
+    UIPopoverController *notebookPopoverController_;
     UIPopoverController *fontPopoverController_;
     NKTFontPickerViewController *fontPickerViewController_;
     
     NKTTextView *textView_;
     UIView *creamPaperBackgroundView_;
     UIView *plainPaperBackgroundView_;
-    NKTPageStyle pageStyle_;
-    UIView *coverEdgeView_;
-    UIImageView *capAndEdgeView_;
-    UIImageView *edgeShadowView_;
+    UIView *rightEdgeView_;
+    UIImageView *leftEdgeView_;
+    UIImageView *leftEdgeShadowView_;
+    UIView *frozenOverlayView_;
+    
     UIToolbar *toolbar_;
+    UIBarButtonItem *notebookItem_;
+    UIBarButtonItem *actionItem_;
+    UIBarButtonItem *fontItem_;
+    UIBarButtonItem *spacerItem_;
+    UIBarButtonItem *boldItem_;
+    UIBarButtonItem *italicItem_;
+    UIBarButtonItem *underlineItem_;
     UILabel *titleLabel_;
-    UILabel *nilPageTitleLabel_;
-    UIButton *navigationButton_;
-    UIBarButtonItem *navigationButtonItem_;
-    UIButton *pageStyleButton_;
-    UIBarButtonItem *pageStyleButtonItem_;    
     KUIToggleButton *boldToggleButton_;
     KUIToggleButton *italicToggleButton_;
     KUIToggleButton *underlineToggleButton_;
-    UIButton *fontButton_;
-    UIBarButtonItem *fontToolbarItem_;
-    UIView *frozenOverlay_;
 }
-
-#pragma mark View Controller
-
-- (UIButton *)borderedToolbarButton;
-- (void)addToolbarItems;
 
 #pragma mark Page
 
@@ -78,52 +74,61 @@ typedef enum
 
 - (void)applyPageStyle;
 
-#pragma mark User Interaction
+#pragma mark Freezing
 
-- (void)freezeUserInteraction;
-- (void)unfreezeUserInteraction;
+- (void)freeze;
+- (void)unfreeze;
 
 #pragma mark Navigation
 
-- (void)dismissNavigationPopoverAnimated:(BOOL)animated;
-- (void)handleNavigationButtonTapped:(UIButton *)button;
+- (void)dismissNotebookPopoverAnimated:(BOOL)animated;
 
 #pragma mark View Controllers
 
 @property (nonatomic, retain) UIPopoverController *fontPopoverController;
 @property (nonatomic, retain) NKTFontPickerViewController *fontPickerViewController;
 
+#pragma mark Actions
+
+- (IBAction)notebookItemTapped:(id)sender;
+- (IBAction)actionItemTapped:(id)sender;
+- (IBAction)fontItemTapped:(id)sender;
+- (IBAction)boldItemTapped:(id)sender;
+- (IBAction)italicItemTapped:(id)sender;
+- (IBAction)underlineItemTapped:(id)sender;
+
 #pragma mark Views
 
 @property (nonatomic, retain) IBOutlet NKTTextView *textView;
-@property (nonatomic, retain) IBOutlet UIView *coverEdgeView;
-@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
-@property (nonatomic, retain) IBOutlet UILabel *titleLabel;
-@property (nonatomic, retain) IBOutlet UILabel *nilPageTitleLabel;
-
 @property (nonatomic, retain) UIView *creamPaperBackgroundView;
 @property (nonatomic, retain) UIView *plainPaperBackgroundView;
-@property (nonatomic, retain) UIImageView *capAndEdgeView;
+@property (nonatomic, retain) IBOutlet UIView *rightEdgeView;
+@property (nonatomic, retain) UIImageView *leftEdgeView;
 @property (nonatomic, retain) UIImageView *edgeShadowView;
-@property (nonatomic, retain) UIView *frozenOverlay;
-@property (nonatomic, retain) UIButton *navigationButton;
-@property (nonatomic, retain) UIBarButtonItem *navigationButtonItem;
-@property (nonatomic, retain) UIButton *pageStyleButton;
-@property (nonatomic, retain) UIBarButtonItem *pageStyleButtonItem;
+@property (nonatomic, retain) UIView *frozenOverlayView;
+
+@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *notebookItem;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *actionItem;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *spacerItem;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *fontItem;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *boldItem;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *italicItem;
+@property (nonatomic, retain) IBOutlet UIBarButtonItem *underlineItem;
+@property (nonatomic, retain) IBOutlet UILabel *titleLabel;
 @property (nonatomic, retain) KUIToggleButton *boldToggleButton;
 @property (nonatomic, retain) KUIToggleButton *italicToggleButton;
 @property (nonatomic, retain) KUIToggleButton *underlineToggleButton;
-@property (nonatomic, retain) UIButton *fontButton;
-@property (nonatomic, retain) UIBarButtonItem *fontToolbarItem;
 
 #pragma mark Updating Views
 
-- (void)disableViewsForNilPage;
-- (void)enableViewsForNonNilPage;
-- (void)updateViews;
+- (void)configureForNonNilPageAnimated:(BOOL)animated;
+- (void)configureForNilPageAnimated:(BOOL)animated;
+- (void)updateToolbarAnimated:(BOOL)animated;
+- (void)updatePageViews;
 - (void)updateTextView;
 - (void)updateTitleLabel;
-- (void)updateNavigationButtonTitle;
+- (void)updateNotebookItem;
 - (void)updateTextEditingItems;
 
 #pragma mark Text Editing
@@ -137,13 +142,6 @@ typedef enum
 - (NSDictionary *)attributesByRemovingUnderlineFromAttributes:(NSDictionary *)attributes;
 - (NSDictionary *)attributesBySettingFontSizeOfAttributes:(NSDictionary *)attributes;
 - (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes;
-
-- (void)handlePageStyleTapped:(UIButton *)button;
-- (void)handleFontButtonTapped:(UIButton *)button;
-- (void)handleBoldToggleTapped:(KUIToggleButton *)toggleButton;
-- (void)handleItalicToggleTapped:(KUIToggleButton *)toggleButton;
-- (void)handleUnderlineToggleTapped:(KUIToggleButton *)toggleButton;
-- (void)handleFontButtonTapped:(UIButton *)button;
 
 #pragma mark Keyboard
 

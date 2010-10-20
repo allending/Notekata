@@ -80,7 +80,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     label.backgroundColor = [UIColor clearColor];
     label.textAlignment = UITextAlignmentCenter;
     label.font = [UIFont fontWithName:@"HelveticaNeue-Bold" size:14.0];
-    label.textColor = [UIColor lightTextColor];
+    label.textColor = [UIColor whiteColor];
     self.navigationItem.titleView = label;
     [label release];
     
@@ -113,8 +113,8 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     
     // There seems to be a bug in UIKit where the navigation controller navigation bar and toolbar may not respect
     // the set styles after rotation animations. As a workaround, we force the style.    
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlackOpaque;
-    self.navigationController.toolbar.barStyle = UIBarStyleBlackOpaque;
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+    self.navigationController.toolbar.barStyle = UIBarStyleBlack;
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -154,12 +154,12 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     {
         [self setToolbarItems:nil animated:YES];
         [pageViewController_.textView resignFirstResponder];
-        [pageViewController_ freezeUserInteraction];
+        [pageViewController_ freeze];
     }
     else
     {
         [self setToolbarItems:[NSArray arrayWithObjects:addNotebookItem_, nil] animated:YES];
-        [pageViewController_ unfreezeUserInteraction];
+        [pageViewController_ unfreeze];
     }
 }
 
@@ -274,7 +274,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     // make the text view first responder following a short delay (this gets around some
     // undesirable keyboard behavior that occurs if performed immediately).
     [self dismissModalViewControllerAnimated:NO];
-    [pageViewController_ dismissNavigationPopoverAnimated:YES];
+    [pageViewController_ dismissNotebookPopoverAnimated:YES];
     [pageViewController_.textView performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.1];
 }
 
