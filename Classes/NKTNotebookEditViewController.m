@@ -2,11 +2,11 @@
 // Copyright 2010 Allen Ding. All rights reserved.
 //
 
-#import "NKTEditNotebookViewController.h"
+#import "NKTNotebookEditViewController.h"
 #import "NKTNotebook.h"
 #import "NKTPage.h"
 
-@implementation NKTEditNotebookViewController
+@implementation NKTNotebookEditViewController
 
 @synthesize notebook = notebook_;
 @synthesize managedObjectContext = managedObjectContext_;
@@ -81,7 +81,7 @@
     [super viewWillAppear:animated];
     
     // PENDING: localize
-    if (mode_ == NKTEditNotebookViewControllerModeAdd)
+    if (mode_ == NKTNotebookEditViewControllerModeAdd)
     {
         titleField_.text = nil;
         navigationBar_.topItem.title = @"Add Notebook";
@@ -130,13 +130,13 @@
 
 - (void)configureToAddNotebook
 {
-    mode_ = NKTEditNotebookViewControllerModeAdd;
+    mode_ = NKTNotebookEditViewControllerModeAdd;
     self.notebook = nil;
 }
 
 - (void)configureToEditNotebook:(NKTNotebook *)notebook
 {
-    mode_ = NKTEditNotebookViewControllerModeEdit;
+    mode_ = NKTNotebookEditViewControllerModeEdit;
     self.notebook = notebook;
 }
 
@@ -151,7 +151,7 @@
 
 - (void)save
 {
-    if (mode_ == NKTEditNotebookViewControllerModeAdd)
+    if (mode_ == NKTNotebookEditViewControllerModeAdd)
     {
         [self addNotebook];
     }
@@ -209,9 +209,9 @@
         abort();
     }
     
-    if ([delegate_ respondsToSelector:@selector(editNotebookViewController:didAddNotebook:)])
+    if ([delegate_ respondsToSelector:@selector(notebookEditViewController:didAddNotebook:)])
     {
-        [delegate_ editNotebookViewController:self didAddNotebook:addedNotebook];
+        [delegate_ notebookEditViewController:self didAddNotebook:addedNotebook];
     }
 }
 
@@ -228,9 +228,9 @@
         abort();
     }
     
-    if ([delegate_ respondsToSelector:@selector(editNotebookViewController:didEditNotebook:)])
+    if ([delegate_ respondsToSelector:@selector(notebookEditViewController:didEditNotebook:)])
     {
-        [delegate_ editNotebookViewController:self didEditNotebook:notebook_];
+        [delegate_ notebookEditViewController:self didEditNotebook:notebook_];
     }
     
     self.notebook = nil;

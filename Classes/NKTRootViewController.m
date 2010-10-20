@@ -3,7 +3,7 @@
 //
 
 #import "NKTRootViewController.h"
-#import "NKTEditNotebookViewController.h"
+#import "NKTNotebookEditViewController.h"
 #import "NKTNotebook.h"
 #import "NKTNotebookViewController.h"
 #import "NKTPage.h"
@@ -17,17 +17,20 @@
 
 @implementation NKTRootViewController
 
-@synthesize managedObjectContext = managedObjectContext_;
-@synthesize fetchedResultsController = fetchedResultsController_;
 @synthesize selectedNotebook = selectedNotebook_;
 
 @synthesize notebookViewController = notebookViewController_;
 @synthesize pageViewController = pageViewController_;
-@synthesize editNotebookViewController = editNotebookViewController_;
+@synthesize notebookEditViewController = notebookEditViewController_;
 
 @synthesize titleLabel = titleLabel_;
-@synthesize addNotebookItem = addNotebookItem_;
-@synthesize addNotebookActionSheet = addNotebookActionSheet_;
+@synthesize notebookAddItem = notebookAddItem_;
+@synthesize notebookAddActionSheet = notebookAddActionSheet_;
+@synthesize notebookDeleteIndexPath = notebookDeleteIndexPath_;
+@synthesize notebookDeleteConfirmationActionSheet = notebookDeleteConfirmationActionSheet;
+
+@synthesize managedObjectContext = managedObjectContext_;
+@synthesize fetchedResultsController = fetchedResultsController_;
 
 static NSString *SelectedNotebookIdKey = @"SelectedNotebookId";
 static const NSUInteger AddNotebookButtonIndex = 0;
@@ -37,18 +40,20 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)dealloc
 {
-    [managedObjectContext_ release];
-    [fetchedResultsController_ release];
     [selectedNotebook_ release];
     
-    [editNotebookViewController_ release];
-    
+    [notebookEditViewController_ release];
     [notebookViewController_ release];
     [pageViewController_ release];
     
     [titleLabel_ release];
-    [addNotebookItem_ release];
-    [addNotebookActionSheet_ release];
+    [notebookAddItem_ release];
+    [notebookAddActionSheet_ release];
+    [notebookDeleteIndexPath_ release];
+    [notebookDeleteConfirmationActionSheet_ release];
+    
+    [managedObjectContext_ release];
+    [fetchedResultsController_ release];
     [super dealloc];
 }
 
@@ -65,16 +70,19 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [super viewDidLoad];
     self.clearsSelectionOnViewWillAppear = YES;
     self.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
-    
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
     // Create edit view controller
-    editNotebookViewController_ = [[NKTEditNotebookViewController alloc] init];
-    editNotebookViewController_.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
-    editNotebookViewController_.managedObjectContext = managedObjectContext_;
-    editNotebookViewController_.delegate = self;
+    notebookEditViewController_ = [[NKTNotebookEditViewController alloc] init];
+    notebookEditViewController_.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
+    notebookEditViewController_.managedObjectContext = managedObjectContext_;
+    notebookEditViewController_.delegate = self;
     
-    // Create custom navigation title view
+    // Create action sheets
+    notebookAddActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Notebook", nil];
+    notebookDeleteConfirmationActionSheet_ = [[UIActionSheet alloc] initWithTitle:@"Are You Sure?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Delete" otherButtonTitles:nil];
+    
+    // Create custom navigation title
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
     label.text = @"Notebooks";
     label.backgroundColor = [UIColor clearColor];
@@ -85,8 +93,8 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [label release];
     
     // Create toolbar items
-    addNotebookItem_ = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(handleAddNotebookItemTapped:)];
-    self.toolbarItems = [NSArray arrayWithObjects:addNotebookItem_, nil];
+    notebookAddItem_ = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addNotebookTapped:)];
+    self.toolbarItems = [NSArray arrayWithObjects:notebookAddItem_, nil];
     
     // Fetch
     NSError *error = nil;
@@ -101,10 +109,15 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 - (void)viewDidUnload
 {
     [super viewDidUnload];
-    self.editNotebookViewController = nil;
+    self.notebookViewController = nil;
+    self.pageViewController = nil;
+    self.notebookEditViewController = nil;
+    
     self.titleLabel = nil;
-    self.addNotebookItem = nil;
-    self.addNotebookActionSheet = nil;
+    self.notebookAddItem = nil;
+    self.notebookAddActionSheet = nil;
+    self.notebookDeleteIndexPath = nil;
+    self.notebookDeleteConfirmationActionSheet = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -120,7 +133,8 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
+
+    // Save last selected notebook id
     if (selectedNotebook_ != nil)
     {
         [[NSUserDefaults standardUserDefaults] setObject:selectedNotebook_.notebookId forKey:SelectedNotebookIdKey];
@@ -134,20 +148,18 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    // Stop editing when rotation occurs so the page view controller is always unfrozen after rotation
+    // Stop editing when rotation occurs so the page view controller is in an unfrozen state
     [self setEditing:NO animated:NO];
     // Dismiss open modals and sheets
-    [addNotebookActionSheet_ dismissWithClickedButtonIndex:-1 animated:NO];
+    [notebookAddActionSheet_ dismissWithClickedButtonIndex:notebookAddActionSheet_.cancelButtonIndex animated:NO];
+    [notebookDeleteConfirmationActionSheet_ dismissWithClickedButtonIndex:notebookDeleteConfirmationActionSheet_.cancelButtonIndex animated:NO];
     [self dismissModalViewControllerAnimated:NO];
 }
-
-#pragma mark -
-#pragma mark Editing
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
 {
     [super setEditing:editing animated:animated];
-    // PENDING: find Core Animation bug workaround when this animated: parameter is YES
+    // PENDING: find Core Animation bug workaround when this is animated
     [self.navigationItem setHidesBackButton:editing animated:NO];
     
     if (editing)
@@ -158,7 +170,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     }
     else
     {
-        [self setToolbarItems:[NSArray arrayWithObjects:addNotebookItem_, nil] animated:YES];
+        [self setToolbarItems:[NSArray arrayWithObjects:notebookAddItem_, nil] animated:YES];
         [pageViewController_ unfreeze];
     }
 }
@@ -168,6 +180,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)selectInitialNotebook
 {
+    // Should only be used after the view has been loaded, or there will be no fetched data
     if (![self isViewLoaded])
     {
         KBCLogWarning(@"This method can only be called after the view has been loaded. Returning.");
@@ -220,65 +233,148 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     return [self.fetchedResultsController objectAtIndexPath:indexPath];
 }
 
+- (void)deleteNotebookAtIndexPath:(NSIndexPath *)indexPath
+{
+    NKTNotebook *notebookToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    NSUInteger numberOfNotebooks = [self numberOfNotebooks];
+    BOOL deletingLastNotebook = (numberOfNotebooks == 1);
+    
+    // Need to inform everyone else if we are going to delete the selected notebook
+    if (notebookToDelete == selectedNotebook_)
+    {
+        self.selectedNotebook = nil;
+        [notebookViewController_ setNotebook:nil restoreLastSelectedPage:NO];
+    }
+    
+    // Renumber the notebooks first by adjusting offsets of pages following the deleted page by -1
+    NSUInteger renumberRangeStart = indexPath.row + 1;
+    NSUInteger renumberRangeEnd = numberOfNotebooks;
+    for (NSUInteger index = renumberRangeStart; index < renumberRangeEnd; ++index)
+    {
+        NSIndexPath *renumberIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        NKTNotebook *notebookToRenumber = [self.fetchedResultsController objectAtIndexPath:renumberIndexPath];
+        NSUInteger displayOrder = index - 1;
+        notebookToRenumber.displayOrder = [NSNumber numberWithInteger:displayOrder];
+    }
+    
+    // Delete the notebook
+    [managedObjectContext_ deleteObject:notebookToDelete];
+    
+    // Create a default notebook if we just deleted the last one
+    if (deletingLastNotebook)
+    {
+        // Create notebook
+        NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+        notebook.title = @"My Notebook";
+        // Generate random uuid as the notebook id
+        CFUUIDRef uuid = CFUUIDCreate(NULL);
+        CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
+        notebook.notebookId = (NSString *)uuidString;
+        CFRelease(uuid);
+        CFRelease(uuidString);
+        // Default display order
+        notebook.displayOrder = [NSNumber numberWithUnsignedInt:0];
+        // Create first page
+        NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:managedObjectContext_];
+        page.pageNumber = [NSNumber numberWithInteger:0];
+        page.textString = @"";
+        page.textStyleString = @"";
+        [notebook addPagesObject:page];
+    }
+    
+    NSError *error = nil;
+    if (![managedObjectContext_ save:&error])
+    {
+        // PENDING: fix and log
+        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+}
+
 #pragma mark -
 #pragma mark Actions
 
-- (void)handleAddNotebookItemTapped:(UIBarButtonItem *)item
+- (void)addNotebookTapped:(id)sender
 {
-    if (!addNotebookActionSheet_.visible)
+    if (!notebookAddActionSheet_.visible)
     {
-        [addNotebookActionSheet_ release];
-        addNotebookActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Notebook", nil];
-        [addNotebookActionSheet_ showFromBarButtonItem:item animated:YES];
+        [notebookAddActionSheet_ showFromBarButtonItem:notebookAddItem_ animated:YES];
     }
+    else
+    {
+        [notebookAddActionSheet_ dismissWithClickedButtonIndex:notebookAddActionSheet_.cancelButtonIndex animated:YES];
+    }
+}
+
+- (void)presentNotebookAddViewController
+{
+    [notebookEditViewController_ configureToAddNotebook];
+    [self presentModalViewController:notebookEditViewController_ animated:YES];
+}
+
+- (void)presentNotebookEditViewControllerForNotebookAtIndexPath:(NSIndexPath *)indexPath
+{
+    NKTNotebook *notebook = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    [notebookEditViewController_ configureToEditNotebook:notebook];
+    [self presentModalViewController:notebookEditViewController_ animated:YES];
+}
+
+- (void)presentNotebookDeleteConfirmationForNotebookAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (notebookDeleteConfirmationActionSheet_.visible)
+    {
+        return;
+    }
+    
+    self.notebookDeleteIndexPath = indexPath;
+    [notebookDeleteConfirmationActionSheet_ showInView:self.view];
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    switch (buttonIndex)
+    if (actionSheet == notebookAddActionSheet_)
     {
-        case AddNotebookButtonIndex:
-            [self presentAddNotebookViewController];
-            break;
-            
-        default:
-            break;
+        if (buttonIndex == AddNotebookButtonIndex)
+        {
+            [self presentNotebookAddViewController];
+        }
     }
-    
-    [addNotebookActionSheet_ autorelease];
-    addNotebookActionSheet_ = nil;
-}
-
-- (void)presentAddNotebookViewController
-{
-    [editNotebookViewController_ configureToAddNotebook];
-    [self presentModalViewController:editNotebookViewController_ animated:YES];
+    else if (actionSheet == notebookDeleteConfirmationActionSheet_)
+    {
+        if (buttonIndex == actionSheet.destructiveButtonIndex)
+        {
+            [self deleteNotebookAtIndexPath:notebookDeleteIndexPath_];
+        }
+        
+        self.notebookDeleteIndexPath = nil;
+    }
 }
 
 #pragma mark -
-#pragma mark Edit Notebook View Controller
+#pragma mark Notebook Edit View Controller
 
-- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didAddNotebook:(NKTNotebook *)notebook
+- (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didAddNotebook:(NKTNotebook *)notebook
 {
     // Set new notebook
     self.selectedNotebook = notebook;
+    
     // Scroll to added notebook
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:notebook];
     [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionTop];
     
     // Update notebook view controller
     [notebookViewController_ setNotebook:notebook restoreLastSelectedPage:NO];
-    [self.navigationController pushViewController:notebookViewController_ animated:YES];    
+    [self.navigationController pushViewController:notebookViewController_ animated:YES];
     
-    // Configure controllers to start editing notebook almost immediately. Dismiss the modal and
-    // make the text view first responder following a short delay (this gets around some
-    // undesirable keyboard behavior that occurs if performed immediately).
-    [self dismissModalViewControllerAnimated:NO];
+    // NOTE: We dismiss the modal without animation and make the text view first responder
+    // following a short delay to get around some undesirable keyboard behavior that occurs if
+    // performed immediately.
     [pageViewController_ dismissNotebookPopoverAnimated:YES];
     [pageViewController_.textView performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.1];
+    [self dismissModalViewControllerAnimated:NO];
 }
 
-- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didEditNotebook:(NKTNotebook *)notebook
+- (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didEditNotebook:(NKTNotebook *)notebook
 {
     [self dismissModalViewControllerAnimated:YES];    
 }
@@ -317,15 +413,22 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     NKTNotebook *notebook = [self.fetchedResultsController objectAtIndexPath:indexPath];
-
-    // HACK: the automatic width of the text label is different if set during editing vs. if it was
-    // set prior to editing. This hack makes the presentation of the text label consistent no
-    // matter what state it is in.
-    BOOL wasEditing = cell.editing;
-    [cell setEditing:NO animated:NO];
-    cell.textLabel.text = notebook.title;
-    [cell setEditing:wasEditing animated:NO];
     
+    // Update text with title
+    // HACK: the automatic width of the text label is different if set during editing vs. if it
+    // was set prior to editing. This hack makes the presentation of the text label consistent.
+    if (cell.editing)
+    {
+        [cell setEditing:NO animated:NO];
+        cell.textLabel.text = notebook.title;
+        [cell setEditing:YES animated:NO];
+    }
+    else
+    {
+        cell.textLabel.text = notebook.title;
+    }
+    
+    // Update detail text with page count
     NSUInteger numberOfPages = [[notebook pages] count];
     if (numberOfPages > 1)
     {
@@ -339,68 +442,9 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (editingStyle != UITableViewCellEditingStyleDelete)
+    if (editingStyle == UITableViewCellEditingStyleDelete)
     {
-        KBCLogWarning(@"unexpected editing style commit, returning");
-        return;
-    }
-    
-    NKTNotebook *notebookToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    NSUInteger numberOfNotebooks = [self numberOfNotebooks];
-    
-    // Stop editing page if we are about to delete it
-    if (notebookToDelete == selectedNotebook_)
-    {
-        self.selectedNotebook = nil;
-        [notebookViewController_ setNotebook:nil restoreLastSelectedPage:NO];
-    }
-    
-    // Renumber the notebooks first
-    NSUInteger renumberRangeStart = indexPath.row + 1;
-    NSUInteger renumberRangeEnd = numberOfNotebooks;
-    for (NSUInteger index = renumberRangeStart; index < renumberRangeEnd; ++index)
-    {
-        NSIndexPath *renumberIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
-        NKTNotebook *notebookToRenumber = [self.fetchedResultsController objectAtIndexPath:renumberIndexPath];
-        //  Adjust offsets of pages following the deleted page by -1
-        NSUInteger displayOrder = index - 1;
-        notebookToRenumber.displayOrder = [NSNumber numberWithInteger:displayOrder];
-    }
-    
-    // Delete the notebook
-    [managedObjectContext_ deleteObject:notebookToDelete];
-    
-    // Add a page if the deleted page was the last one
-    if (numberOfNotebooks == 1)
-    {
-        // Create notebook
-        NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
-        // PENDING: localize
-        notebook.title = @"My Notebook";
-        
-        // Generate random uuid as the notebook id
-        CFUUIDRef uuid = CFUUIDCreate(NULL);
-        CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
-        notebook.notebookId = (NSString *)uuidString;
-        CFRelease(uuid);
-        CFRelease(uuidString);
-        
-        // Default display order
-        notebook.displayOrder = [NSNumber numberWithUnsignedInt:0];
-        // Create first page
-        NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:managedObjectContext_];
-        page.pageNumber = [NSNumber numberWithInteger:0];
-        page.textString = @"";
-        page.textStyleString = @"";
-        [notebook addPagesObject:page];
-    }
-    
-    NSError *error = nil;
-    if (![managedObjectContext_ save:&error])
-    {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
-        abort();
+        [self presentNotebookDeleteConfirmationForNotebookAtIndexPath:indexPath];
     }
 }
 
@@ -467,15 +511,13 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     self.selectedNotebook = notebook;
     [notebookViewController_ setNotebook:notebook restoreLastSelectedPage:YES];
     [self.navigationController pushViewController:notebookViewController_ animated:YES];
-    // Popover in page view controller not dismissed - chances are the user will select different page
     [pageViewController_.textView resignFirstResponder];
+    // Popover in page view controller not dismissed so the user can select a different page
 }
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
 {
-    NKTNotebook *notebook = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    [editNotebookViewController_ configureToEditNotebook:notebook];
-    [self presentModalViewController:editNotebookViewController_ animated:YES];
+    [self presentNotebookEditViewControllerForNotebookAtIndexPath:indexPath];
 }
 
 #pragma mark -
@@ -516,18 +558,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type
 {
-    KBCLogWarning(@"this should never be called");
-    
-    switch(type)
-    {
-        case NSFetchedResultsChangeInsert:
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-            
-        case NSFetchedResultsChangeDelete:
-            [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-    }
+    KBCLogWarning(@"This method should never be called");
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath

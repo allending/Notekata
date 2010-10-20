@@ -7,25 +7,25 @@
 
 @class NKTNotebook;
 
-@protocol NKTEditNotebookViewControllerDelegate;
+@protocol NKTNotebookEditViewControllerDelegate;
 
 typedef enum
 {
-    NKTEditNotebookViewControllerModeAdd,
-    NKTEditNotebookViewControllerModeEdit
-} NKTEditNotebookViewControllerMode;
+    NKTNotebookEditViewControllerModeAdd,
+    NKTNotebookEditViewControllerModeEdit
+} NKTNotebookEditViewControllerMode;
 
-// NKTEditNotebookViewController
-@interface NKTEditNotebookViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
+// NKTNotebookEditViewController
+@interface NKTNotebookEditViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
 {
 @private
     // Data    
-    NKTEditNotebookViewControllerMode mode_;
+    NKTNotebookEditViewControllerMode mode_;
     NKTNotebook *notebook_;
     NSManagedObjectContext *managedObjectContext_;
     
     // Delegate
-    id <NKTEditNotebookViewControllerDelegate> delegate_;
+    id <NKTNotebookEditViewControllerDelegate> delegate_;
     
     // UI
     UINavigationBar *navigationBar_;
@@ -38,7 +38,7 @@ typedef enum
 
 #pragma mark Delegate
 
-@property (nonatomic, assign) id <NKTEditNotebookViewControllerDelegate> delegate;
+@property (nonatomic, assign) id <NKTNotebookEditViewControllerDelegate> delegate;
 
 #pragma mark Notebooks
 
@@ -70,15 +70,15 @@ typedef enum
 
 @end
 
-// NKTEditNotebookViewControllerDelegate is a protocol that allows clients to receive editing related messages from an
-// NKTEditNotebookViewController.
-@protocol NKTEditNotebookViewControllerDelegate <NSObject>
+// NKTNotebookEditViewControllerDelegate is a protocol that allows clients to receive editing related messages from an
+// NKTNotebookEditViewController.
+@protocol NKTNotebookEditViewControllerDelegate <NSObject>
 
 @optional
 
-#pragma mark Responding to Edit Notebook View Controller Events
+#pragma mark Responding to Notebook Edit View Controller Events
 
-- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didAddNotebook:(NKTNotebook *)notebook;
-- (void)editNotebookViewController:(NKTEditNotebookViewController *)editNotebookViewController didEditNotebook:(NKTNotebook *)notebook;
+- (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didAddNotebook:(NKTNotebook *)notebook;
+- (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didEditNotebook:(NKTNotebook *)notebook;
 
 @end

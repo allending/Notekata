@@ -396,7 +396,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
             self.textView.horizontalRulesEnabled = YES;
             self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:0.5];
             self.textView.verticalMarginEnabled = YES;
-            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.45 blue:0.49 alpha:0.5];
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.5 blue:0.49 alpha:0.5];
             self.textView.verticalMarginInset = 60.0;
             break;
             
@@ -627,7 +627,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     rightEdgeView_.hidden = YES;
     leftEdgeView_.hidden = YES;
     leftEdgeShadowView_.hidden = YES;
-    titleLabel_.text = @"Please Select A Notebook";
+    titleLabel_.text = @"No Notebook Selected";
     notebookItem_.title = @"Notebooks";
     CGRect bounds = titleLabel_.bounds;
     bounds.size.width = 300.0;

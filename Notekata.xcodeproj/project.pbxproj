@@ -61,8 +61,8 @@
 		9FA54112122A59530005323E /* CaretLoupe.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410D122A59530005323E /* CaretLoupe.png */; };
 		9FA54113122A59530005323E /* CaretLoupeMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA5410E122A59530005323E /* CaretLoupeMask.png */; };
 		9FA564E012517E14002EFFC7 /* PlainPaperPattern2.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FA564DF12517E14002EFFC7 /* PlainPaperPattern2.png */; };
-		9FAF0C2F126BD52800B58D59 /* NKTEditNotebookViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAF0C2D126BD52800B58D59 /* NKTEditNotebookViewController.m */; };
-		9FAF0C30126BD52800B58D59 /* NKTEditNotebookViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FAF0C2E126BD52800B58D59 /* NKTEditNotebookViewController.xib */; };
+		9FAF0C2F126BD52800B58D59 /* NKTNotebookEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAF0C2D126BD52800B58D59 /* NKTNotebookEditViewController.m */; };
+		9FAF0C30126BD52800B58D59 /* NKTNotebookEditViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9FAF0C2E126BD52800B58D59 /* NKTNotebookEditViewController.xib */; };
 		9FB1465412402B26001EEB7B /* KUIToggleButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB1465312402B26001EEB7B /* KUIToggleButton.m */; };
 		9FBBF117126E84240036C17F /* whiteButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FBBF116126E84240036C17F /* whiteButton.png */; };
 		9FBBF145126E856D0036C17F /* blueButton.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FBBF144126E856D0036C17F /* blueButton.png */; };
@@ -186,9 +186,9 @@
 		9FA5410D122A59530005323E /* CaretLoupe.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CaretLoupe.png; sourceTree = "<group>"; };
 		9FA5410E122A59530005323E /* CaretLoupeMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CaretLoupeMask.png; sourceTree = "<group>"; };
 		9FA564DF12517E14002EFFC7 /* PlainPaperPattern2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PlainPaperPattern2.png; sourceTree = "<group>"; };
-		9FAF0C2C126BD52800B58D59 /* NKTEditNotebookViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTEditNotebookViewController.h; sourceTree = "<group>"; };
-		9FAF0C2D126BD52800B58D59 /* NKTEditNotebookViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTEditNotebookViewController.m; sourceTree = "<group>"; };
-		9FAF0C2E126BD52800B58D59 /* NKTEditNotebookViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = NKTEditNotebookViewController.xib; path = ../Classes/NKTEditNotebookViewController.xib; sourceTree = "<group>"; };
+		9FAF0C2C126BD52800B58D59 /* NKTNotebookEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebookEditViewController.h; sourceTree = "<group>"; };
+		9FAF0C2D126BD52800B58D59 /* NKTNotebookEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebookEditViewController.m; sourceTree = "<group>"; };
+		9FAF0C2E126BD52800B58D59 /* NKTNotebookEditViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = NKTNotebookEditViewController.xib; path = ../Classes/NKTNotebookEditViewController.xib; sourceTree = "<group>"; };
 		9FB1465212402B26001EEB7B /* KUIToggleButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KUIToggleButton.h; sourceTree = "<group>"; };
 		9FB1465312402B26001EEB7B /* KUIToggleButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KUIToggleButton.m; sourceTree = "<group>"; };
 		9FB1466012402C1D001EEB7B /* KobaUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KobaUI.h; sourceTree = "<group>"; };
@@ -309,7 +309,7 @@
 			children = (
 				9F47F0DF1260C31000E5E6BB /* Images */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
-				9FAF0C2E126BD52800B58D59 /* NKTEditNotebookViewController.xib */,
+				9FAF0C2E126BD52800B58D59 /* NKTNotebookEditViewController.xib */,
 				F520393412097B1B00675702 /* NKTPageViewController.xib */,
 				8D1107310486CEB800E47090 /* Notekata-Info.plist */,
 				9F47F0FD1260C57F00E5E6BB /* Notekata.xcdatamodel */,
@@ -480,8 +480,8 @@
 		F5632AAA11DD92CF00868F7B /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				9FAF0C2C126BD52800B58D59 /* NKTEditNotebookViewController.h */,
-				9FAF0C2D126BD52800B58D59 /* NKTEditNotebookViewController.m */,
+				9FAF0C2C126BD52800B58D59 /* NKTNotebookEditViewController.h */,
+				9FAF0C2D126BD52800B58D59 /* NKTNotebookEditViewController.m */,
 				9FCBC1681248AD6D008A0A1F /* NKTFontPickerViewController.h */,
 				9FCBC1691248AD6D008A0A1F /* NKTFontPickerViewController.m */,
 				9F3D08CE12620AF200AB9903 /* NKTNotebookViewController.h */,
@@ -621,7 +621,7 @@
 				9F381028126378D800C1CBF7 /* RandomCap.png in Resources */,
 				9FFD7FF3126400F700CB082D /* DarkBgCap.png in Resources */,
 				9FFD800A1264031800CB082D /* EdgeShadow.png in Resources */,
-				9FAF0C30126BD52800B58D59 /* NKTEditNotebookViewController.xib in Resources */,
+				9FAF0C30126BD52800B58D59 /* NKTNotebookEditViewController.xib in Resources */,
 				9FBD594A126E0A5C00B52D97 /* Tools.png in Resources */,
 				9FBBF117126E84240036C17F /* whiteButton.png in Resources */,
 				9FBBF145126E856D0036C17F /* blueButton.png in Resources */,
@@ -685,7 +685,7 @@
 				9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */,
 				9FFD84FB1264A34400CB082D /* KUIUtilities.m in Sources */,
 				9FC1D46C1267F34000443368 /* NKTSelectedTextRegion.m in Sources */,
-				9FAF0C2F126BD52800B58D59 /* NKTEditNotebookViewController.m in Sources */,
+				9FAF0C2F126BD52800B58D59 /* NKTNotebookEditViewController.m in Sources */,
 				9F34A32B126C92390067CC61 /* NKTPage.m in Sources */,
 				9F34A32C126C92390067CC61 /* NKTNotebook.m in Sources */,
 			);
