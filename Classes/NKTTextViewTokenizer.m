@@ -273,9 +273,7 @@
     }
 }
 
-- (BOOL)isPosition:(NKTTextPosition *)textPosition
-    withinTextUnit:(UITextGranularity)granularity
-       inDirection:(UITextDirection)direction
+- (BOOL)isPosition:(NKTTextPosition *)textPosition withinTextUnit:(UITextGranularity)granularity inDirection:(UITextDirection)direction
 {
     BOOL result = NO;
     

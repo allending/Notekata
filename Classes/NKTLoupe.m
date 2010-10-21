@@ -293,6 +293,7 @@
     }
     
     // Render the relevant zoomed view region to an image context
+    CGContextSetFillColorWithColor(bitmapContext_, fillColor_.CGColor);
     CGContextFillRect(bitmapContext_, CGRectMake(0.0, 0.0, zoomedSize.width, zoomedSize.height));    
     CGPoint zoomOrigin = CGPointMake(zoomCenter_.x - halfZoomedSize.width, zoomCenter_.y - halfZoomedSize.height);
     // Apply inverse zoom origin so zoomed view can render directly into the context

@@ -62,7 +62,7 @@
 - (void)handleForwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer;
 - (void)updateForwardHandleDragSelection;
 
-- (NKTTextRange *)gesturedWordRangeAtTextPosition:(NKTTextPosition *)textPosition;
+- (NKTTextRange *)guessedDoubleTapTextRangeAtTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Scrolling
 
@@ -777,21 +777,20 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
-        NKTTextRange *gesturedWordRange = [self gesturedWordRangeAtTextPosition:textPosition];
+        NKTTextRange *guessedTextRange = [self guessedDoubleTapTextRangeAtTextPosition:textPosition];
         
-        if (gesturedWordRange == nil)
+        if (guessedTextRange == nil)
         {
             return;
         }
         
-        self.initialDoubleTapTextRange = gesturedWordRange;
-        self.gestureTextRange = gesturedWordRange;
+        self.initialDoubleTapTextRange = guessedTextRange;
+        self.gestureTextRange = guessedTextRange;
         [self setMarkedTextRange:nil notifyInputDelegate:YES];
         [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
         [self.textRangeLoupe setHidden:NO animated:YES];
         [selectionDisplayController_ updateSelectionDisplay];
-        [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer
-                                               selector:@selector(updateDoubleTapDragSelection)];
+        [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateDoubleTapDragSelection)];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
@@ -809,8 +808,7 @@
             return;
         }
         
-        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer
-                                              selector:@selector(updateDoubleTapDragSelection)];
+        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateDoubleTapDragSelection)];
         self.initialDoubleTapTextRange = nil;
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
@@ -825,13 +823,11 @@
     
     if ([textPosition compare:initialDoubleTapTextRange_.start] == NSOrderedAscending)
     {
-        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition
-                                                           textPosition:initialDoubleTapTextRange_.end];
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:textPosition textPosition:initialDoubleTapTextRange_.end];
     }
     else if ([textPosition compare:initialDoubleTapTextRange_.end] == NSOrderedDescending)
     {
-        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:initialDoubleTapTextRange_.start
-                                                           textPosition:textPosition];
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:initialDoubleTapTextRange_.start textPosition:textPosition];
     }
     else
     {
@@ -851,10 +847,10 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
+        self.gestureTextRange = selectedTextRange_;
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
         [self.textRangeLoupe setHidden:NO animated:YES];
-        [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer
-                                               selector:@selector(updateBackwardHandleDragSelection)];
+        [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateBackwardHandleDragSelection)];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
@@ -862,8 +858,7 @@
     }
     else
     {
-        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer
-                                              selector:@selector(updateBackwardHandleDragSelection)];
+        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateBackwardHandleDragSelection)];
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
     }
@@ -895,10 +890,10 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
+        self.gestureTextRange = selectedTextRange_;
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
         [self.textRangeLoupe setHidden:NO animated:YES];
-        [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer
-                                               selector:@selector(updateForwardHandleDragSelection)];
+        [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateForwardHandleDragSelection)];
     }
     else if (gestureRecognizer.state == UIGestureRecognizerStateChanged)
     {
@@ -906,8 +901,7 @@
     }
     else
     {
-        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer
-                                              selector:@selector(updateForwardHandleDragSelection)];
+        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateForwardHandleDragSelection)];
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
     }
@@ -921,8 +915,7 @@
     
     if ([textPosition compare:selectedTextRange_.start] == NSOrderedDescending)
     {
-        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start
-                                                           textPosition:textPosition];
+        self.gestureTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start textPosition:textPosition];
         [self setMarkedTextRange:nil notifyInputDelegate:YES];
         [selectionDisplayController_ updateSelectionDisplay];
     }
@@ -932,49 +925,62 @@
 }
 
 // Searches for the likely word being indicated at the given text position when the user performs
-// a selection gesture. The search considers words in the following order:
-// at the text position, at a word boundary before the text position, and at a word boundary after
-// the text position.
-- (NKTTextRange *)gesturedWordRangeAtTextPosition:(NKTTextPosition *)textPosition
+// a selection gesture.
+//
+// The search considers words in the following order:
+// - at the text position
+// - at a word before the text position
+// - at a word after the text position
+//
+// The search is bounded by the line that contains text position.
+//
+// If no match is found, the text range represented by the text position is returned.
+- (NKTTextRange *)guessedDoubleTapTextRangeAtTextPosition:(NKTTextPosition *)textPosition
 {
-    // The text position might already be at within a word (in either text direction)
-    if ([self.tokenizer isPosition:textPosition
-                    withinTextUnit:UITextGranularityWord
-                       inDirection:UITextStorageDirectionForward])
-    {
-        return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition
-                                                      withGranularity:UITextGranularityWord
-                                                          inDirection:UITextStorageDirectionForward];
-    }
-    else if ([self.tokenizer isPosition:textPosition
-                             atBoundary:UITextGranularityWord
-                            inDirection:UITextStorageDirectionForward])
-    {
-        return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition
-                                                      withGranularity:UITextGranularityWord
-                                                          inDirection:UITextStorageDirectionBackward];
-    }
+    NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
+    NKTTextRange *lineTextRange = [line textRange];
     
-    // Search for target word at other boundaries
-    NKTTextPosition *previousBoundary = (NKTTextPosition *)[self.tokenizer positionFromPosition:textPosition
-                                                                                     toBoundary:UITextGranularityWord
-                                                                                    inDirection:UITextStorageDirectionBackward];
-    NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:previousBoundary
-                                                                     withGranularity:UITextGranularityWord
-                                                                         inDirection:UITextStorageDirectionBackward];
-    
-    // The text range can still be nil if the previous boundary is the start of the document
-    if (textRange != nil)
+    // Within a word, and the end of word follows the text position
+    if ([self.tokenizer isPosition:textPosition withinTextUnit:UITextGranularityWord inDirection:UITextStorageDirectionForward])
     {
-        return textRange;
+        // Accept if start of word precedes end of line
+        if ([textPosition compareIgnoringAffinity:lineTextRange.end] == NSOrderedAscending)
+        {
+            return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+        }
+    }
+    // Within a word, and the start of word precedes the text position
+    else if ([self.tokenizer isPosition:textPosition withinTextUnit:UITextGranularityWord inDirection:UITextStorageDirectionBackward])
+    {
+        // Accept if end of word follows start of line
+        if ([lineTextRange.start compareIgnoringAffinity:textPosition] == NSOrderedAscending)
+        {
+            return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
+        }
     }
     
-    NKTTextPosition *nextBoundary = (NKTTextPosition *)[self.tokenizer positionFromPosition:textPosition
-                                                                                 toBoundary:UITextGranularityWord
-                                                                                inDirection:UITextStorageDirectionForward];
-    return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:nextBoundary
-                                                  withGranularity:UITextGranularityWord
-                                                      inDirection:UITextStorageDirectionForward];
+    NKTTextPosition *previousBoundary = (NKTTextPosition *)[self.tokenizer positionFromPosition:textPosition toBoundary:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
+    if ([lineTextRange containsTextPosition:previousBoundary])
+    {
+        NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:previousBoundary withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
+        // The text range can still be nil if the previous boundary is the start of the document
+        if (textRange != nil)
+        {
+            return textRange;
+        }
+    }
+    
+    NKTTextPosition *nextBoundary = (NKTTextPosition *)[self.tokenizer positionFromPosition:textPosition toBoundary:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+    if ([lineTextRange containsTextPosition:nextBoundary])
+    {
+        NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:nextBoundary withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+        if (textRange != nil)
+        {
+            return textRange;
+        }
+    }
+    
+    return lineTextRange;
 }
 
 #pragma mark -
