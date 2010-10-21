@@ -720,6 +720,8 @@
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
 {
+    // PENDING: if first responder accepted, the selected text range should already be set!
+    
     if (![self isFirstResponder] && ![self becomeFirstResponder])
     {
         return;
@@ -1188,6 +1190,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     // Figure out the attributes that inserted text needs to have
     NSDictionary *inputTextAttributes = self.inputTextAttributes;
     NKTTextRange *insertionTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
+    // In case the underlying text range is nil-ed
+    [[insertionTextRange retain] autorelease];
     NSDictionary *inheritedAttributes = nil;
     
     if ([self hasText])
