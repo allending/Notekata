@@ -62,7 +62,7 @@
 - (void)handleForwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer;
 - (void)updateForwardHandleDragSelection;
 
-- (NKTTextRange *)guessedDoubleTapTextRangeAtTextPosition:(NKTTextPosition *)textPosition;
+- (NKTTextRange *)guessedTextRangeAtTextPosition:(NKTTextPosition *)textPosition wordRange:(NKTTextRange **)wordRange;
 
 #pragma mark Scrolling
 
@@ -777,14 +777,20 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
-        NKTTextRange *guessedTextRange = [self guessedDoubleTapTextRangeAtTextPosition:textPosition];
+        NKTTextRange *wordRange = nil;
+        NKTTextRange *guessedTextRange = [self guessedTextRangeAtTextPosition:textPosition wordRange:&wordRange];
         
         if (guessedTextRange == nil)
         {
             return;
         }
         
-        self.initialDoubleTapTextRange = guessedTextRange;
+        if (wordRange == nil)
+        {
+            wordRange = guessedTextRange;
+        }
+        
+        self.initialDoubleTapTextRange = wordRange;
         self.gestureTextRange = guessedTextRange;
         [self setMarkedTextRange:nil notifyInputDelegate:YES];
         [self configureLoupe:self.textRangeLoupe toShowPoint:point anchorToLine:YES];
@@ -935,7 +941,7 @@
 // The search is bounded by the line that contains text position.
 //
 // If no match is found, the text range represented by the text position is returned.
-- (NKTTextRange *)guessedDoubleTapTextRangeAtTextPosition:(NKTTextPosition *)textPosition
+- (NKTTextRange *)guessedTextRangeAtTextPosition:(NKTTextPosition *)textPosition wordRange:(NKTTextRange **)wordRange
 {
     NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
     NKTTextRange *lineTextRange = [line textRange];
@@ -946,7 +952,14 @@
         // Accept if start of word precedes end of line
         if ([textPosition compareIgnoringAffinity:lineTextRange.end] == NSOrderedAscending)
         {
-            return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+            NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
+            
+            if (wordRange != NULL)
+            {
+                *wordRange = textRange;
+            }
+            
+            return textRange;
         }
     }
     // Within a word, and the start of word precedes the text position
@@ -955,7 +968,14 @@
         // Accept if end of word follows start of line
         if ([lineTextRange.start compareIgnoringAffinity:textPosition] == NSOrderedAscending)
         {
-            return (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
+            NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:textPosition withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
+            
+            if (wordRange != NULL)
+            {
+                *wordRange = textRange;
+            }
+            
+            return textRange;
         }
     }
     
@@ -963,10 +983,15 @@
     if ([lineTextRange containsTextPosition:previousBoundary])
     {
         NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:previousBoundary withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionBackward];
-        // The text range can still be nil if the previous boundary is the start of the document
+        // The text range could still be nil if the previous boundary is the start of the document
         if (textRange != nil)
         {
-            return textRange;
+            if (wordRange != NULL)
+            {
+                *wordRange = textRange;
+            }
+            
+            return [NKTTextRange textRangeWithTextPosition:textRange.start textPosition:textPosition];
         }
     }
     
@@ -976,8 +1001,18 @@
         NKTTextRange *textRange = (NKTTextRange *)[self.tokenizer rangeEnclosingPosition:nextBoundary withGranularity:UITextGranularityWord inDirection:UITextStorageDirectionForward];
         if (textRange != nil)
         {
-            return textRange;
+            if (wordRange != NULL)
+            {
+                *wordRange = textRange;
+            }
+            
+            return [NKTTextRange textRangeWithTextPosition:textPosition textPosition:textRange.end];
         }
+    }
+    
+    if (wordRange != NULL)
+    {
+        *wordRange = nil;
     }
     
     return lineTextRange;

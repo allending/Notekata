@@ -257,6 +257,12 @@
 
 - (NKTLine *)lineForCaretAtTextPosition:(NKTTextPosition *)textPosition
 {
+    if (textPosition == nil)
+    {
+        KBCLogWarning(@"Text position is nil. Returning nil.");
+        return nil;
+    }
+    
     NSUInteger minLineIndex = 0;
     NSUInteger maxLineIndex = self.numberOfLines - 1;
     NSUInteger midLineIndex = 0;
@@ -283,7 +289,7 @@
         }
     }
     
-    KBCLogWarning(@"search failed, returning nil");
+    KBCLogWarning(@"Search failed. Returning nil.");
     return nil;
 }
 
