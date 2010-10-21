@@ -141,6 +141,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     // Stop editing when rotation occurs so the page view controller is always unfrozen after rotation
     [self setEditing:NO animated:NO];
     // Dismiss open modals and sheets
+    [addPageActionSheet_ dismissWithClickedButtonIndex:addPageActionSheet_.cancelButtonIndex animated:NO];
 }
 
 #pragma mark -
@@ -259,6 +260,10 @@ static const NSUInteger AddPageButtonIndex = 0;
         [addPageActionSheet_ release];
         addPageActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Page", nil];
         [addPageActionSheet_ showFromBarButtonItem:item animated:YES];
+    }
+    else
+    {
+        [addPageActionSheet_ dismissWithClickedButtonIndex:addPageActionSheet_.cancelButtonIndex animated:YES];
     }
 }
 

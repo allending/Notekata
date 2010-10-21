@@ -101,6 +101,11 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 #pragma mark -
 #pragma mark View Controller
 
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -224,11 +229,15 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 {
     [super viewWillDisappear:animated];
     [self savePendingChanges];
+    menuEnabledForSelectedTextRange_ = NO;
 }
 
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
+    // The controller could have asked for first responder status when the text view recognized
+    // gestures, so resign first responder status whenever the view dissapears?
+    [self resignFirstResponder];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -269,6 +278,13 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         [leftEdgeView_ removeFromSuperview];
         [leftEdgeShadowView_ removeFromSuperview];
     }
+    
+    [self updateMenuForTemporaryViewChangesOccuring];
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    [self updateMenuForTemporaryViewChangesEnded];
 }
 
 #pragma mark -
@@ -281,6 +297,10 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         return;
     }
     
+    // The controller could have asked for first responder status when the text view recognized
+    // gestures, so resign first responder status whenever the view dissapears?
+    [self resignFirstResponder];
+    
     if ([fontPopoverController_ isPopoverVisible])
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
@@ -289,7 +309,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     // PENDING: figure this out .. save or not?
     // PENDING: store a flag so this does not call delegate
     // NOTE: this causes a save to occur on the previous page!
-    //[self resignFirstResponder];
+    //[textView_ resignFirstResponder];
     //[self savePendingChanges];
     
     [page_ release];
@@ -747,64 +767,6 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 }
 
 #pragma mark -
-#pragma mark Text View
-
-- (NSDictionary *)defaultCoreTextAttributes
-{
-    KBTStyleDescriptor *styleDecriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:@"Helvetica Neue" fontSize:16.0 bold:NO italic:NO underlined:NO];
-    return [styleDecriptor coreTextAttributes];
-}
-
-- (UIColor *)loupeFillColor
-{
-    // The loupe 
-    return textView_.backgroundView.backgroundColor;
-}
-
-- (void)textViewDidBeginEditing:(NKTTextView *)textView
-{
-    [self registerForKeyboardEvents];
-    [self updateTextEditingItems];
-}
-
-- (void)textViewDidEndEditing:(NKTTextView *)textView
-{
-    if (fontPopoverController_.popoverVisible)
-    {
-        [fontPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
-    [self updateTextEditingItems];
-    [self savePendingChanges];
-    [self unregisterForKeyboardEvents];
-}
-
-- (void)textViewDidChangeSelection:(NKTTextView *)textView
-{
-    [self updateTextEditingItems];
-}
-
-- (void)textViewDidChange:(NKTTextView *)textView
-{
-    if (notebookPopoverController_.popoverVisible)
-    {
-        [notebookPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
-    if (fontPopoverController_.popoverVisible)
-    {
-        [fontPopoverController_ dismissPopoverAnimated:YES];
-    }
-    
-    if ([delegate_ respondsToSelector:@selector(pageViewController:textViewDidChange:)])
-    {
-        [delegate_ pageViewController:self textViewDidChange:textView_];
-    }
-    
-    [self updateTitleLabel];
-}
-
-#pragma mark -
 #pragma mark Text Editing
 
 - (NSDictionary *)currentCoreTextAttributes
@@ -874,6 +836,342 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:attributes];
     KBTStyleDescriptor *newStyleDescriptor = [styleDescriptor styleDescriptorBySettingFontFamilyName:fontPickerViewController_.selectedFontFamilyName];
     return [newStyleDescriptor coreTextAttributes];
+}
+
+#pragma mark -
+#pragma mark Text View
+
+- (NSDictionary *)defaultCoreTextAttributes
+{
+    KBTStyleDescriptor *styleDecriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:@"Helvetica Neue" fontSize:16.0 bold:NO italic:NO underlined:NO];
+    return [styleDecriptor coreTextAttributes];
+}
+
+- (UIColor *)loupeFillColor
+{
+    // The loupe 
+    return textView_.backgroundView.backgroundColor;
+}
+
+- (void)textViewDidBeginEditing:(NKTTextView *)textView
+{
+    [self registerForKeyboardEvents];
+    [self updateTextEditingItems];
+}
+
+- (void)textViewDidEndEditing:(NKTTextView *)textView
+{
+    if (fontPopoverController_.popoverVisible)
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    [self updateTextEditingItems];
+    [self savePendingChanges];
+    [self unregisterForKeyboardEvents];
+    
+    menuEnabledForSelectedTextRange_ = NO;
+    [self dismissMenu];
+}
+
+- (void)textViewDidChangeSelection:(NKTTextView *)textView
+{
+    [self updateTextEditingItems];
+
+    menuEnabledForSelectedTextRange_ = NO;
+    [self dismissMenu];
+}
+
+- (void)textViewDidChange:(NKTTextView *)textView
+{
+    if (notebookPopoverController_.popoverVisible)
+    {
+        [notebookPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    if (fontPopoverController_.popoverVisible)
+    {
+        [fontPopoverController_ dismissPopoverAnimated:YES];
+    }
+    
+    if ([delegate_ respondsToSelector:@selector(pageViewController:textViewDidChange:)])
+    {
+        [delegate_ pageViewController:self textViewDidChange:textView_];
+    }
+    
+    [self updateTitleLabel];
+    
+    menuEnabledForSelectedTextRange_ = NO;
+    [self dismissMenu];
+}
+
+#pragma mark -
+#pragma mark Text View Gestures
+
+- (void)textViewDidRecognizeTap:(NKTTextView *)textView previousSelectedTextRange:(NKTTextRange *)previousSelectedTextRange
+{
+    menuEnabledForSelectedTextRange_ = NO;
+        
+    if (previousSelectedTextRange != nil && [previousSelectedTextRange isEqualToTextRange:(NKTTextRange *)textView.selectedTextRange])
+    {
+        menuEnabledForSelectedTextRange_ = YES;
+        [self presentMenu];
+    }
+    else
+    {
+        menuEnabledForSelectedTextRange_ = NO;
+        [self dismissMenu];
+    }
+}
+
+- (void)textViewContinuousGestureDidBegin
+{
+    menuEnabledForSelectedTextRange_ = NO;
+    [self dismissMenu];
+    
+    if (![textView_ isFirstResponder])
+    {
+        [self becomeFirstResponder];
+    }
+}
+
+- (void)textViewContinuousGestureDidEnd
+{
+    menuEnabledForSelectedTextRange_ = YES;
+    [self presentMenu];
+}
+
+- (void)textViewLongPressDidBegin:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidBegin];
+}
+
+- (void)textViewLongPressDidEnd:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidEnd];
+}
+
+- (void)textViewDoubleTapDragDidBegin:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidBegin];
+}
+
+- (void)textViewDoubleTapDragDidEnd:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidEnd];
+}
+
+- (void)textViewDragBackwardDidBegin:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidBegin];
+}
+
+- (void)textViewDragBackwardDidEnd:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidEnd];
+}
+
+- (void)textViewDragForwardDidBegin:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidBegin];
+}
+
+- (void)textViewDragForwardDidEnd:(NKTTextView *)textView
+{
+    [self textViewContinuousGestureDidEnd];
+}
+
+#pragma mark -
+#pragma mark Scroll View
+
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+{
+    [self updateMenuForTemporaryViewChangesOccuring];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+{
+    if (!decelerate)
+    {
+        [self updateMenuForTemporaryViewChangesEnded];
+    }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+    [self updateMenuForTemporaryViewChangesEnded];
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    [self updateMenuForTemporaryViewChangesOccuring];
+}
+
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
+{
+    [self updateMenuForTemporaryViewChangesOccuring];
+    return YES;
+}
+
+- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView
+{
+    [self updateMenuForTemporaryViewChangesEnded];
+}
+
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
+{
+    [self updateMenuForTemporaryViewChangesEnded];
+}
+
+#pragma mark -
+#pragma mark Menu
+
+- (void)presentMenu
+{
+    if (!menuEnabledForSelectedTextRange_)
+    {
+        return;
+    }
+    
+    UIMenuController *menuController = [UIMenuController sharedMenuController];
+    
+    if (!menuController.menuVisible)
+    {
+        NKTTextRange *selectedTextRange = (NKTTextRange *)textView_.selectedTextRange;
+        
+        if (textView_.selectedTextRange == nil)
+        {
+            return;
+        }
+        
+        CGRect firstRect = [textView_ firstRectForTextRange:selectedTextRange];
+        CGRect lastRect = [textView_ lastRectForTextRange:selectedTextRange];
+        CGRect targetRect = CGRectUnion(firstRect, lastRect);
+        
+        if (CGRectEqualToRect(targetRect, CGRectNull))
+        {
+            return;
+        }
+        
+        // Only show menu if the target rect is visible within text view bounds
+        if (!CGRectIntersectsRect(targetRect, textView_.bounds))
+        {
+            KBCLogDebug(@"target rect is outside of view bounds, returning");
+            return;
+        }
+        
+        [menuController setTargetRect:targetRect inView:textView_];
+        [menuController setMenuVisible:YES animated:YES];
+    }
+}
+
+- (void)dismissMenu
+{
+    UIMenuController *menuController = [UIMenuController sharedMenuController];
+    
+    if (menuController.menuVisible)
+    {
+        [menuController setTargetRect:CGRectNull inView:textView_];
+        [menuController setMenuVisible:NO animated:YES];
+    }
+}
+
+- (void)updateMenuForTemporaryViewChangesOccuring
+{    
+    if ([self isFirstResponder] || [textView_ isFirstResponder])
+    {
+        [self dismissMenu];
+    }
+    
+    // When the text view selection is empty and it isn't in editing more, the menu is not shown
+    // because it would be visually confusing
+    
+    NKTTextRange *textRange = (NKTTextRange *)textView_.selectedTextRange;
+    
+    if (textRange == nil || (textRange.empty && !textView_.editing))
+    {
+        menuEnabledForSelectedTextRange_ = NO;
+    }
+}
+
+- (void)updateMenuForTemporaryViewChangesEnded
+{    
+    if ([self isFirstResponder] || [textView_ isFirstResponder])
+    {        
+        UIMenuController *menuController = [UIMenuController sharedMenuController];
+        
+        if (!menuController.menuVisible)
+        {
+            [self presentMenu];
+        }
+    }
+}
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+    NKTTextRange *textRange = (NKTTextRange *)textView_.selectedTextRange;
+    
+    if (@selector(copy:) == action)
+    {
+        return !textRange.empty;
+    }
+    else if (@selector(cut:) == action)
+    {
+        return textView_.editing && !textRange.empty;
+    }
+    else if (@selector(delete:) == action)
+    {
+        return NO;
+    }
+    else if (@selector(paste:) == action)
+    {
+        return textView_.editing;
+    }
+    else if (@selector(select:) == action)
+    {
+        return textRange.empty;
+    }
+    else if (@selector(selectAll:) == action)
+    {
+        return textRange.empty;
+    }
+    
+    return NO;
+}
+
+- (void)cut:(id)sender
+{
+    KBCLogTrace();
+}
+
+- (void)copy:(id)sender
+{
+    KBCLogTrace();
+}
+
+- (void)delete:(id)sender
+{
+    KBCLogTrace();
+}
+
+- (void)paste:(id)sender
+{
+    KBCLogTrace();
+}
+
+- (void)select:(id)sender
+{
+    KBCLogTrace();
+}
+
+- (void)selectAll:(id)sender
+{
+    KBCLogTrace();
+    NKTTextPosition *start = (NKTTextPosition *)[textView_ beginningOfDocument];
+    NKTTextPosition *end = (NKTTextPosition *)[textView_ endOfDocument];
+    NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
+    [textView_ setSelectedTextRange:textRange notifyInputDelegate:YES];
+    [textView_ updateSelectionDisplay];
 }
 
 #pragma mark -

@@ -110,9 +110,19 @@
 @property (nonatomic, readonly) UILongPressGestureRecognizer *longPressGestureRecognizer;
 @property (nonatomic, readonly) NKTDragGestureRecognizer *doubleTapDragGestureRecognizer;
 
+#pragma mark Selection
+
+- (void)updateSelectionDisplay;
+
+- (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;
+
 #pragma mark Tokenizing
 
 - (NKTTextRange *)textRangeForLineContainingTextPosition:(UITextPosition *)textPosition;
+
+#pragma mark Editing
+
+@property (nonatomic, readonly, getter = isEditing) BOOL editing;
 
 @end
 
@@ -123,6 +133,11 @@
 
 @optional
 
+#pragma mark Managing Loupes
+
+- (UIColor *)loupeFillColor;
+- (UIView *)addLoupe:(UIView *)view;
+
 #pragma mark Getting Text Attributes
 
 - (NSDictionary *)defaultCoreTextAttributes;
@@ -131,18 +146,19 @@
 
 - (void)textViewDidBeginEditing:(NKTTextView *)textView;
 - (void)textViewDidEndEditing:(NKTTextView *)textView;
-
-#pragma mark Responding to Text Changes
-
 - (void)textViewDidChange:(NKTTextView *)textView;
-
-#pragma mark Responding to Selection Changes
-
 - (void)textViewDidChangeSelection:(NKTTextView *)textView;
 
-#pragma mark Managing Loupes
+#pragma mark Gestures
 
-- (UIColor *)loupeFillColor;
-- (UIView *)addLoupe:(UIView *)view;
+- (void)textViewDidRecognizeTap:(NKTTextView *)textView previousSelectedTextRange:(NKTTextRange *)previousSelectedTextRange;
+- (void)textViewLongPressDidBegin:(NKTTextView *)textView;
+- (void)textViewLongPressDidEnd:(NKTTextView *)textView;
+- (void)textViewDoubleTapDragDidBegin:(NKTTextView *)textView;
+- (void)textViewDoubleTapDragDidEnd:(NKTTextView *)textView;
+- (void)textViewDragBackwardDidBegin:(NKTTextView *)textView;
+- (void)textViewDragBackwardDidEnd:(NKTTextView *)textView;
+- (void)textViewDragForwardDidBegin:(NKTTextView *)textView;
+- (void)textViewDragForwardDidEnd:(NKTTextView *)textView;
 
 @end

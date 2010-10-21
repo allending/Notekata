@@ -720,13 +720,7 @@
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognizer
 {
-    // PENDING: if first responder accepted, the selected text range should already be set!
-    
-    if (![self isFirstResponder] && ![self becomeFirstResponder])
-    {
-        return;
-    }
-    
+    NKTTextRange *previousSelectedTextRange = [[selectedTextRange_ retain] autorelease];
     CGPoint point = [gestureRecognizer locationInView:self];
     CGPoint framesetterPoint = [self convertPointToFramesetter:point];
     NKTTextPosition *textPosition = [self.framesetter closestTextPositionForCaretToPoint:framesetterPoint];
@@ -734,12 +728,24 @@
     [self setSelectedTextRange:[textPosition textRange] notifyInputDelegate:YES];
     selectionDisplayController_.caretVisible = YES;
     [selectionDisplayController_ updateSelectionDisplay];
+    BOOL wasFirstResponder = [self isFirstResponder];   
+    [self becomeFirstResponder];
+    
+    if (wasFirstResponder && [self.delegate respondsToSelector:@selector(textViewDidRecognizeTap:previousSelectedTextRange:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidRecognizeTap:self previousSelectedTextRange:previousSelectedTextRange];
+    }
 }
 
 - (void)handleLongPress:(UIGestureRecognizer *)gestureRecognizer
 {
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
+        if ([self.delegate respondsToSelector:@selector(textViewLongPressDidBegin:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewLongPressDidBegin:self];
+        }
+        
         [self updateLongPressSelection];
         [self startEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateLongPressSelection)];
     }
@@ -753,6 +759,11 @@
         [self confirmGestureTextRange];
         [self.caretLoupe setHidden:YES animated:YES];
         selectionDisplayController_.caretVisible = [self isFirstResponder];
+        
+        if ([self.delegate respondsToSelector:@selector(textViewLongPressDidEnd:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewLongPressDidEnd:self];
+        }
     }
 }
 
@@ -777,6 +788,11 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
+        if ([self.delegate respondsToSelector:@selector(textViewDoubleTapDragDidBegin:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDoubleTapDragDidBegin:self];
+        }
+        
         NKTTextRange *wordRange = nil;
         NKTTextRange *guessedTextRange = [self guessedTextRangeAtTextPosition:textPosition wordRange:&wordRange];
         
@@ -809,15 +825,18 @@
     }
     else
     {
-        if (initialDoubleTapTextRange_ == nil)
+        if (initialDoubleTapTextRange_ != nil)
         {
-            return;
+            [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateDoubleTapDragSelection)];
+            self.initialDoubleTapTextRange = nil;
+            [self confirmGestureTextRange];
+            [self.textRangeLoupe setHidden:YES animated:YES];
         }
         
-        [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateDoubleTapDragSelection)];
-        self.initialDoubleTapTextRange = nil;
-        [self confirmGestureTextRange];
-        [self.textRangeLoupe setHidden:YES animated:YES];
+        if ([self.delegate respondsToSelector:@selector(textViewDoubleTapDragDidEnd:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDoubleTapDragDidEnd:self];
+        }
     }
 }
 
@@ -845,6 +864,7 @@
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
+
 - (void)handleBackwardHandleDrag:(UIGestureRecognizer *)gestureRecognizer
 {    
     CGPoint point = [gestureRecognizer locationInView:self];
@@ -853,6 +873,11 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
+        if ([self.delegate respondsToSelector:@selector(textViewDragBackwardDidBegin:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDragBackwardDidBegin:self];
+        }
+        
         self.gestureTextRange = selectedTextRange_;
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
         [self.textRangeLoupe setHidden:NO animated:YES];
@@ -867,6 +892,11 @@
         [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateBackwardHandleDragSelection)];
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
+        
+        if ([self.delegate respondsToSelector:@selector(textViewDragBackwardDidEnd:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDragBackwardDidEnd:self];
+        }
     }
 }
 
@@ -896,6 +926,11 @@
     
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan)
     {
+        if ([self.delegate respondsToSelector:@selector(textViewDragForwardDidBegin:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDragForwardDidBegin:self];
+        }
+        
         self.gestureTextRange = selectedTextRange_;
         [self configureLoupe:self.textRangeLoupe toShowTextPosition:textPosition];
         [self.textRangeLoupe setHidden:NO animated:YES];
@@ -910,6 +945,11 @@
         [self stopEdgeScrollCheckWithGestureRecognizer:gestureRecognizer selector:@selector(updateForwardHandleDragSelection)];
         [self confirmGestureTextRange];
         [self.textRangeLoupe setHidden:YES animated:YES];
+        
+        if ([self.delegate respondsToSelector:@selector(textViewDragForwardDidEnd:)])
+        {
+            [(id <NKTTextViewDelegate>)self.delegate textViewDragForwardDidEnd:self];
+        }
     }
 }
 
@@ -1436,6 +1476,11 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     [self scrollTextRangeToVisible:self.selectedTextRange animated:YES];
 }
 
+- (void)updateSelectionDisplay
+{
+    [selectionDisplayController_ updateSelectionDisplay];
+}
+
 - (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate
 {
     if (selectedTextRange_ == textRange || [selectedTextRange_ isEqualToTextRange:textRange])
@@ -1767,15 +1812,25 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     return [self firstRectForTextRange:textRange];
 }
 
-- (CGRect)firstRectForTextRange:(UITextRange *)textRange
+- (CGRect)firstRectForTextRange:(NKTTextRange *)textRange
 {
+    if (textRange.empty)
+    {
+        return [self caretRectForTextPosition:textRange.start applyInputTextAttributes:NO];
+    }
+    
     CGRect rect = [self.framesetter firstRectForTextRange:(NKTTextRange *)textRange];
     CGAffineTransform transform = [self framesetterToViewTransform];
     return CGRectApplyAffineTransform(rect, transform);
 }
 
-- (CGRect)lastRectForTextRange:(UITextRange *)textRange
+- (CGRect)lastRectForTextRange:(NKTTextRange *)textRange
 {
+    if (textRange.empty)
+    {
+        return [self caretRectForTextPosition:textRange.start applyInputTextAttributes:NO];
+    }
+    
     CGRect rect = [self.framesetter lastRectForTextRange:(NKTTextRange *)textRange];
     CGAffineTransform transform = [self framesetterToViewTransform];
     return CGRectApplyAffineTransform(rect, transform);
@@ -1955,6 +2010,14 @@ static const CGFloat CaretBottomPadding = 1.0;
 {
     NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
     return line.textRange;
+}
+
+#pragma mark -
+#pragma mark Editing
+
+- (BOOL)isEditing
+{
+    return [self isFirstResponder];
 }
 
 @end

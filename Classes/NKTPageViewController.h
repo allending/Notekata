@@ -33,6 +33,7 @@ typedef enum
     UIPopoverController *notebookPopoverController_;
     UIPopoverController *fontPopoverController_;
     NKTFontPickerViewController *fontPickerViewController_;
+    BOOL menuEnabledForSelectedTextRange_;
     
     NKTTextView *textView_;
     UIView *creamPaperBackgroundView_;
@@ -142,6 +143,14 @@ typedef enum
 - (NSDictionary *)attributesByRemovingUnderlineFromAttributes:(NSDictionary *)attributes;
 - (NSDictionary *)attributesBySettingFontSizeOfAttributes:(NSDictionary *)attributes;
 - (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes;
+
+#pragma mark Menu
+
+
+- (void)presentMenu;
+- (void)updateMenuForTemporaryViewChangesEnded;
+- (void)dismissMenu;
+- (void)updateMenuForTemporaryViewChangesOccuring;
 
 #pragma mark Keyboard
 
