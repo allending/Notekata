@@ -140,12 +140,30 @@ static NSString *StyleRangesKey = @"StyleRanges";
         NSArray *styles = [dictionary objectForKey:StylesKey];
         NSArray *styleRanges = [dictionary objectForKey:StyleRangesKey];
         NSUInteger styleCount = [styles count];
+        NSUInteger length = [attributedString length];
         
         for (NSUInteger index = 0; index < styleCount; ++index)
         {
             NSDictionary *style = [styles objectAtIndex:index];
             NSRange styleRange = KBCRangeFromPortableRepresentation([styleRanges objectAtIndex:index]);
             KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithPortableRepresentation:style];
+            
+            // In case the string and styles ever get out of sync, we try our best to work around
+            // the problem. This has been observed during testing, but tracking down the exact
+            // causes of why this happens has been difficult.
+            
+            if (styleRange.location >= length)
+            {
+                KBCLogWarning(@"Detected style range start exceeding string length. Breaking.");
+                break;
+            }
+            
+            if (NSMaxRange(styleRange) > length)
+            {
+                KBCLogWarning(@"Detected invalid style range end. Forcing style range end to end of string.");
+                styleRange = NSMakeRange(styleRange.location, length - styleRange.location);
+            }
+            
             [attributedString setAttributes:[styleDescriptor coreTextAttributes] range:styleRange];
         }
     }
