@@ -23,7 +23,6 @@
 @synthesize pageViewController = pageViewController_;
 @synthesize notebookEditViewController = notebookEditViewController_;
 
-@synthesize titleLabel = titleLabel_;
 @synthesize notebookAddItem = notebookAddItem_;
 @synthesize notebookAddActionSheet = notebookAddActionSheet_;
 @synthesize notebookDeleteIndexPath = notebookDeleteIndexPath_;
@@ -46,7 +45,6 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [notebookViewController_ release];
     [pageViewController_ release];
     
-    [titleLabel_ release];
     [notebookAddItem_ release];
     [notebookAddActionSheet_ release];
     [notebookDeleteIndexPath_ release];
@@ -109,11 +107,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 - (void)viewDidUnload
 {
     [super viewDidUnload];
-    self.notebookViewController = nil;
-    self.pageViewController = nil;
     self.notebookEditViewController = nil;
-    
-    self.titleLabel = nil;
     self.notebookAddItem = nil;
     self.notebookAddActionSheet = nil;
     self.notebookDeleteIndexPath = nil;

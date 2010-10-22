@@ -21,7 +21,6 @@
     NKTPageViewController *pageViewController_;
     NKTNotebookEditViewController *notebookEditViewController_;
     
-    UILabel *titleLabel_;
     UIBarButtonItem *notebookAddItem_;
     UIActionSheet *notebookAddActionSheet_;
     NSIndexPath *notebookDeleteIndexPath_;
@@ -59,7 +58,6 @@
 #pragma mark -
 #pragma mark Views
 
-@property (nonatomic, retain) UILabel *titleLabel;
 @property (nonatomic, retain) UIBarButtonItem *notebookAddItem;
 @property (nonatomic, retain) UIActionSheet *notebookAddActionSheet;
 @property (nonatomic, retain) NSIndexPath *notebookDeleteIndexPath;
