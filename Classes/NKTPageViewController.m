@@ -1063,8 +1063,16 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
             return;
         }
         
-        // Always present menu pointing with arrow pointing down
-        menuController.arrowDirection = UIMenuControllerArrowDown;
+        // Position menu arrow
+        if (targetRect.origin.y > textViewBounds.origin.y)
+        {
+            menuController.arrowDirection = UIMenuControllerArrowDown;
+        }
+        else
+        {
+            menuController.arrowDirection = UIMenuControllerArrowUp;
+        }
+        
         [menuController setTargetRect:targetRect inView:textView_];
         [menuController setMenuVisible:YES animated:YES];
     }

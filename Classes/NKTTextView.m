@@ -1670,6 +1670,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     if (markedText_ == nil)
     {
         markedText_ = @"";
+        [markedText_ retain];
     }
     
     // Figure out the attributes that inserted text needs to have
@@ -1687,14 +1688,26 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
+    NKTTextRange *newMarkedTextRange = nil;
+    NKTTextRange *newSelectedTextRange = nil;
+    
     // Update the marked and selected text ranges
-    NKTTextPosition *newMarkedEnd = [NKTTextPosition textPositionWithLocation:replacementTextRange.start.location + [markedText_ length] affinity:UITextStorageDirectionForward];
-    NKTTextRange *newMarkedTextRange = [NKTTextRange textRangeWithTextPosition:replacementTextRange.start textPosition:newMarkedEnd];
+    if (relativeSelectedRange.location != NSNotFound)
+    {
+        NKTTextPosition *newMarkedEnd = [NKTTextPosition textPositionWithLocation:replacementTextRange.start.location + [markedText_ length] affinity:UITextStorageDirectionForward];
+        newMarkedTextRange = [NKTTextRange textRangeWithTextPosition:replacementTextRange.start textPosition:newMarkedEnd];
+        NKTTextPosition *newSelectedStart = [NKTTextPosition textPositionWithLocation:newMarkedTextRange.start.location + relativeSelectedRange.location affinity:UITextStorageDirectionForward];
+        NKTTextPosition *newSelectedEnd = [NKTTextPosition textPositionWithLocation:newSelectedStart.location + relativeSelectedRange.length affinity:UITextStorageDirectionForward];
+        newSelectedTextRange = [NKTTextRange textRangeWithTextPosition:newSelectedStart textPosition:newSelectedEnd];
+    }
+    else
+    {
+        NKTTextPosition *newSelectedStart = [NKTTextPosition textPositionWithLocation:replacementTextRange.start.location affinity:UITextStorageDirectionForward];
+        NKTTextPosition *newSelectedEnd = [NKTTextPosition textPositionWithLocation:newSelectedStart.location + [markedText_ length] affinity:UITextStorageDirectionForward];
+        newSelectedTextRange = [NKTTextRange textRangeWithTextPosition:newSelectedStart textPosition:newSelectedEnd];
+    }
     
     // Since the selected text range is always within the marked text range, update the selected text range first
-    NKTTextPosition *newSelectedStart = [NKTTextPosition textPositionWithLocation:newMarkedTextRange.start.location + relativeSelectedRange.location affinity:UITextStorageDirectionForward];
-    NKTTextPosition *newSelectedEnd = [NKTTextPosition textPositionWithLocation:newSelectedStart.location + relativeSelectedRange.length affinity:UITextStorageDirectionForward];
-    NKTTextRange *newSelectedTextRange = [NKTTextRange textRangeWithTextPosition:newSelectedStart textPosition:newSelectedEnd];
     [self setSelectedTextRange:newSelectedTextRange notifyInputDelegate:NO];
     [self setMarkedTextRange:newMarkedTextRange notifyInputDelegate:NO];
     
