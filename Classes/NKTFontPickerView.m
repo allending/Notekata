@@ -13,7 +13,7 @@ static NSString * const TableViewTopCapFilename = @"NKTFontPickerViewTableViewTo
 static NSString * const TableViewBottomCapFilename = @"NKTFontPickerViewTableViewBottomCap.png";
 static NSString * const TableViewBorderFilename = @"NKTFontPickerViewTableViewBorder.png";
 static const CGFloat FontSizeSegmentedControlHeight = 44.0;
-static const CGFloat TableViewCapWidth = 8.0;
+static const CGFloat TableViewCapWidth = 9.0;
 static const CGFloat TableViewCapHeight = 9.0;
 static const CGFloat SubviewInset = 20.0;
 
@@ -26,7 +26,7 @@ static const CGFloat SubviewInset = 20.0;
     if ((self = [super initWithFrame:frame]))
     {        
         // Off-gray background color - scheme tied to the table view cap images
-        self.backgroundColor = [UIColor colorWithRed:0.82 green:0.83 blue:0.85 alpha:1.0];
+        self.backgroundColor = [UIColor colorWithRed:0.77 green:0.79 blue:0.82 alpha:1.0];
         self.opaque = YES;
         self.autoresizesSubviews = NO;
         
@@ -46,6 +46,7 @@ static const CGFloat SubviewInset = 20.0;
         topCapImage = [topCapImage stretchableImageWithLeftCapWidth:TableViewCapWidth
                                                        topCapHeight:TableViewCapHeight];
         tableViewTopCap_ = [[UIImageView alloc] initWithImage:topCapImage];
+        tableViewTopCap_.opaque = NO;
         [self addSubview:tableViewTopCap_];
         
         // Create bottom cap
@@ -53,6 +54,7 @@ static const CGFloat SubviewInset = 20.0;
         bottomCapImage = [bottomCapImage stretchableImageWithLeftCapWidth:TableViewCapWidth
                                                              topCapHeight:TableViewCapHeight];
         tableViewBottomCap_ = [[UIImageView alloc] initWithImage:bottomCapImage];
+        tableViewBottomCap_.opaque = NO;
         [self addSubview:tableViewBottomCap_];
         
         UIImage *tableViewBorderImage = [UIImage imageNamed:TableViewBorderFilename];
