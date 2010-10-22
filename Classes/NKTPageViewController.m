@@ -1149,8 +1149,6 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 
 - (void)cut:(id)sender
 {
-    KBCLogTrace();
-    
     if (!textView_.editing)
     {
         KBCLogWarning(@"Text view is not in editing mode. Ignoring");
@@ -1165,7 +1163,6 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 
 - (void)copy:(id)sender
 {
-    KBCLogTrace();
     NKTTextRange *textRange = (NKTTextRange *)textView_.selectedTextRange;
     NSAttributedString *text = [textView_ text];
     NSAttributedString *attributedString = [text attributedSubstringFromRange:textRange.nsRange];
@@ -1185,9 +1182,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 }
 
 - (void)paste:(id)sender
-{
-    KBCLogTrace();
-    
+{    
     if (!textView_.editing)
     {
         KBCLogWarning(@"Text view is not in editing mode. Ignoring");
@@ -1222,7 +1217,6 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 
 - (void)select:(id)sender
 {
-    KBCLogTrace();
     NKTTextRange *textRange = [textView_ guessedTextRangeAtTextPosition:(NKTTextPosition *)textView_.selectedTextRange.start wordRange:NULL];
     
     if (textRange == nil)
@@ -1238,7 +1232,6 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 
 - (void)selectAll:(id)sender
 {
-    KBCLogTrace();
     NKTTextPosition *start = (NKTTextPosition *)[textView_ beginningOfDocument];
     NKTTextPosition *end = (NKTTextPosition *)[textView_ endOfDocument];
     NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];

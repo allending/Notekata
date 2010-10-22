@@ -1275,7 +1275,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     
     // Figure out the attributes that inserted text needs to have
-    NSDictionary *inputTextAttributes = self.inputTextAttributes;
+    NSDictionary *inputTextAttributes = [[self.inputTextAttributes copy] autorelease];
     NKTTextRange *insertionTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
     // In case the underlying text range is nil-ed
     [[insertionTextRange retain] autorelease];
@@ -1414,30 +1414,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
-// UITextInput method
-- (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText notifyInputDelegate:(BOOL)notifyInputDelegate
+- (NSDictionary *)inheritedAttributesForTextRange:(NKTTextRange *)textRange
 {
-    KBCLogDebug(@"%@ : %@", textRange, replacementText);
-    
-    NKTTextRange* nextTextRange = nil;
-    
-    // The text range to be replaced is to the left of the selected text range
-    if ([textRange.end compareIgnoringAffinity:selectedTextRange_.start] != NSOrderedDescending)
-    {
-        NSInteger changeInLength = [replacementText length] - textRange.length;
-        NKTTextPosition *start = [selectedTextRange_.start textPositionByApplyingOffset:changeInLength];
-        NKTTextPosition *end = [selectedTextRange_.end textPositionByApplyingOffset:changeInLength];
-        nextTextRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
-    }
-    // The text range overlaps the selected text range
-    else if ([selectedTextRange_ containsTextPositionIgnoringAffinity:textRange.start])
-    {
-        NKTTextPosition *nextTextPosition = [textRange.start textPositionByApplyingOffset:[replacementText length]];
-        nextTextRange = [nextTextPosition textRange];
-    }
-    
-    // Figure out the attributes that replaced text needs to have
-    NSDictionary *inputTextAttributes = self.inputTextAttributes;
     NSDictionary *inheritedAttributes = nil;
     
     if ([self hasText])
@@ -1457,6 +1435,49 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         
         inheritedAttributes = [text_ attributesAtIndex:inheritedAttributesIndex effectiveRange:NULL];
     }
+    
+    return inheritedAttributes;
+}
+
+- (NKTTextRange *)selectedTextRangeAfterReplacingRange:(NKTTextRange *)textRange withText:(NSString *)replacementText
+{
+    NKTTextRange* nextTextRange = nil;
+    
+    // The text range to be replaced is to the left of the selected text range
+    if ([textRange.end compareIgnoringAffinity:selectedTextRange_.start] != NSOrderedDescending)
+    {
+        NSInteger changeInLength = [replacementText length] - textRange.length;
+        NKTTextPosition *start = [selectedTextRange_.start textPositionByApplyingOffset:changeInLength];
+        NKTTextPosition *end = [selectedTextRange_.end textPositionByApplyingOffset:changeInLength];
+        nextTextRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
+    }
+    // The text range overlaps the selected text range
+    else if ([selectedTextRange_ containsTextPositionIgnoringAffinity:textRange.start])
+    {
+        NKTTextPosition *nextTextPosition = [textRange.start textPositionByApplyingOffset:[replacementText length]];
+        nextTextRange = [nextTextPosition textRange];
+    }
+    
+    return nextTextRange;
+}
+
+// UITextInput method
+- (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText notifyInputDelegate:(BOOL)notifyInputDelegate
+{
+    KBCLogDebug(@"%@ : %@", textRange, replacementText);
+    
+    NKTTextRange* nextTextRange = [self selectedTextRangeAfterReplacingRange:textRange withText:replacementText];
+    NSDictionary *inheritedAttributes = [self inheritedAttributesForTextRange:textRange];
+    // Figure out the attributes that replaced text needs to have - this needs to be done before
+    // the text range changes
+    NSDictionary *inputTextAttributes = [[self.inputTextAttributes copy] autorelease];
+    
+    // To be safe and not be in a state when the selected text range could be invalid, following
+    // text changes, set the selected text range to nil first. Also we retain and autorelease
+    // nextTextRange and textRange in case they are the same as the selected text range!
+    [[nextTextRange retain] autorelease];
+    [[textRange retain] autorelease];
+    [self setSelectedTextRange:nil notifyInputDelegate:notifyInputDelegate];
     
     if (notifyInputDelegate)
     {
@@ -1492,26 +1513,19 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
 }
 
+// PENDING: merge with method above
 - (void)replaceRange:(NKTTextRange *)textRange withAttributedString:(NSAttributedString *)attributedString notifyInputDelegate:(BOOL)notifyInputDelegate
 {
     KBCLogDebug(@"%@ : %@", textRange, replacementText);
     
-    NKTTextRange* nextTextRange = nil;
+    NKTTextRange* nextTextRange = [self selectedTextRangeAfterReplacingRange:textRange withText:[attributedString string]];
     
-    // The text range to be replaced is to the left of the selected text range
-    if ([textRange.end compareIgnoringAffinity:selectedTextRange_.start] != NSOrderedDescending)
-    {
-        NSInteger changeInLength = [attributedString length] - textRange.length;
-        NKTTextPosition *start = [selectedTextRange_.start textPositionByApplyingOffset:changeInLength];
-        NKTTextPosition *end = [selectedTextRange_.end textPositionByApplyingOffset:changeInLength];
-        nextTextRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
-    }
-    // The text range overlaps the selected text range
-    else if ([selectedTextRange_ containsTextPositionIgnoringAffinity:textRange.start])
-    {
-        NKTTextPosition *nextTextPosition = [textRange.start textPositionByApplyingOffset:[attributedString length]];
-        nextTextRange = [nextTextPosition textRange];
-    }
+    // To be safe and not be in a state when the selected text range could be invalid, following
+    // text changes, set the selected text range to nil first. Also we retain and autorelease
+    // nextTextRange and textRange in case they are the same as the selected text range!
+    [[nextTextRange retain] autorelease];
+    [[textRange retain] autorelease];
+    [self setSelectedTextRange:nil notifyInputDelegate:notifyInputDelegate];
     
     if (notifyInputDelegate)
     {
@@ -1526,6 +1540,11 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     if (notifyInputDelegate)
     {
         [inputDelegate_ textDidChange:self];
+    }
+    
+    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
     }
     
     [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
@@ -1654,10 +1673,9 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     
     // Figure out the attributes that inserted text needs to have
-    NSDictionary *inputTextAttributes = self.inputTextAttributes;
+    NSDictionary *inputTextAttributes = [[self.inputTextAttributes copy] autorelease];
     NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
-    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_
-                                                                           attributes:inputTextAttributes];
+    NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_ attributes:inputTextAttributes];
     [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
     [attributedString release];
     
@@ -1670,18 +1688,13 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     
     // Update the marked and selected text ranges
-    NKTTextPosition *newMarkedTextRangeEnd = [NKTTextPosition textPositionWithLocation:replacementTextRange.start.location + [markedText_ length]
-                                                                              affinity:UITextStorageDirectionForward];
-    NKTTextRange *newMarkedTextRange = [NKTTextRange textRangeWithTextPosition:replacementTextRange.start
-                                                                  textPosition:newMarkedTextRangeEnd];
+    NKTTextPosition *newMarkedEnd = [NKTTextPosition textPositionWithLocation:replacementTextRange.start.location + [markedText_ length] affinity:UITextStorageDirectionForward];
+    NKTTextRange *newMarkedTextRange = [NKTTextRange textRangeWithTextPosition:replacementTextRange.start textPosition:newMarkedEnd];
     
     // Since the selected text range is always within the marked text range, update the selected text range first
-    NKTTextPosition *newSelectedTextRangeStart = [NKTTextPosition textPositionWithLocation:newMarkedTextRange.start.location + relativeSelectedRange.location
-                                                                                  affinity:UITextStorageDirectionForward];
-    NKTTextPosition *newSelectedTextRangeEnd = [NKTTextPosition textPositionWithLocation:newSelectedTextRangeStart.location + relativeSelectedRange.length
-                                                                                affinity:UITextStorageDirectionForward];
-    NKTTextRange *newSelectedTextRange = [NKTTextRange textRangeWithTextPosition:newSelectedTextRangeStart
-                                                                    textPosition:newSelectedTextRangeEnd];
+    NKTTextPosition *newSelectedStart = [NKTTextPosition textPositionWithLocation:newMarkedTextRange.start.location + relativeSelectedRange.location affinity:UITextStorageDirectionForward];
+    NKTTextPosition *newSelectedEnd = [NKTTextPosition textPositionWithLocation:newSelectedStart.location + relativeSelectedRange.length affinity:UITextStorageDirectionForward];
+    NKTTextRange *newSelectedTextRange = [NKTTextRange textRangeWithTextPosition:newSelectedStart textPosition:newSelectedEnd];
     [self setSelectedTextRange:newSelectedTextRange notifyInputDelegate:NO];
     [self setMarkedTextRange:newMarkedTextRange notifyInputDelegate:NO];
     

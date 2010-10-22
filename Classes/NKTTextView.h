@@ -117,6 +117,8 @@
 - (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;
 - (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText notifyInputDelegate:(BOOL)notifyInputDelegate;
 - (void)replaceRange:(NKTTextRange *)textRange withAttributedString:(NSAttributedString *)attributedString notifyInputDelegate:(BOOL)notifyInputDelegate;
+- (NSDictionary *)inheritedAttributesForTextRange:(NKTTextRange *)textRange;
+- (NKTTextRange *)selectedTextRangeAfterReplacingRange:(NKTTextRange *)textRange withText:(NSString *)replacementText;
 
 #pragma mark Tokenizing
 
