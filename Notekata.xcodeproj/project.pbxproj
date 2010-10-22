@@ -24,7 +24,6 @@
 		9F0D0EBE1263069A00348E1B /* CJSONScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EB11263069A00348E1B /* CJSONScanner.m */; };
 		9F0D0EBF1263069A00348E1B /* CJSONSerializer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EB31263069A00348E1B /* CJSONSerializer.m */; };
 		9F0D0EC01263069A00348E1B /* CSerializedJSONData.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0EB51263069A00348E1B /* CSerializedJSONData.m */; };
-		9F0D0EDA12630AB100348E1B /* KBTAttributedStringIntermediate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */; };
 		9F0D11A11263571E00348E1B /* KobaText.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11A01263571E00348E1B /* KobaText.m */; };
 		9F0D11CA1263595000348E1B /* KBTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11C91263595000348E1B /* KBTFont.m */; };
 		9F0D11D7126359E100348E1B /* KBTUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11D6126359E100348E1B /* KBTUtilities.m */; };
@@ -133,8 +132,6 @@
 		9F0D0EB31263069A00348E1B /* CJSONSerializer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJSONSerializer.m; sourceTree = "<group>"; };
 		9F0D0EB41263069A00348E1B /* CSerializedJSONData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSerializedJSONData.h; sourceTree = "<group>"; };
 		9F0D0EB51263069A00348E1B /* CSerializedJSONData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSerializedJSONData.m; sourceTree = "<group>"; };
-		9F0D0ED812630AB100348E1B /* KBTAttributedStringIntermediate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTAttributedStringIntermediate.h; sourceTree = "<group>"; };
-		9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTAttributedStringIntermediate.m; sourceTree = "<group>"; };
 		9F0D11A01263571E00348E1B /* KobaText.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KobaText.m; sourceTree = "<group>"; };
 		9F0D11C81263595000348E1B /* KBTFont.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFont.h; sourceTree = "<group>"; };
 		9F0D11C91263595000348E1B /* KBTFont.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFont.m; sourceTree = "<group>"; };
@@ -435,8 +432,6 @@
 			children = (
 				9F45C7E112715D7100E56239 /* KBTAttributedStringCodec.h */,
 				9F45C7E212715D7100E56239 /* KBTAttributedStringCodec.m */,
-				9F0D0ED812630AB100348E1B /* KBTAttributedStringIntermediate.h */,
-				9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */,
 				9F0D11C81263595000348E1B /* KBTFont.h */,
 				9F0D11C91263595000348E1B /* KBTFont.m */,
 				9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */,
@@ -687,7 +682,6 @@
 				9F0D0EBE1263069A00348E1B /* CJSONScanner.m in Sources */,
 				9F0D0EBF1263069A00348E1B /* CJSONSerializer.m in Sources */,
 				9F0D0EC01263069A00348E1B /* CSerializedJSONData.m in Sources */,
-				9F0D0EDA12630AB100348E1B /* KBTAttributedStringIntermediate.m in Sources */,
 				9F0D11A11263571E00348E1B /* KobaText.m in Sources */,
 				9F0D11CA1263595000348E1B /* KBTFont.m in Sources */,
 				9F0D11D7126359E100348E1B /* KBTUtilities.m in Sources */,

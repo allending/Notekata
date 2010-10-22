@@ -338,12 +338,10 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     }
     
     // PENDING: store a dirty flag to avoid needless saving
-    // Set the text of the page from the text view's text and save the page
-    NSAttributedString *text = textView_.text;
-    KBTAttributedStringIntermediate *intermediate = [[KBTAttributedStringIntermediate alloc] initWithAttributedString:text];
-    page_.textString = [intermediate string];
-    page_.textStyleString = [intermediate styleString];
-    [intermediate release];
+    // Extract text of the page from the text view's text and save the page
+    NSAttributedString *text = textView_.text;    
+    page_.textString = [text string];
+    page_.textStyleString = [KBTAttributedStringCodec styleStringForAttributedString:text];
     
     NSError *error = nil;
     if (![page_.managedObjectContext save:&error])
@@ -702,8 +700,8 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 
 - (void)updateTextView
 {
-    KBTAttributedStringIntermediate *intermediate = [KBTAttributedStringIntermediate attributedStringIntermediateWithString:page_.textString styleString:page_.textStyleString];
-    textView_.text = [intermediate attributedString];
+    NSAttributedString *attributedString = [KBTAttributedStringCodec attributedStringWithString:page_.textString styleString:page_.textStyleString];
+    textView_.text = attributedString;
 }
 
 - (void)updateTitleLabel

@@ -439,6 +439,7 @@
         currentLocation = longestEffectiveRange.location + longestEffectiveRange.length;
     }
     
+    // PENDING: frameset intelligently
     [self regenerateTextFrame];
 }
 
@@ -1307,8 +1308,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     else
     {
-        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text
-                                                                               attributes:inputTextAttributes];
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:inputTextAttributes];
         [text_ replaceCharactersInRange:insertionTextRange.nsRange withAttributedString:attributedString];
         [attributedString release];
     }
