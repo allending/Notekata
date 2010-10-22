@@ -34,6 +34,7 @@ typedef enum
     UIPopoverController *fontPopoverController_;
     NKTFontPickerViewController *fontPickerViewController_;
     BOOL menuEnabledForSelectedTextRange_;
+    BOOL menuDisabledForKeyboard_;
     
     NKTTextView *textView_;
     UIView *creamPaperBackgroundView_;
@@ -160,6 +161,7 @@ typedef enum
 - (void)keyboardDidShow:(NSNotification *)notification;
 - (void)keyboardWillHide:(NSNotification *)notification;
 - (CGRect)keyboardFrameFromNotification:(NSNotification *)notification;
+- (BOOL)keyboardFrameFromNotificationOverlapsTextView:(NSNotification *)notification;
 - (void)growTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
 - (void)shrinkTextViewToAccomodateKeyboardFrameFromNotification:(NSNotification *)notification;
 

@@ -983,6 +983,12 @@
 // If no match is found, the text range represented by the text position is returned.
 - (NKTTextRange *)guessedTextRangeAtTextPosition:(NKTTextPosition *)textPosition wordRange:(NKTTextRange **)wordRange
 {
+    if (textPosition == nil)
+    {
+        KBCLogWarning(@"Text position is nil. Returning nil");
+        return nil;
+    }
+    
     NKTLine *line = [self.framesetter lineForCaretAtTextPosition:textPosition];
     NKTTextRange *lineTextRange = [line textRange];
     
@@ -1404,32 +1410,125 @@ static const CGFloat EdgeScrollThreshold = 40.0;
 // UITextInput method
 - (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText
 {
+    [self replaceRange:textRange withText:replacementText notifyInputDelegate:NO];
+    [selectionDisplayController_ updateSelectionDisplay];
+}
+
+// UITextInput method
+- (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText notifyInputDelegate:(BOOL)notifyInputDelegate
+{
     KBCLogDebug(@"%@ : %@", textRange, replacementText);
-    [text_ replaceCharactersInRange:textRange.nsRange withString:replacementText];
-    // PENDING: frameset intelligently
-    [self regenerateTextFrame];
     
-    // The text range to be replaced lies fully before the selected text range
+    NKTTextRange* nextTextRange = nil;
+    
+    // The text range to be replaced is to the left of the selected text range
     if ([textRange.end compareIgnoringAffinity:selectedTextRange_.start] != NSOrderedDescending)
     {
         NSInteger changeInLength = [replacementText length] - textRange.length;
-        NKTTextPosition *newTextRangeStart = [selectedTextRange_.start textPositionByApplyingOffset:changeInLength];
-        NKTTextPosition *newTextRangeEnd = [selectedTextRange_.end textPositionByApplyingOffset:changeInLength];
-        NKTTextRange *newTextRange = [NKTTextRange textRangeWithTextPosition:newTextRangeStart
-                                                                textPosition:newTextRangeEnd];
-        [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
-        [selectionDisplayController_ updateSelectionDisplay];
+        NKTTextPosition *start = [selectedTextRange_.start textPositionByApplyingOffset:changeInLength];
+        NKTTextPosition *end = [selectedTextRange_.end textPositionByApplyingOffset:changeInLength];
+        nextTextRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
     }
     // The text range overlaps the selected text range
     else if ([selectedTextRange_ containsTextPositionIgnoringAffinity:textRange.start])
     {
-        NKTTextPosition *newEndTextPosition = [NKTTextPosition textPositionWithLocation:textRange.start.location
-                                                                               affinity:selectedTextRange_.end.affinity];
-        NKTTextRange *newTextRange = [NKTTextRange textRangeWithTextPosition:selectedTextRange_.start
-                                                                textPosition:newEndTextPosition];
-        [self setSelectedTextRange:newTextRange notifyInputDelegate:NO];
-        [selectionDisplayController_ updateSelectionDisplay];
+        NKTTextPosition *nextTextPosition = [textRange.start textPositionByApplyingOffset:[replacementText length]];
+        nextTextRange = [nextTextPosition textRange];
     }
+    
+    // Figure out the attributes that replaced text needs to have
+    NSDictionary *inputTextAttributes = self.inputTextAttributes;
+    NSDictionary *inheritedAttributes = nil;
+    
+    if ([self hasText])
+    {
+        NSUInteger inheritedAttributesIndex = textRange.start.location;
+        
+        // If the replacement range is empty, inserted characters inherit the attributes of the
+        // character preceding the range, if any.
+        if (textRange.empty && inheritedAttributesIndex > 0)
+        {
+            inheritedAttributesIndex = inheritedAttributesIndex - 1;
+        }
+        else if (inheritedAttributesIndex > [text_ length])
+        {
+            inheritedAttributesIndex = [text_ length] - 1;
+        }
+        
+        inheritedAttributes = [text_ attributesAtIndex:inheritedAttributesIndex effectiveRange:NULL];
+    }
+    
+    if (notifyInputDelegate)
+    {
+        [inputDelegate_ textWillChange:self];
+    }
+    
+    // It is possible to avoid creating a new range of attributed text if the attributes that
+    // would be inherited from the string following insertion match the insertion attributes
+    if ([inheritedAttributes isEqualToDictionary:inputTextAttributes])
+    {
+        [text_ replaceCharactersInRange:textRange.nsRange withString:replacementText];
+    }
+    else
+    {
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:replacementText attributes:inputTextAttributes];
+        [text_ replaceCharactersInRange:textRange.nsRange withAttributedString:attributedString];
+        [attributedString release];
+    }
+    
+    // PENDING: frameset intelligently
+    [self regenerateTextFrame];
+    
+    if (notifyInputDelegate)
+    {
+        [inputDelegate_ textDidChange:self];
+    }
+    
+    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
+    }
+    
+    [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
+}
+
+- (void)replaceRange:(NKTTextRange *)textRange withAttributedString:(NSAttributedString *)attributedString notifyInputDelegate:(BOOL)notifyInputDelegate
+{
+    KBCLogDebug(@"%@ : %@", textRange, replacementText);
+    
+    NKTTextRange* nextTextRange = nil;
+    
+    // The text range to be replaced is to the left of the selected text range
+    if ([textRange.end compareIgnoringAffinity:selectedTextRange_.start] != NSOrderedDescending)
+    {
+        NSInteger changeInLength = [attributedString length] - textRange.length;
+        NKTTextPosition *start = [selectedTextRange_.start textPositionByApplyingOffset:changeInLength];
+        NKTTextPosition *end = [selectedTextRange_.end textPositionByApplyingOffset:changeInLength];
+        nextTextRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
+    }
+    // The text range overlaps the selected text range
+    else if ([selectedTextRange_ containsTextPositionIgnoringAffinity:textRange.start])
+    {
+        NKTTextPosition *nextTextPosition = [textRange.start textPositionByApplyingOffset:[attributedString length]];
+        nextTextRange = [nextTextPosition textRange];
+    }
+    
+    if (notifyInputDelegate)
+    {
+        [inputDelegate_ textWillChange:self];
+    }
+    
+    [text_ replaceCharactersInRange:textRange.nsRange withAttributedString:attributedString];
+    
+    // PENDING: frameset intelligently
+    [self regenerateTextFrame];
+    
+    if (notifyInputDelegate)
+    {
+        [inputDelegate_ textDidChange:self];
+    }
+    
+    [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
 }
 
 #pragma mark -
@@ -1564,6 +1663,11 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     
     // PENDING: frameset intelligently
     [self regenerateTextFrame];
+    
+    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
+    }
     
     // Update the marked and selected text ranges
     NKTTextPosition *newMarkedTextRangeEnd = [NKTTextPosition textPositionWithLocation:replacementTextRange.start.location + [markedText_ length]

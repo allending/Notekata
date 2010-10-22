@@ -41,6 +41,8 @@
 		9F3D04951261C73A00AB9903 /* NKTRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D04941261C73A00AB9903 /* NKTRootViewController.m */; };
 		9F3D079B1261F71F00AB9903 /* DocumentIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F3D079A1261F71F00AB9903 /* DocumentIcon.png */; };
 		9F3D08D012620AF200AB9903 /* NKTNotebookViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3D08CF12620AF200AB9903 /* NKTNotebookViewController.m */; };
+		9F45C73A1271449400E56239 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F45C7391271449400E56239 /* MobileCoreServices.framework */; };
+		9F45C7E312715D7100E56239 /* KBTAttributedStringCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F45C7E212715D7100E56239 /* KBTAttributedStringCodec.m */; };
 		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
 		9F47F0B51260C27B00E5E6BB /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F47F0B41260C27B00E5E6BB /* CoreData.framework */; };
 		9F47F0FE1260C57F00E5E6BB /* Notekata.xcdatamodel in Sources */ = {isa = PBXBuildFile; fileRef = 9F47F0FD1260C57F00E5E6BB /* Notekata.xcdatamodel */; };
@@ -159,6 +161,9 @@
 		9F3D079A1261F71F00AB9903 /* DocumentIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DocumentIcon.png; sourceTree = "<group>"; };
 		9F3D08CE12620AF200AB9903 /* NKTNotebookViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTNotebookViewController.h; sourceTree = "<group>"; };
 		9F3D08CF12620AF200AB9903 /* NKTNotebookViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTNotebookViewController.m; sourceTree = "<group>"; };
+		9F45C7391271449400E56239 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		9F45C7E112715D7100E56239 /* KBTAttributedStringCodec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTAttributedStringCodec.h; sourceTree = "<group>"; };
+		9F45C7E212715D7100E56239 /* KBTAttributedStringCodec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTAttributedStringCodec.m; sourceTree = "<group>"; };
 		9F47A1B5122AC6C900285550 /* KBCGeometry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBCGeometry.h; sourceTree = "<group>"; };
 		9F47A1B6122AC6C900285550 /* KBCGeometry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBCGeometry.m; sourceTree = "<group>"; };
 		9F47F0B41260C27B00E5E6BB /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
@@ -254,6 +259,7 @@
 				F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */,
 				9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */,
 				9F47F0B51260C27B00E5E6BB /* CoreData.framework in Frameworks */,
+				9F45C73A1271449400E56239 /* MobileCoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,6 +332,7 @@
 				F5632B0111DD9D1000868F7B /* CoreText.framework */,
 				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
 				9F47F0B41260C27B00E5E6BB /* CoreData.framework */,
+				9F45C7391271449400E56239 /* MobileCoreServices.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -426,6 +433,8 @@
 		9F5CA42C12406ED1009D1A47 /* KobaText */ = {
 			isa = PBXGroup;
 			children = (
+				9F45C7E112715D7100E56239 /* KBTAttributedStringCodec.h */,
+				9F45C7E212715D7100E56239 /* KBTAttributedStringCodec.m */,
 				9F0D0ED812630AB100348E1B /* KBTAttributedStringIntermediate.h */,
 				9F0D0ED912630AB100348E1B /* KBTAttributedStringIntermediate.m */,
 				9F0D11C81263595000348E1B /* KBTFont.h */,
@@ -688,6 +697,7 @@
 				9FAF0C2F126BD52800B58D59 /* NKTNotebookEditViewController.m in Sources */,
 				9F34A32B126C92390067CC61 /* NKTPage.m in Sources */,
 				9F34A32C126C92390067CC61 /* NKTNotebook.m in Sources */,
+				9F45C7E312715D7100E56239 /* KBTAttributedStringCodec.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

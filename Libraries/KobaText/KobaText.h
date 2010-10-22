@@ -3,6 +3,7 @@
 //
 
 #import <CoreText/CoreText.h>
+#import "KBTAttributedStringCodec.h"
 #import "KBTAttributedStringIntermediate.h"
 #import "KBTFont.h"
 #import "KBTFontFamilyDescriptor.h"

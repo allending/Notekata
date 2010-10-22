@@ -72,7 +72,7 @@
 {
     CGRect topRect = firstRect_;
     
-    if (!CGRectEqualToRect(topRect, CGRectNull))
+    if (!CGRectIsNull(topRect))
     {
         topFillView_.frame = topRect;
         topFillView_.hidden = NO;
@@ -84,7 +84,7 @@
     
     CGRect bottomRect = lastRect_;
     
-    if (!CGRectEqualToRect(bottomRect, topRect) && !CGRectEqualToRect(bottomRect, CGRectNull))
+    if (!CGRectEqualToRect(bottomRect, topRect) && !CGRectIsNull(bottomRect))
     {
         bottomFillView_.frame = bottomRect;
         bottomFillView_.hidden = NO;
@@ -94,9 +94,7 @@
         bottomFillView_.hidden = YES;
     }
     
-    if (!CGRectEqualToRect(topRect, CGRectNull) &&
-        !CGRectEqualToRect(bottomRect, CGRectNull) &&
-        CGRectGetMaxY(topRect) < CGRectGetMinY(bottomRect))
+    if (!CGRectIsNull(topRect) && !CGRectIsNull(bottomRect) && CGRectGetMaxY(topRect) < CGRectGetMinY(bottomRect))
     {
         CGRect middleRect = CGRectMake(CGRectGetMinX(bottomRect),
                                        CGRectGetMaxY(topRect),

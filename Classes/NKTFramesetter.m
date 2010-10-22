@@ -304,7 +304,7 @@
     NKTLine *line = [self lineForCaretAtTextPosition:textRange.start];
     CGRect rect = [line rectForTextRange:textRange];
     
-    if (CGRectEqualToRect(rect, CGRectNull) && line.index > 0)
+    if (CGRectIsNull(rect) && line.index > 0)
     {
         line = [self.lines objectAtIndex:line.index - 1];
         rect = [line rectForTextRange:textRange];
@@ -318,7 +318,7 @@
     NKTLine *line = [self lineForCaretAtTextPosition:textRange.end];
     CGRect rect = [line rectForTextRange:textRange];
     
-    if (CGRectEqualToRect(rect, CGRectNull) && line.index > 0)
+    if (CGRectIsNull(rect) && line.index > 0)
     {
         line = [self.lines objectAtIndex:line.index - 1];
         rect = [line rectForTextRange:textRange];
@@ -338,7 +338,7 @@
         NKTLine *line = [self.lines objectAtIndex:lineIndex];
         CGRect rect = [line rectForTextRange:textRange];
         
-        if (!CGRectEqualToRect(rect, CGRectNull))
+        if (!CGRectIsNull(rect))
         {
             rect = CGRectApplyAffineTransform(rect, transform);
             [rects addObject:[NSValue valueWithCGRect:rect]];

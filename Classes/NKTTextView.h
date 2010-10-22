@@ -113,8 +113,10 @@
 #pragma mark Selection
 
 - (void)updateSelectionDisplay;
-
+- (NKTTextRange *)guessedTextRangeAtTextPosition:(NKTTextPosition *)textPosition wordRange:(NKTTextRange **)wordRange;
 - (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;
+- (void)replaceRange:(NKTTextRange *)textRange withText:(NSString *)replacementText notifyInputDelegate:(BOOL)notifyInputDelegate;
+- (void)replaceRange:(NKTTextRange *)textRange withAttributedString:(NSAttributedString *)attributedString notifyInputDelegate:(BOOL)notifyInputDelegate;
 
 #pragma mark Tokenizing
 

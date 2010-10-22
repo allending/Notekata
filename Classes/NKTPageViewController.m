@@ -3,6 +3,7 @@
 //
 
 #import "NKTPageViewController.h"
+#import <MobileCoreServices/UTCoreTypes.h>
 #import "KobaText.h"
 #import "NKTPage.h"
 #import "NKTNotebook.h"
@@ -38,6 +39,7 @@
 @synthesize underlineToggleButton = underlineToggleButton_;
 
 static const CGFloat KeyboardOverlapTolerance = 1.0;
+static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notekata.attributedstringportablerepresentation";
 
 #pragma mark -
 #pragma mark Initializing
@@ -1028,7 +1030,7 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 
 - (void)presentMenu
 {
-    if (!menuEnabledForSelectedTextRange_)
+    if (!menuEnabledForSelectedTextRange_ || menuDisabledForKeyboard_)
     {
         return;
     }
@@ -1046,20 +1048,25 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
         
         CGRect firstRect = [textView_ firstRectForTextRange:selectedTextRange];
         CGRect lastRect = [textView_ lastRectForTextRange:selectedTextRange];
-        CGRect targetRect = CGRectUnion(firstRect, lastRect);
+        CGRect textRangeRect = CGRectUnion(firstRect, lastRect);
         
-        if (CGRectEqualToRect(targetRect, CGRectNull))
+        if (CGRectIsNull(textRangeRect))
         {
             return;
         }
         
-        // Only show menu if the target rect is visible within text view bounds
-        if (!CGRectIntersectsRect(targetRect, textView_.bounds))
+        CGRect textViewBounds = textView_.bounds;
+        // The target rect is the intersection between the text range rect and the text view bounds
+        CGRect targetRect = CGRectIntersection(textRangeRect, textViewBounds);
+        
+        if (CGRectIsNull(targetRect))
         {
             KBCLogDebug(@"target rect is outside of view bounds, returning");
             return;
         }
         
+        // Always present menu pointing with arrow pointing down
+        menuController.arrowDirection = UIMenuControllerArrowDown;
         [menuController setTargetRect:targetRect inView:textView_];
         [menuController setMenuVisible:YES animated:YES];
     }
@@ -1107,6 +1114,9 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     }
 }
 
+#pragma mark -
+#pragma mark Cut/Copy/Paste
+
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
     NKTTextRange *textRange = (NKTTextRange *)textView_.selectedTextRange;
@@ -1119,21 +1129,19 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     {
         return textView_.editing && !textRange.empty;
     }
-    else if (@selector(delete:) == action)
-    {
-        return NO;
-    }
     else if (@selector(paste:) == action)
     {
-        return textView_.editing;
+        UIPasteboard *pasteBoard = [UIPasteboard generalPasteboard];
+        NSArray *supportedPasteboardTypes = [NSArray arrayWithObjects:NotekataAttributedStringDataTypeIdentifier, kUTTypeUTF8PlainText, nil];
+        return textView_.editing && [pasteBoard containsPasteboardTypes:supportedPasteboardTypes];
     }
     else if (@selector(select:) == action)
     {
-        return textRange.empty;
+        return textRange.empty && [textView_ hasText];
     }
     else if (@selector(selectAll:) == action)
     {
-        return textRange.empty;
+        return textRange.empty && [textView_ hasText];
     }
     
     return NO;
@@ -1142,26 +1150,90 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
 - (void)cut:(id)sender
 {
     KBCLogTrace();
+    
+    if (!textView_.editing)
+    {
+        KBCLogWarning(@"Text view is not in editing mode. Ignoring");
+        return;
+    }
+    
+    [self copy:sender];
+    [textView_ replaceRange:(NKTTextRange *)textView_.selectedTextRange withText:@"" notifyInputDelegate:YES];
+    [textView_ updateSelectionDisplay];
+    [textView_ scrollTextRangeToVisible:textView_.selectedTextRange animated:YES];
 }
 
 - (void)copy:(id)sender
 {
     KBCLogTrace();
-}
-
-- (void)delete:(id)sender
-{
-    KBCLogTrace();
+    NKTTextRange *textRange = (NKTTextRange *)textView_.selectedTextRange;
+    NSAttributedString *text = [textView_ text];
+    NSAttributedString *attributedString = [text attributedSubstringFromRange:textRange.nsRange];
+    
+    if ([attributedString length] == 0)
+    {
+        return;
+    }
+    
+    NSData *data = [KBTAttributedStringCodec dataWithAttributedString:attributedString];
+    NSDictionary *representations = [NSDictionary dictionaryWithObjectsAndKeys:
+        data , NotekataAttributedStringDataTypeIdentifier,
+        [attributedString string], kUTTypeUTF8PlainText,
+        nil];
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.items = [NSArray arrayWithObject:representations];
 }
 
 - (void)paste:(id)sender
 {
     KBCLogTrace();
+    
+    if (!textView_.editing)
+    {
+        KBCLogWarning(@"Text view is not in editing mode. Ignoring");
+        return;
+    }
+    
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    NSArray *pasteboardTypes = [pasteboard pasteboardTypes];
+    
+    // Handle internally coded attributed string
+    if ([pasteboardTypes containsObject:NotekataAttributedStringDataTypeIdentifier])
+    {
+        NSData *data = [pasteboard dataForPasteboardType:NotekataAttributedStringDataTypeIdentifier];
+        NSAttributedString *attributedString = [KBTAttributedStringCodec attributedStringWithData:data];
+        [textView_ replaceRange:(NKTTextRange *)textView_.selectedTextRange withAttributedString:attributedString notifyInputDelegate:YES];
+        [textView_ updateSelectionDisplay];
+        [textView_ scrollTextRangeToVisible:textView_.selectedTextRange animated:YES];
+    }
+    // Handle plain text
+    else if ([pasteboardTypes containsObject:(id)kUTTypeUTF8PlainText])
+    {
+        NSString *string = [pasteboard valueForPasteboardType:(id)kUTTypeUTF8PlainText];
+        [textView_ replaceRange:(NKTTextRange *)textView_.selectedTextRange withText:string notifyInputDelegate:YES];
+        [textView_ updateSelectionDisplay];
+        [textView_ scrollTextRangeToVisible:textView_.selectedTextRange animated:YES];        
+    }
+    else
+    {
+        KBCLogWarning(@"Pasting unsupported type. Ignoring");
+    }
 }
 
 - (void)select:(id)sender
 {
     KBCLogTrace();
+    NKTTextRange *textRange = [textView_ guessedTextRangeAtTextPosition:(NKTTextPosition *)textView_.selectedTextRange.start wordRange:NULL];
+    
+    if (textRange == nil)
+    {
+        return;
+    }
+    
+    [textView_ setSelectedTextRange:textRange notifyInputDelegate:YES];
+    [textView_ updateSelectionDisplay];
+    menuEnabledForSelectedTextRange_ = YES;
+    [self presentMenu];
 }
 
 - (void)selectAll:(id)sender
@@ -1172,6 +1244,8 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     NKTTextRange *textRange = [NKTTextRange textRangeWithTextPosition:start textPosition:end];
     [textView_ setSelectedTextRange:textRange notifyInputDelegate:YES];
     [textView_ updateSelectionDisplay];
+    menuEnabledForSelectedTextRange_ = YES;
+    [self presentMenu];
 }
 
 #pragma mark -
@@ -1189,14 +1263,30 @@ static const CGFloat KeyboardOverlapTolerance = 1.0;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (BOOL)keyboardFrameFromNotificationOverlapsTextView:(NSNotification *)notification
+{
+    CGRect textViewFrame = textView_.frame;
+    CGRect keyboardFrame = [self keyboardFrameFromNotification:notification];
+    CGFloat heightOverlap = CGRectGetMaxY(textViewFrame) - CGRectGetMinY(keyboardFrame);
+    return heightOverlap > KeyboardOverlapTolerance;
+}
+
 - (void)keyboardWillShow:(NSNotification *)notification
 {
     [self growTextViewToAccomodateKeyboardFrameFromNotification:notification];
+
+    if ([self keyboardFrameFromNotificationOverlapsTextView:notification])
+    {
+        menuDisabledForKeyboard_ = YES;
+        [self updateMenuForTemporaryViewChangesOccuring];
+    }
 }
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
     [self shrinkTextViewToAccomodateKeyboardFrameFromNotification:notification];
+    menuDisabledForKeyboard_ = NO;
+    [self updateMenuForTemporaryViewChangesEnded];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
