@@ -5,20 +5,20 @@
 #import "NKTPageViewController.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 #import "KobaText.h"
-#import "NKTPage.h"
-#import "NKTNotebook.h"
+#import "NKTNotebook+CustomAdditions.h"
+#import "NKTPage+CustomAdditions.h"
 
 @implementation NKTPageViewController
 
 @synthesize page = page_;
-@synthesize delegate = delegate_;
 
+@synthesize delegate = delegate_;
 @synthesize fontPopoverController = fontPopoverController_;
 @synthesize fontPickerViewController = fontPickerViewController_;
 
 @synthesize textView = textView_;
-@synthesize creamPaperBackgroundView = creamPaperBackgroundView_;
-@synthesize plainPaperBackgroundView = plainPaperBackgroundView_;
+@synthesize creamBackgroundView = creamBackgroundView_;
+@synthesize plainBackgroundView = plainBackgroundView_;
 @synthesize rightEdgeView = rightEdgeView_;
 @synthesize leftEdgeView = leftEdgeView_;
 @synthesize edgeShadowView = leftEdgeShadowView_;
@@ -38,7 +38,7 @@
 @synthesize underlineToggleButton = underlineToggleButton_;
 
 static const CGFloat KeyboardOverlapTolerance = 1.0;
-static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notekata.attributedstringportablerepresentation";
+static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notekata.codedattributedstringdata";
 
 #pragma mark -
 #pragma mark Memory
@@ -52,8 +52,8 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     [fontPickerViewController_ release];
     
     [textView_ release];
-    [creamPaperBackgroundView_ release];
-    [plainPaperBackgroundView_ release];
+    [creamBackgroundView_ release];
+    [plainBackgroundView_ release];
     [rightEdgeView_ release];
     [leftEdgeView_ release];
     [leftEdgeShadowView_ release];
@@ -67,7 +67,6 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     [boldItem_ release];
     [italicItem_ release];
     [underlineItem_ release];
-    
     [titleLabel_ release];
     [boldToggleButton_ release];
     [italicToggleButton_ release];
@@ -93,34 +92,35 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 {
     [super viewDidLoad];
     
+    // Toolbar
     toolbar_.barStyle = UIBarStyleBlack;
-        
-    // Configure background views
-    creamPaperBackgroundView_ = [[UIView alloc] init];
-    creamPaperBackgroundView_.opaque = YES;
-    creamPaperBackgroundView_.userInteractionEnabled = NO;
-    creamPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamBackgroundPattern.png"]];
-    plainPaperBackgroundView_ = [[UIView alloc] init];
-    plainPaperBackgroundView_.opaque = YES;
-    plainPaperBackgroundView_.userInteractionEnabled = NO;
-    plainPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainBackgroundPattern.png"]];
     
-    // Configure right edge view
+    // Background views
+    creamBackgroundView_ = [[UIView alloc] init];
+    creamBackgroundView_.opaque = YES;
+    creamBackgroundView_.userInteractionEnabled = NO;
+    creamBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamBackgroundPattern.png"]];
+    plainBackgroundView_ = [[UIView alloc] init];
+    plainBackgroundView_.opaque = YES;
+    plainBackgroundView_.userInteractionEnabled = NO;
+    plainBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainBackgroundPattern.png"]];
+    
+    // Right edge view
     rightEdgeView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PageRightEdgeBackgroundPattern.png"]];
     
-    // Configure left edge view
+    // Left edge view
     UIImage *leftEdgeImage = [[UIImage imageNamed:@"PageLeftEdgeCap.png"] stretchableImageWithLeftCapWidth:6.0 topCapHeight:3.0];
     leftEdgeView_ = [[UIImageView alloc] initWithImage:leftEdgeImage];
     leftEdgeView_.userInteractionEnabled = NO;
     leftEdgeView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     
-    // Configure left edge shadow view
+    // Left edge shadow view
     leftEdgeShadowView_ = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"PageLeftEdgeShadow.png"]];
     leftEdgeShadowView_.userInteractionEnabled = NO;
     leftEdgeShadowView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     leftEdgeShadowView_.frame = CGRectMake(5.0, 0.0, 10.0, 0.0);
     
-    // Configure frozen overlay view
+    // Frozen overlay view
     frozenOverlayView_ = [[UIView alloc] initWithFrame:self.view.bounds];
     frozenOverlayView_.backgroundColor = [UIColor blackColor];
     frozenOverlayView_.userInteractionEnabled = NO;
@@ -128,7 +128,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     frozenOverlayView_.alpha = 0.0;
     [self.view addSubview:frozenOverlayView_];
     
-    // Configure bold item
+    // Bold item
     boldToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
     [boldToggleButton_ addTarget:self action:@selector(boldItemTapped:) forControlEvents:UIControlEventValueChanged];
     [boldToggleButton_ setTitle:@"B" forState:UIControlStateNormal];
@@ -136,7 +136,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     boldToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
     boldItem_.customView = boldToggleButton_;
 
-    // Configure italic item
+    // Italic item
     italicToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
     [italicToggleButton_ addTarget:self action:@selector(italicItemTapped:) forControlEvents:UIControlEventValueChanged];
     [italicToggleButton_ setTitle:@"I" forState:UIControlStateNormal];
@@ -144,7 +144,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     italicToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
     italicItem_.customView = italicToggleButton_;
     
-    // Configure underline item
+    // Underline item
     underlineToggleButton_ = [[KUIToggleButton alloc] initWithStyle:KUIToggleButtonStyleTextDark];
     [underlineToggleButton_ addTarget:self action:@selector(underlineItemTapped:) forControlEvents:UIControlEventValueChanged];
     [underlineToggleButton_ setTitle:@"U" forState:UIControlStateNormal];
@@ -152,7 +152,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     underlineToggleButton_.frame = CGRectMake(0.0, 0.0, 40.0, 40.0);
     underlineItem_.customView = underlineToggleButton_;
     
-    // Create the font picker view
+    // Font picker view controller and popover
     fontPickerViewController_ = [[NKTFontPickerViewController alloc] init];
     fontPickerViewController_.delegate = self;
     fontPickerViewController_.selectedFontFamilyName = @"Helvetica Neue";
@@ -160,16 +160,17 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     fontPopoverController_ = [[UIPopoverController alloc] initWithContentViewController:fontPickerViewController_];
     fontPopoverController_.popoverContentSize = CGSizeMake(320.0, 400.0);
     
-    // Set up the text view
+    // Text view
     textView_.delegate = self;
     
+    // Initial view configuration
     if (page_ != nil)
     {
-        [self configureForNonNilPageAnimated:NO];
+        [self configureViewsForNonNilPageAnimated:NO];
     }
     else
     {
-        [self configureForNilPageAnimated:NO];
+        [self configureViewsForNilPageAnimated:NO];
     }
 }
 
@@ -180,8 +181,8 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     self.fontPopoverController = nil;
     
     self.textView = nil;
-    self.creamPaperBackgroundView = nil;
-    self.plainPaperBackgroundView = nil;
+    self.creamBackgroundView = nil;
+    self.plainBackgroundView = nil;
     self.rightEdgeView = nil;
     self.leftEdgeView = nil;
     self.edgeShadowView = nil;
@@ -204,13 +205,14 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [self updatePageViews];
+    [self updatePageDependentViews];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
     [self savePendingChanges];
+    // PENDING: document why this is here
     menuEnabledForSelectedTextRange_ = NO;
 }
 
@@ -218,7 +220,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 {
     [super viewDidDisappear:animated];
     // The controller could have asked for first responder status when the text view recognized
-    // gestures, so resign first responder status whenever the view dissapears?
+    // gestures, so resign first responder status whenever the view dissapears
     [self resignFirstResponder];
 }
 
@@ -256,7 +258,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
         frame.size.width = self.view.bounds.size.width - 15.0;
         textView_.frame = frame;
         
-        // Remove adornment views
+        // Remove edge views
         [leftEdgeView_ removeFromSuperview];
         [leftEdgeShadowView_ removeFromSuperview];
     }
@@ -283,20 +285,15 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     // gestures, so resign first responder status whenever the view dissapears?
     [self resignFirstResponder];
     
-    // PENDING: THIS SHOULD SAVE UNSAVED CHANGES
-    [self savePendingChanges];
-    
     if ([fontPopoverController_ isPopoverVisible])
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
     
-    // PENDING: figure this out .. save or not?
-    // PENDING: store a flag so this does not call delegate
-    // NOTE: this causes a save to occur on the previous page!
-    //[textView_ resignFirstResponder];
-    //[self savePendingChanges];
+    // Make sure to save pending changes to current page before changing
+    [self savePendingChanges];
     
+    // Clean up
     if (page_ != nil)
     {
         [page_.notebook removeObserver:self forKeyPath:@"title"];
@@ -306,23 +303,23 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     [page_ release];
     page_ = [page retain];
     
-    // When the page is set to nil, the page view controller goes into a special state
+    // A special view configuration is shown if the page is nil
     if (page_ != nil)
     {
-        [self configureForNonNilPageAnimated:NO];
-        // Apply the style of the notebook the page belongs to
-        [self applyPageStyle];
-        [self updatePageViews];
+        // Need to know when certain notebook properties change
         [page_.notebook addObserver:self forKeyPath:@"title" options:0 context:nil];
         [page_.notebook addObserver:self forKeyPath:@"notebookStyle" options:0 context:nil];
+        
+        [self configureViewsForNonNilPageAnimated:NO];
+        [self applyNotebookStyle];
+        [self updatePageDependentViews];
     }
     else
     {
-        [self configureForNilPageAnimated:NO];
+        [self configureViewsForNilPageAnimated:NO];
     }
 }
 
-// PENDING: this should be unnecessary
 - (void)savePendingChanges
 {
     if (page_ == nil)
@@ -331,8 +328,8 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     }
     
     // PENDING: store a dirty flag to avoid needless saving
-    // Extract text of the page from the text view's text and save the page
-    NSAttributedString *text = textView_.text;    
+    // Get text of the page from the text view and save to page
+    NSAttributedString *text = textView_.text;
     page_.textString = [text string];
     page_.textStyleString = [KBTAttributedStringCodec styleStringForAttributedString:text];
     
@@ -358,159 +355,9 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
         }
         else if ([keyPath isEqualToString:@"notebookStyle"])
         {
-            [self applyPageStyle];
+            [self applyNotebookStyle];
         }
     }
-}
-
-#pragma mark -
-#pragma mark Styles
-
-- (void)applyPageStyle
-{
-    if (page_ == nil)
-    {
-        return;
-    }
-    
-    NSUInteger notebookStyle = [page_.notebook.notebookStyle unsignedIntegerValue];
-    
-    switch (notebookStyle)
-    {
-        case NKTPageStylePlain:
-            self.textView.backgroundView = plainPaperBackgroundView_;
-            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
-            self.textView.horizontalRulesEnabled = NO;
-            self.textView.verticalMarginEnabled = NO;
-            break;
-            
-        case NKTPageStyleCollegeRuled:
-            self.textView.backgroundView = plainPaperBackgroundView_;
-            self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
-            self.textView.horizontalRulesEnabled = YES;
-            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.75 blue:0.9 alpha:0.5];
-            self.textView.verticalMarginEnabled = YES;
-            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.45 blue:0.49 alpha:0.5];
-            self.textView.verticalMarginInset = 60.0;
-            break;
-            
-        case NKTPageStyleElegant:
-            self.textView.backgroundView = creamPaperBackgroundView_;
-            self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
-            self.textView.horizontalRulesEnabled = YES;
-            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:0.5];
-            self.textView.verticalMarginEnabled = YES;
-            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.5 blue:0.49 alpha:0.5];
-            self.textView.verticalMarginInset = 60.0;
-            break;
-            
-        default:
-            KBCLogWarning(@"unknown page style, ignoring");
-            break;
-    }
-}
-
-#pragma mark -
-#pragma mark Freezing
-
-- (void)freeze
-{
-    if (frozen_)
-    {
-        return;
-    }
-    
-    frozen_ = YES;
-    [UIView beginAnimations:@"FreezeView" context:nil];
-    [UIView setAnimationBeginsFromCurrentState:YES];
-    frozenOverlayView_.alpha = 0.37;
-    [UIView commitAnimations];
-    self.view.userInteractionEnabled = NO;
-    self.toolbar.userInteractionEnabled = NO;
-}
-
-- (void)unfreeze
-{
-    if (!frozen_)
-    {
-        return;
-    }
-    
-    frozen_ = NO;
-    [UIView beginAnimations:@"UnfreezeView" context:nil];
-    [UIView setAnimationBeginsFromCurrentState:YES];
-    frozenOverlayView_.alpha = 0.0;
-    [UIView commitAnimations];
-    self.view.userInteractionEnabled = YES;
-    self.toolbar.userInteractionEnabled = YES;
-}
-
-#pragma mark -
-#pragma mark Navigation
-
-- (void)dismissNotebookPopoverAnimated
-{
-    if (notebookPopoverController_.popoverVisible)
-    {
-        [notebookPopoverController_ dismissPopoverAnimated:YES];
-    }
-}
-
-- (void)dismissNotebookPopoverAnimated:(BOOL)animated
-{
-    if (notebookPopoverController_.popoverVisible)
-    {
-        [notebookPopoverController_ dismissPopoverAnimated:animated];
-    }
-}
-
-#pragma mark -
-#pragma mark Split View Controller
-
-- (void)splitViewController:(UISplitViewController*)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem*)barButtonItem forPopoverController:(UIPopoverController*)pc
-{
-    notebookPopoverController_ = pc;
-    [notebookPopoverController_ setDelegate:self];
-    [self updateToolbarAnimated:NO];
-}
-
-- (void)splitViewController:(UISplitViewController*)svc willShowViewController:(UIViewController *)aViewController invalidatingBarButtonItem:(UIBarButtonItem *)button
-{
-    notebookPopoverController_ = nil;
-    [self updateToolbarAnimated:NO];
-}
-
-#pragma mark -
-#pragma mark Notebook Popover Controller
-
-- (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
-{
-    if (popoverController == notebookPopoverController_)
-    {
-        // PENDING: this is kinda leaky ... maybe ask delegate?
-        // If the controller is frozen, then we must not dismiss the popover, or there might be no
-        // way to unfreeze the controller
-        return !frozen_;
-    }
-    
-    return YES;
-}
-
-#pragma mark -
-#pragma mark Font Picker View Controller
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontFamilyName:(NSString *)fontFamilyName
-{
-    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-    [self updateTextEditingItems];
-}
-
-- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontSize:(CGFloat)fontSize
-{
-    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontSizeOfAttributes:)];
-    textView_.inputTextAttributes = [self currentCoreTextAttributes];
-    [self updateTextEditingItems];
 }
 
 #pragma mark -
@@ -624,6 +471,104 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     }
 }
 
+#pragma mark -
+#pragma mark Freezing
+
+- (void)freeze
+{
+    if (frozen_)
+    {
+        return;
+    }
+    
+    frozen_ = YES;
+    [UIView beginAnimations:@"FreezeView" context:nil];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    frozenOverlayView_.alpha = 0.37;
+    [UIView commitAnimations];
+    self.view.userInteractionEnabled = NO;
+    self.toolbar.userInteractionEnabled = NO;
+}
+
+- (void)unfreeze
+{
+    if (!frozen_)
+    {
+        return;
+    }
+    
+    frozen_ = NO;
+    [UIView beginAnimations:@"UnfreezeView" context:nil];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    frozenOverlayView_.alpha = 0.0;
+    [UIView commitAnimations];
+    self.view.userInteractionEnabled = YES;
+    self.toolbar.userInteractionEnabled = YES;
+}
+
+#pragma mark -
+#pragma mark Notebook Popover
+
+- (void)dismissNotebookPopoverAnimated:(BOOL)animated
+{
+    if (notebookPopoverController_.popoverVisible)
+    {
+        [notebookPopoverController_ dismissPopoverAnimated:animated];
+    }
+}
+
+#pragma mark -
+#pragma mark Split View Controller Delegate
+
+- (void)splitViewController:(UISplitViewController*)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem*)barButtonItem forPopoverController:(UIPopoverController*)pc
+{
+    notebookPopoverController_ = pc;
+    [notebookPopoverController_ setDelegate:self];
+    [self updateToolbarAnimated:NO];
+}
+
+- (void)splitViewController:(UISplitViewController*)svc willShowViewController:(UIViewController *)aViewController invalidatingBarButtonItem:(UIBarButtonItem *)button
+{
+    notebookPopoverController_ = nil;
+    [self updateToolbarAnimated:NO];
+}
+
+#pragma mark -
+#pragma mark Notebook Popover Controller Delegate
+
+- (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
+{
+    if (popoverController == notebookPopoverController_)
+    {
+        // PENDING: this is kinda leaky ... maybe ask delegate?
+        // If the controller is frozen, then we must not dismiss the popover, or there might be no
+        // way to unfreeze the controller
+        return !frozen_;
+    }
+    
+    return YES;
+}
+
+#pragma mark -
+#pragma mark Font Picker View Controller Delegate
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontFamilyName:(NSString *)fontFamilyName
+{
+    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontFamilyNameOfAttributes:)];
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+    [self updateTextEditingItems];
+}
+
+- (void)fontPickerViewController:(NKTFontPickerViewController *)fontPickerViewController didSelectFontSize:(CGFloat)fontSize
+{
+    [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesBySettingFontSizeOfAttributes:)];
+    textView_.inputTextAttributes = [self currentCoreTextAttributes];
+    [self updateTextEditingItems];
+}
+
+#pragma mark -
+#pragma mark Mail Compose View Controller Delegate
+
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error 
 {
     [self dismissModalViewControllerAnimated:YES];
@@ -632,7 +577,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 #pragma mark -
 #pragma mark Updating Views
 
-- (void)configureForNonNilPageAnimated:(BOOL)animated
+- (void)configureViewsForNonNilPageAnimated:(BOOL)animated
 {
     textView_.hidden = NO;
     textView_.userInteractionEnabled = YES;
@@ -646,7 +591,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     [self updateToolbarAnimated:animated];
 }
 
-- (void)configureForNilPageAnimated:(BOOL)animated
+- (void)configureViewsForNilPageAnimated:(BOOL)animated
 {
     textView_.text = nil;
     textView_.hidden = YES;
@@ -660,6 +605,50 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     bounds.size.width = 300.0;
     titleLabel_.bounds = bounds;
     [self updateToolbarAnimated:animated];
+}
+
+- (void)applyNotebookStyle
+{
+    if (page_ == nil)
+    {
+        return;
+    }
+    
+    NSUInteger notebookStyle = [page_.notebook.notebookStyle unsignedIntegerValue];
+    
+    switch (notebookStyle)
+    {
+        case NKTNotebookStylePlain:
+            self.textView.backgroundView = plainBackgroundView_;
+            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = NO;
+            self.textView.verticalMarginEnabled = NO;
+            break;
+            
+        case NKTNotebookStyleCollegeRuled:
+            self.textView.backgroundView = plainBackgroundView_;
+            self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = YES;
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.75 blue:0.9 alpha:0.5];
+            self.textView.verticalMarginEnabled = YES;
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.45 blue:0.49 alpha:0.5];
+            self.textView.verticalMarginInset = 60.0;
+            break;
+            
+        case NKTNotebookStyleElegant:
+            self.textView.backgroundView = creamBackgroundView_;
+            self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
+            self.textView.horizontalRulesEnabled = YES;
+            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:0.5];
+            self.textView.verticalMarginEnabled = YES;
+            self.textView.verticalMarginColor = [UIColor colorWithRed:0.8 green:0.5 blue:0.49 alpha:0.5];
+            self.textView.verticalMarginInset = 60.0;
+            break;
+            
+        default:
+            KBCLogWarning(@"unknown page style, ignoring");
+            break;
+    }
 }
 
 - (void)updateToolbarAnimated:(BOOL)animated
@@ -691,7 +680,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     }
 }
 
-- (void)updatePageViews
+- (void)updatePageDependentViews
 {
     if (page_ == nil)
     {
@@ -787,7 +776,8 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     return [styleDescriptor coreTextAttributes];
 }
 
-// These methods are meant to be used as callbacks by the NKTTextView in its -styleTextRange:withTarget:selector: method.
+// These methods are meant to be used as callbacks by the text view in its
+// -styleTextRange:withTarget:selector: method.
 
 - (NSDictionary *)attributesByAddingBoldTraitToAttributes:(NSDictionary *)attributes
 {
@@ -846,7 +836,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 }
 
 #pragma mark -
-#pragma mark Text View
+#pragma mark Text View Delegate
 
 - (NSDictionary *)defaultCoreTextAttributes
 {
@@ -989,7 +979,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 }
 
 #pragma mark -
-#pragma mark Scroll View
+#pragma mark Scroll View Delegate
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
@@ -1145,7 +1135,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     else if (@selector(paste:) == action)
     {
         UIPasteboard *pasteBoard = [UIPasteboard generalPasteboard];
-        NSArray *supportedPasteboardTypes = [NSArray arrayWithObjects:NotekataAttributedStringDataTypeIdentifier, kUTTypeUTF8PlainText, nil];
+        NSArray *supportedPasteboardTypes = [NSArray arrayWithObjects:CodedAttributedStringDataTypeIdentifier, kUTTypeUTF8PlainText, nil];
         return textView_.editing && [pasteBoard containsPasteboardTypes:supportedPasteboardTypes];
     }
     else if (@selector(select:) == action)
@@ -1187,7 +1177,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     
     NSData *data = [KBTAttributedStringCodec dataWithAttributedString:attributedString];
     NSDictionary *representations = [NSDictionary dictionaryWithObjectsAndKeys:
-        data , NotekataAttributedStringDataTypeIdentifier,
+        data , CodedAttributedStringDataTypeIdentifier,
         [attributedString string], kUTTypeUTF8PlainText,
         nil];
     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
@@ -1206,9 +1196,9 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     NSArray *pasteboardTypes = [pasteboard pasteboardTypes];
     
     // Handle internally coded attributed string
-    if ([pasteboardTypes containsObject:NotekataAttributedStringDataTypeIdentifier])
+    if ([pasteboardTypes containsObject:CodedAttributedStringDataTypeIdentifier])
     {
-        NSData *data = [pasteboard dataForPasteboardType:NotekataAttributedStringDataTypeIdentifier];
+        NSData *data = [pasteboard dataForPasteboardType:CodedAttributedStringDataTypeIdentifier];
         NSAttributedString *attributedString = [KBTAttributedStringCodec attributedStringWithData:data];
         [textView_ replaceRange:(NKTTextRange *)textView_.selectedTextRange withAttributedString:attributedString notifyInputDelegate:YES];
         [textView_ updateSelectionDisplay];

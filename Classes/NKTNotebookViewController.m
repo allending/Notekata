@@ -65,6 +65,7 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     pageAddItem_ = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(pageAddToolbarItemTapped:)];
     self.toolbarItems = [NSArray arrayWithObjects:pageAddItem_, nil];
     
+    // Page view controller
     pageViewController_.delegate = self;
 }
 
@@ -250,13 +251,16 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
 - (void)addPageAndBeginEditing
 {
     NKTPage *page = [self addPageToNotebook];
-    self.selectedPage = page;
-    // Select and scroll to added page
+    
+    // Scroll to added page
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:page];
     [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
-    // Start editing immediately
-    [pageViewController_ savePendingChanges];
+    
+    // Select added page
+    self.selectedPage = page;
     pageViewController_.page = page;
+    
+    // Start editing immediately
     [pageViewController_ dismissNotebookPopoverAnimated:YES];
     [pageViewController_.textView becomeFirstResponder];
 }

@@ -302,15 +302,15 @@ static const NSUInteger NotebookStyleSection = 1;
 {
     switch (indexPath.row)
     {
-        case NKTPageStyleElegant:
+        case NKTNotebookStyleElegant:
             cell.textLabel.text = @"Elegant";
             break;
             
-        case NKTPageStyleCollegeRuled:
+        case NKTNotebookStyleCollegeRuled:
             cell.textLabel.text = @"College Ruled";
             break;
             
-        case NKTPageStylePlain:
+        case NKTNotebookStylePlain:
             cell.textLabel.text = @"Plain";
             break;
             

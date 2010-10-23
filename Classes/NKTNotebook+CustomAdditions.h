@@ -5,6 +5,13 @@
 #import "KobaUI.h"
 #import "NKTNotebook.h"
 
+typedef enum
+{
+    NKTNotebookStyleElegant = 0,
+    NKTNotebookStyleCollegeRuled = 1,
+    NKTNotebookStylePlain = 2,
+} NKTNotebookStyle;
+
 @interface NKTNotebook(CustomAdditions)
 
 #pragma mark Initializing
