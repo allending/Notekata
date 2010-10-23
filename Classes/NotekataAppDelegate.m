@@ -3,8 +3,8 @@
 //
 
 #import "NotekataAppDelegate.h"
-#import "NKTNotebook.h"
-#import "NKTPage.h"
+#import "NKTNotebook+CustomAdditions.h"
+#import "NKTPage+CustomAdditions.h"
 #import "NKTPageViewController.h"
 #import "NKTRootViewController.h"
 
@@ -15,6 +15,10 @@
 @synthesize pageViewController = pageViewController_;
 
 @synthesize window = window_;
+
+static NSString *StorePath = @"Notekata.sqlite";
+static NSString *ModelResource = @"Notekata";
+static NSString *ModelType = @"mom";
 
 #pragma mark -
 #pragma mark Memory
@@ -31,10 +35,6 @@
     
     [window_ release];
     [super dealloc];
-}
-
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
-{
 }
 
 #pragma mark -
@@ -75,7 +75,6 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-    // Save changes in the application's managed object context before the application terminates
     if (managedObjectContext_ != nil)
     {
         NSError *error = nil;
@@ -93,17 +92,9 @@
 
 - (void)primeNotebookData
 {
-    // Fetch at least one notebooks
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
-    [fetchRequest setEntity:entity];
-    // We only care that at least one notebook exists
-    [fetchRequest setFetchLimit:1];
-    
+    // Check to make sure a notebook exists
     NSError *error = nil;
-    NSArray *notebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
-    [fetchRequest release];
-    
+    NSArray *notebooks = [NKTNotebook fetchNotebooksInManagedObjectContext:managedObjectContext_ fetchLimit:1 error:&error];
     if (error != nil)
     {
         // PENDING: fix and log
@@ -114,28 +105,7 @@
     // Create default notebook if none exist
     if ([notebooks count] == 0)
     {
-        // Create notebook
-        NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
-        notebook.notebookStyle = [NSNumber numberWithInteger:0];
-        // PENDING: localize
-        notebook.title = @"My Notebook";
-        
-        // Generate random uuid as the notebook id
-        CFUUIDRef uuid = CFUUIDCreate(NULL);
-        CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
-        notebook.notebookId = (NSString *)uuidString;
-        CFRelease(uuid);
-        CFRelease(uuidString);
-        
-        // Default display order
-        notebook.displayOrder = [NSNumber numberWithUnsignedInt:0];
-        // Create first page
-        NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:managedObjectContext_];
-        page.pageNumber = [NSNumber numberWithInteger:0];
-        page.textString = @"";
-        page.textStyleString = @"";
-        [notebook addPagesObject:page];
-        
+        [NKTNotebook insertNotebookInManagedObjectContext:managedObjectContext_];
         error = nil;
         if (![managedObjectContext_ save:&error])
         {
@@ -182,7 +152,7 @@
         return managedObjectModel_;
     }
     
-    NSString *modelPath = [[NSBundle mainBundle] pathForResource:@"Notekata" ofType:@"mom"];
+    NSString *modelPath = [[NSBundle mainBundle] pathForResource:ModelResource ofType:ModelType];
     NSURL *modelURL = [NSURL fileURLWithPath:modelPath];
     managedObjectModel_ = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];    
     return managedObjectModel_;
@@ -195,11 +165,11 @@
         return persistentStoreCoordinator_;
     }
     
-    NSString *storePath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent:@"Notekata.sqlite"];
+    NSString *storePath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent:StorePath];
     NSURL *storeURL = [NSURL fileURLWithPath:storePath];
     persistentStoreCoordinator_ = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    NSError *error = nil;
     
+    NSError *error = nil;
     if (![persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
     {
         /*
@@ -232,6 +202,7 @@
          
          */
         
+        // PENDING: fix and log
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }

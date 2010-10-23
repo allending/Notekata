@@ -29,3 +29,11 @@ NSRange KBCRangeFromPortableRepresentation(NSDictionary *portableRepresentation)
     NSUInteger length = [[portableRepresentation objectForKey:LengthKey] unsignedIntegerValue];
     return NSMakeRange(location, length);
 }
+
+NSString *KBCUUIDString(void)
+{
+    CFUUIDRef uuid = CFUUIDCreate(NULL);
+    NSString *uuidString = (NSString *)CFUUIDCreateString(NULL, uuid);
+    CFRelease(uuid);
+    return [uuidString autorelease];
+}

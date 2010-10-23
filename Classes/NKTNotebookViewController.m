@@ -3,8 +3,8 @@
 //
 
 #import "NKTNotebookViewController.h"
-#import "NKTNotebook.h"
-#import "NKTPage.h"
+#import "NKTNotebook+CustomAdditions.h"
+#import "NKTPage+CustomAdditions.h"
 
 @interface NKTNotebookViewController()
 
@@ -20,11 +20,10 @@
 @synthesize pageViewController = pageViewController_;
 
 @synthesize titleLabel = titleLabel_;
-@synthesize addPageItem = addPageItem_;
-@synthesize addPageActionSheet = addPageActionSheet_;
+@synthesize pageAddItem = pageAddItem_;
+@synthesize pageAddActionSheet = pageAddActionSheet_;
 
-static NSString *SelectedPageNumbersDictionaryKey = @"SelectedPageNumbersDictionary";
-static const NSUInteger AddPageButtonIndex = 0;
+static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
 
 #pragma mark -
 #pragma mark Memory
@@ -38,14 +37,9 @@ static const NSUInteger AddPageButtonIndex = 0;
     [pageViewController_ release];
     
     [titleLabel_ release];
-    [addPageItem_ release];
-    [addPageActionSheet_ release];
+    [pageAddItem_ release];
+    [pageAddActionSheet_ release];
     [super dealloc];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
 }
 
 #pragma mark -
@@ -56,10 +50,9 @@ static const NSUInteger AddPageButtonIndex = 0;
     [super viewDidLoad];
     self.clearsSelectionOnViewWillAppear = NO;
     self.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
-    
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
-    // Create custom navigation title view
+    // Custom navigation title
     titleLabel_ = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
     titleLabel_.backgroundColor = [UIColor clearColor];
     titleLabel_.textAlignment = UITextAlignmentCenter;
@@ -67,10 +60,10 @@ static const NSUInteger AddPageButtonIndex = 0;
     titleLabel_.textColor = [UIColor whiteColor];
     titleLabel_.text = notebook_.title;
     self.navigationItem.titleView = titleLabel_;
-
-    // Create toolbar items
-    addPageItem_ = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(handleAddPageItemTapped:)];
-    self.toolbarItems = [NSArray arrayWithObjects:addPageItem_, nil];
+    
+    // Toolbar items
+    pageAddItem_ = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(pageAddToolbarItemTapped:)];
+    self.toolbarItems = [NSArray arrayWithObjects:pageAddItem_, nil];
     
     pageViewController_.delegate = self;
 }
@@ -79,14 +72,13 @@ static const NSUInteger AddPageButtonIndex = 0;
 {
     [super viewDidUnload];
     self.titleLabel = nil;
-    self.addPageItem = nil;
-    self.addPageActionSheet = nil;
+    self.pageAddItem = nil;
+    self.pageAddActionSheet = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
     // There seems to be a bug in UIKit where the navigation controller navigation bar and toolbar
     // may not respect the set styles after rotation animations. As a workaround, we force the style.    
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
@@ -100,7 +92,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     if (selectedPage_ != nil)
     {
         NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
-        [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
+        [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionTop];
     }
 }
 
@@ -108,8 +100,7 @@ static const NSUInteger AddPageButtonIndex = 0;
 {
     [super viewWillDisappear:animated];
     
-    // HACK: a bit of a hack to figure out when we are are navigating away from this view
-    // controller
+    // HACK: figure out when we are are navigating away from this view controller
     if ([self.navigationController.viewControllers indexOfObject:self] == NSNotFound)
     {
         [pageViewController_.textView resignFirstResponder];
@@ -118,7 +109,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     // Save last selected page of notebook
     if (notebook_ != nil && selectedPage_ != nil) 
     {
-        NSMutableDictionary *dictionary = [[[NSUserDefaults standardUserDefaults] objectForKey:SelectedPageNumbersDictionaryKey] mutableCopy];
+        NSMutableDictionary *dictionary = [[[NSUserDefaults standardUserDefaults] objectForKey:LastViewedPageNumbersKey] mutableCopy];
         
         if (dictionary == nil)
         {
@@ -126,7 +117,7 @@ static const NSUInteger AddPageButtonIndex = 0;
         }
         
         [dictionary setObject:selectedPage_.pageNumber forKey:notebook_.notebookId];
-        [[NSUserDefaults standardUserDefaults] setObject:dictionary forKey:SelectedPageNumbersDictionaryKey];
+        [[NSUserDefaults standardUserDefaults] setObject:dictionary forKey:LastViewedPageNumbersKey];
         [dictionary release];
     }
 }
@@ -138,14 +129,9 @@ static const NSUInteger AddPageButtonIndex = 0;
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    // Stop editing when rotation occurs so the page view controller is always unfrozen after rotation
     [self setEditing:NO animated:NO];
-    // Dismiss open modals and sheets
-    [addPageActionSheet_ dismissWithClickedButtonIndex:addPageActionSheet_.cancelButtonIndex animated:NO];
+    [pageAddActionSheet_ dismissWithClickedButtonIndex:pageAddActionSheet_.cancelButtonIndex animated:NO];
 }
-
-#pragma mark -
-#pragma mark Editing
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
 {
@@ -161,9 +147,8 @@ static const NSUInteger AddPageButtonIndex = 0;
     }
     else
     {
-        // PENDING: find Core Animation bug workaround
-        [self setToolbarItems:[NSArray arrayWithObjects:addPageItem_, nil] animated:YES];
-        // The table view selection state is potentially out of date
+        [self setToolbarItems:[NSArray arrayWithObjects:pageAddItem_, nil] animated:YES];
+        // The table view selection state might be out of date
         NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
         [self.tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
         [pageViewController_ unfreeze];
@@ -193,7 +178,7 @@ static const NSUInteger AddPageButtonIndex = 0;
     {
         if (restoreLastSelectedPage)
         {
-            NSDictionary *dictionary = [[NSUserDefaults standardUserDefaults] objectForKey:SelectedPageNumbersDictionaryKey];
+            NSDictionary *dictionary = [[NSUserDefaults standardUserDefaults] objectForKey:LastViewedPageNumbersKey];
             NSUInteger pageNumber = [[dictionary objectForKey:notebook.notebookId] unsignedIntegerValue];
             
             if (pageNumber < [[notebook_ pages] count])
@@ -209,9 +194,6 @@ static const NSUInteger AddPageButtonIndex = 0;
     }
     
     self.selectedPage = page;
-    // PENDING:
-    // Common Issue: what if the page view controller's page is no longer valid?
-    [pageViewController_ savePendingChanges];
     pageViewController_.page = page;
 }
 
@@ -224,19 +206,16 @@ static const NSUInteger AddPageButtonIndex = 0;
     return [self.fetchedResultsController objectAtIndexPath:indexPath];
 }
 
-- (NKTPage *)addPage
+- (NKTPage *)addPageToNotebook
 {
     if (notebook_ == nil)
     {
-        KBCLogWarning(@"notebook is nil, returning nil");
+        KBCLogWarning(@"Notebook is nil. Returning nil.");
         return nil;
     }
     
-    // Create a new page and add it to the notebook
-    NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:notebook_.managedObjectContext];
+    NKTPage *page = [NKTPage insertPageInManagedObjectContext:notebook_.managedObjectContext];
     page.pageNumber = [NSNumber numberWithUnsignedInteger:[[notebook_ pages] count]];
-    page.textString = @"";
-    page.textStyleString = @"";
     [notebook_ addPagesObject:page];
     
     NSError *error = nil;
@@ -253,39 +232,24 @@ static const NSUInteger AddPageButtonIndex = 0;
 #pragma mark -
 #pragma mark Actions
 
-- (void)handleAddPageItemTapped:(UIBarButtonItem *)item
+- (void)pageAddToolbarItemTapped:(UIBarButtonItem *)item
 {
-    if (!addPageActionSheet_.visible)
+    if (pageAddActionSheet_.visible)
     {
-        [addPageActionSheet_ release];
-        addPageActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Page", nil];
-        [addPageActionSheet_ showFromBarButtonItem:item animated:YES];
+        [pageAddActionSheet_ dismissWithClickedButtonIndex:pageAddActionSheet_.cancelButtonIndex animated:YES];
+        pageAddActionSheet_ = nil;
     }
     else
     {
-        [addPageActionSheet_ dismissWithClickedButtonIndex:addPageActionSheet_.cancelButtonIndex animated:YES];
+        pageAddActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Page", nil];
+        [pageAddActionSheet_ showFromBarButtonItem:item animated:YES];
+        [pageAddActionSheet_ release];
     }
-}
-
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    switch (buttonIndex)
-    {
-        case AddPageButtonIndex:
-            [self addPageAndBeginEditing];
-            break;
-            
-        default:
-            break;
-    }
-    
-    [addPageActionSheet_ autorelease];
-    addPageActionSheet_ = nil;
 }
 
 - (void)addPageAndBeginEditing
 {
-    NKTPage *page = [self addPage];
+    NKTPage *page = [self addPageToNotebook];
     self.selectedPage = page;
     // Select and scroll to added page
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:page];
@@ -297,19 +261,34 @@ static const NSUInteger AddPageButtonIndex = 0;
     [pageViewController_.textView becomeFirstResponder];
 }
 
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    // Present the next view after the sheet has been dismissed to prevent some animation
+    // artifacts
+    if (actionSheet == pageAddActionSheet_)
+    {
+        if (buttonIndex == pageAddActionSheet_.firstOtherButtonIndex)
+        {
+            [self addPageAndBeginEditing];
+        }
+        
+        pageAddActionSheet_ = nil;
+    }
+}
+
 #pragma mark -
-#pragma mark Page View Controller
+#pragma mark Page View Controller Delegate
 
 - (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView
 {
+    // PENDING: can optimize if text position is given
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    // PENDING: can optimize if text position is given
     [self configureCell:cell atIndexPath:indexPath];
 }
 
 #pragma mark -
-#pragma mark Table View Data Source
+#pragma mark Table View Data Source/Delegate
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -338,7 +317,7 @@ static const NSUInteger AddPageButtonIndex = 0;
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
-    // Assign a snippet to the text label based on the page's text
+    // Assign a snippet to the text label based on the page text
     NKTPage *page = [self.fetchedResultsController objectAtIndexPath:indexPath];
     cell.showsReorderControl = YES;
     
@@ -371,28 +350,28 @@ static const NSUInteger AddPageButtonIndex = 0;
 {
     if (editingStyle != UITableViewCellEditingStyleDelete)
     {
-        KBCLogWarning(@"unexpected editing style commit, returning");
+        KBCLogWarning(@"Unexpected editing style. Returning.");
         return;
     }
     
     NKTPage *pageToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    NSUInteger numberOfPages = [[notebook_ pages] count];
+    BOOL deletingSelectedPage = (pageToDelete == selectedPage_);
+    BOOL deletingLastPage = (numberOfPages == 1);
     
-    // Stop editing page if we are about to delete it
-    if (pageToDelete == selectedPage_)
+    if (deletingSelectedPage)
     {
         pageViewController_.page = nil;
     }
     
-    // Renumber the pages first
-    NSUInteger renumberRangeStart = indexPath.row + 1;
-    NSUInteger renumberRangeEnd = [[notebook_ pages] count];
-    for (NSUInteger index = renumberRangeStart; index < renumberRangeEnd; ++index)
+    // Reorder the pages first
+    NSUInteger reorderRangeStart = indexPath.row + 1;
+    NSUInteger reorderRangeEnd = numberOfPages;
+    for (NSUInteger index = reorderRangeStart; index < reorderRangeEnd; ++index)
     {
-        NSIndexPath *renumberIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
-        NKTPage *pageToRenumber = [self.fetchedResultsController objectAtIndexPath:renumberIndexPath];
-        //  Adjust offsets of pages following the deleted page by -1
-        NSUInteger pageNumber = index - 1;
-        pageToRenumber.pageNumber = [NSNumber numberWithInteger:pageNumber];
+        NSIndexPath *reorderIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        NKTPage *pageToReorder = [self.fetchedResultsController objectAtIndexPath:reorderIndexPath];
+        pageToReorder.pageNumber = [NSNumber numberWithInteger:index - 1];
     }
     
     // Delete the page
@@ -400,13 +379,10 @@ static const NSUInteger AddPageButtonIndex = 0;
     [notebook_.managedObjectContext deleteObject:pageToDelete];
     
     // Add a page if the deleted page was the last one
-    if ([[notebook_ pages] count] == 0)
+    if (deletingLastPage)
     {
-        NKTPage *pageToAdd = [NSEntityDescription insertNewObjectForEntityForName:@"Page" inManagedObjectContext:notebook_.managedObjectContext];
-        pageToAdd.pageNumber = [NSNumber numberWithInteger:0];
-        pageToAdd.textString = @"";
-        pageToAdd.textStyleString = @"";
-        [notebook_ addPagesObject:pageToAdd];
+        NKTPage *page = [NKTPage insertPageInManagedObjectContext:notebook_.managedObjectContext];
+        [notebook_ addPagesObject:page];
     }
     
     NSError *error = nil;
@@ -418,11 +394,12 @@ static const NSUInteger AddPageButtonIndex = 0;
     }
     
     // Select new page if the deleted page was the selected page
-    if (pageToDelete == selectedPage_)
+    if (deletingSelectedPage)
     {
         // Select the new page occupying the deleted page number's spot, or the last page of the notebook
         NKTPage *pageToSelect = nil;
-        NSUInteger numberOfPages = [[notebook_ pages] count];
+        // Number of pages might have changed
+        numberOfPages = [[notebook_ pages] count];
         
         if (indexPath.row < numberOfPages)
         {
@@ -449,37 +426,36 @@ static const NSUInteger AddPageButtonIndex = 0;
         return;
     }
     
-    // Set flag so we know to ignore changes from the fetch results controller
-    changeIsUserDriven_ = YES;
+    // Set flag so we know to ignore fetch results controller updates
+    modelChangeIsUserDriven_ = YES;
     
     // Set page number of moved page
     NKTPage *page = [self.fetchedResultsController objectAtIndexPath:fromIndexPath];
     page.pageNumber = [NSNumber numberWithUnsignedInteger:toIndex];
     
-    // Renumber rest of the pages
-    NSUInteger renumberRangeStart = 0;
-    NSUInteger renumberRangeEnd = 0;
+    // Reorder other pages
+    NSUInteger reorderRangeStart = 0;
+    NSUInteger reorderRangeEnd = 0;
     NSInteger pageNumberAdjustment = 0;
-    
     if (fromIndex < toIndex)
     {
-        renumberRangeStart = fromIndex + 1;
-        renumberRangeEnd = toIndex + 1;
+        reorderRangeStart = fromIndex + 1;
+        reorderRangeEnd = toIndex + 1;
         pageNumberAdjustment = -1;
     }
     else
     {
-        renumberRangeStart = toIndex;
-        renumberRangeEnd = fromIndex;
+        reorderRangeStart = toIndex;
+        reorderRangeEnd = fromIndex;
         pageNumberAdjustment = 1;
     }
     
-    for (NSUInteger index = renumberRangeStart; index < renumberRangeEnd; ++index)
+    for (NSUInteger index = reorderRangeStart; index < reorderRangeEnd; ++index)
     {
-        NSIndexPath *renumberIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
-        NKTPage *pageToRenumber = [self.fetchedResultsController objectAtIndexPath:renumberIndexPath];
-        NSInteger pageNumber = [pageToRenumber.pageNumber integerValue] + pageNumberAdjustment;
-        pageToRenumber.pageNumber = [NSNumber numberWithInteger:pageNumber];
+        NSIndexPath *reorderIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        NKTPage *pageToReorder = [self.fetchedResultsController objectAtIndexPath:reorderIndexPath];
+        NSInteger pageNumber = [pageToReorder.pageNumber integerValue] + pageNumberAdjustment;
+        pageToReorder.pageNumber = [NSNumber numberWithInteger:pageNumber];
     }
     
     NSError *error = nil;
@@ -490,18 +466,14 @@ static const NSUInteger AddPageButtonIndex = 0;
         abort();
     }
     
-    changeIsUserDriven_ = NO;
+    modelChangeIsUserDriven_ = NO;
 }
-
-#pragma mark -
-#pragma mark Table View Delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [pageViewController_.textView resignFirstResponder];
     NKTPage *page = [self.fetchedResultsController objectAtIndexPath:indexPath];
     self.selectedPage = page;
-    [pageViewController_ savePendingChanges];
     pageViewController_.page = page;
     [pageViewController_ dismissNotebookPopoverAnimated:YES];
 }
@@ -513,7 +485,7 @@ static const NSUInteger AddPageButtonIndex = 0;
 {
     if (notebook_ == nil)
     {
-        KBCLogWarning(@"notebook is nil, returning nil");
+        KBCLogWarning(@"Notebook is nil. Returning nil.");
         return nil;
     }
     
@@ -552,7 +524,7 @@ static const NSUInteger AddPageButtonIndex = 0;
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller 
 {
-    if (changeIsUserDriven_)
+    if (modelChangeIsUserDriven_)
     {
         return;
     }
@@ -562,23 +534,12 @@ static const NSUInteger AddPageButtonIndex = 0;
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeSection:(id <NSFetchedResultsSectionInfo>)sectionInfo atIndex:(NSUInteger)sectionIndex forChangeType:(NSFetchedResultsChangeType)type
 {
-    KBCLogWarning(@"this should never be called");
-    
-    switch(type)
-    {
-        case NSFetchedResultsChangeInsert:
-            [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-            
-        case NSFetchedResultsChangeDelete:
-            [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex] withRowAnimation:UITableViewRowAnimationFade];
-            break;
-    }
+    KBCLogWarning(@"This method should never be called. Ignoring.");
 }
 
 - (void)controller:(NSFetchedResultsController *)controller didChangeObject:(id)anObject atIndexPath:(NSIndexPath *)indexPath forChangeType:(NSFetchedResultsChangeType)type newIndexPath:(NSIndexPath *)newIndexPath
 {
-    if (changeIsUserDriven_)
+    if (modelChangeIsUserDriven_)
     {
         return;
     }
@@ -606,7 +567,7 @@ static const NSUInteger AddPageButtonIndex = 0;
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller
 {
-    if (changeIsUserDriven_)
+    if (modelChangeIsUserDriven_)
     {
         return;
     }

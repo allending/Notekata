@@ -3,14 +3,14 @@
 //
 
 #import "NKTNotebookEditViewController.h"
-#import "NKTNotebook.h"
-#import "NKTPage.h"
+#import "NKTNotebook+CustomAdditions.h"
+#import "NKTPage+CustomAdditions.h"
 #import "NKTPageViewController.h"
 
 @implementation NKTNotebookEditViewController
 
-@synthesize notebook = notebook_;
 @synthesize managedObjectContext = managedObjectContext_;
+@synthesize notebook = notebook_;
 
 @synthesize delegate = delegate_;
 
@@ -20,6 +20,9 @@
 @synthesize tableView = tableView_;
 @synthesize titleCell = titleCell_;
 @synthesize titleField = titleField_;
+
+static const NSUInteger TitleSection = 0;
+static const NSUInteger NotebookStyleSection = 1;
 
 #pragma mark -
 #pragma mark Initializing
@@ -39,8 +42,8 @@
 
 - (void)dealloc
 {
-    [notebook_ release];
     [managedObjectContext_ release];
+    [notebook_ release];
     
     [navigationBar_ release];
     [doneButton_ release];
@@ -49,11 +52,6 @@
     [titleCell_ release];
     [titleField_ release];
     [super dealloc];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
 }
 
 #pragma mark -
@@ -81,7 +79,7 @@
 {
     [super viewWillAppear:animated];
     
-    // PENDING: localize
+    // Update UI elements
     if (mode_ == NKTNotebookEditViewControllerModeAdd)
     {
         titleField_.text = nil;
@@ -95,6 +93,7 @@
         doneButton_.title = @"Save";
     }
     
+    // Reload table data
     [tableView_ reloadData];
     
     if (mode_ == NKTNotebookEditViewControllerModeAdd)
@@ -134,18 +133,18 @@
     return notebooks;
 }
 
-- (void)configureToAddNotebook
+- (void)configureForAddingNotebook
 {
     mode_ = NKTNotebookEditViewControllerModeAdd;
     self.notebook = nil;
-    selectedPageStyleIndex_ = 0;
+    selectedNotebookStyleIndex_ = 0;
 }
 
-- (void)configureToEditNotebook:(NKTNotebook *)notebook
+- (void)configureForEditingNotebook:(NKTNotebook *)notebook
 {
     mode_ = NKTNotebookEditViewControllerModeEdit;
     self.notebook = notebook;
-    selectedPageStyleIndex_ = [notebook.notebookStyle integerValue];
+    selectedNotebookStyleIndex_ = [notebook.notebookStyle integerValue];
 }
 
 #pragma mark -
@@ -175,13 +174,6 @@
 
 - (void)addNotebook
 {
-    if (managedObjectContext_ == nil)
-    {
-        KBCLogWarning(@"managed object context is nil, returning");
-        [self.parentViewController dismissModalViewControllerAnimated:YES];
-        return;
-    }
-    
     [self.titleField resignFirstResponder];
     
     // Get the last notebook that exists
@@ -192,27 +184,12 @@
         lastNotebook = [sortedNotebooks objectAtIndex:[sortedNotebooks count] - 1];
     }
     
-    // Create notebook
-    NKTNotebook *addedNotebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
-    addedNotebook.notebookStyle = [NSNumber numberWithUnsignedInteger:selectedPageStyleIndex_];
+    // Create notebook and configure
+    NKTNotebook *addedNotebook = [NKTNotebook insertNotebookInManagedObjectContext:managedObjectContext_];
     addedNotebook.title = [titleField_.text length] == 0 ? @"Untitled Notebook" : titleField_.text;
-    
-    // Generate random uuid as the notebook id
-    CFUUIDRef uuid = CFUUIDCreate(NULL);
-    CFStringRef uuidString = CFUUIDCreateString(NULL, uuid);
-    addedNotebook.notebookId = (NSString *)uuidString;
-    CFRelease(uuid);
-    CFRelease(uuidString);
-    
+    addedNotebook.notebookStyle = [NSNumber numberWithUnsignedInteger:selectedNotebookStyleIndex_];
     NSInteger displayOrder = [lastNotebook.displayOrder integerValue] + 1;
     addedNotebook.displayOrder = [NSNumber numberWithInteger:displayOrder];
-    // Create first page
-    NKTPage *page = [NSEntityDescription insertNewObjectForEntityForName:@"Page"
-                                                  inManagedObjectContext:managedObjectContext_];
-    page.pageNumber = [NSNumber numberWithInteger:0];
-    page.textString = @"";
-    page.textStyleString = @"";
-    [addedNotebook addPagesObject:page];
     
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
@@ -231,8 +208,10 @@
 - (void)editNotebook
 {
     [self.titleField resignFirstResponder];
-    notebook_.notebookStyle = [NSNumber numberWithUnsignedInteger:selectedPageStyleIndex_];
+    
+    // Update notebook
     notebook_.title = titleField_.text;
+    notebook_.notebookStyle = [NSNumber numberWithUnsignedInteger:selectedNotebookStyleIndex_];
     
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
@@ -251,7 +230,7 @@
 }
 
 #pragma mark -
-#pragma mark Text Field
+#pragma mark Text Field Delegate
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
@@ -261,7 +240,7 @@
 }
 
 #pragma mark -
-#pragma mark Table View Data Source
+#pragma mark Table View Data Source/Delegate
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -270,14 +249,13 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    switch (section) {
-        // Title
-        case 0:
+    switch (section)
+    {
+        case TitleSection:
             return 1;
             break;
             
-        // Paper Type
-        case 1:
+        case NotebookStyleSection:
             return 3;
             break;
             
@@ -290,47 +268,17 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    if (section == 1)
+    if (section == NotebookStyleSection)
     {
-        return @"Paper Type";
+        return @"Notebook Style";
     }
     
     return nil;
 }
 
-- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
-{
-    switch (indexPath.row)
-    {
-        case NKTPageStyleElegant:
-            cell.textLabel.text = @"Elegant";
-            break;
-
-        case NKTPageStyleCollegeRuled:
-            cell.textLabel.text = @"College Ruled";
-            break;
-            
-        case NKTPageStylePlain:
-            cell.textLabel.text = @"Plain";
-            break;
-            
-        default:
-            break;
-    }
-    
-    if (indexPath.row == selectedPageStyleIndex_)
-    {
-        cell.accessoryType = UITableViewCellAccessoryCheckmark;
-    }
-    else
-    {
-        cell.accessoryType = UITableViewCellAccessoryNone;
-    }
-}
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 0)
+    if (indexPath.section == TitleSection)
     {
         return titleCell_;
     }
@@ -345,30 +293,58 @@
             cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
         }
         
-        [self configureCell:cell atIndexPath:indexPath];
+        [self configureNotebookStyleCell:cell atIndexPath:indexPath];
         return cell;
     }
 }
 
-#pragma mark -
-#pragma mark Table View Delegate
+- (void)configureNotebookStyleCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
+{
+    switch (indexPath.row)
+    {
+        case NKTPageStyleElegant:
+            cell.textLabel.text = @"Elegant";
+            break;
+            
+        case NKTPageStyleCollegeRuled:
+            cell.textLabel.text = @"College Ruled";
+            break;
+            
+        case NKTPageStylePlain:
+            cell.textLabel.text = @"Plain";
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (indexPath.row == selectedNotebookStyleIndex_)
+    {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    else
+    {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+}
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 0)
+    if (indexPath.section != NotebookStyleSection)
     {
         return;
     }
     
     [titleField_ resignFirstResponder];
     
-    if (selectedPageStyleIndex_ != indexPath.row)
+    // Uncheck old notebook style cell
+    if (selectedNotebookStyleIndex_ != indexPath.row)
     {
-        UITableViewCell *cell = [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:selectedPageStyleIndex_ inSection:1]];
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:selectedNotebookStyleIndex_ inSection:1]];
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
     
-    selectedPageStyleIndex_ = indexPath.row;
+    selectedNotebookStyleIndex_ = indexPath.row;
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     cell.accessoryType = UITableViewCellAccessoryCheckmark;
     [tableView deselectRowAtIndexPath:indexPath animated:YES];

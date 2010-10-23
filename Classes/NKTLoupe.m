@@ -36,13 +36,13 @@
         switch (style)
         {
             case NKTLoupeStyleBand:
-                maskData_ = [[UIImage imageNamed:@"BandLoupeMask.png"] retain];
-                overlay_ = [[UIImage imageNamed:@"BandLoupe.png"] retain];
+                maskData_ = [[UIImage imageNamed:@"RectangleLoupeMask.png"] retain];
+                overlay_ = [[UIImage imageNamed:@"RectangleLoupe.png"] retain];
                 anchorOffset_ = CGPointMake(overlay_.size.width * 0.5, overlay_.size.height);
                 break;
             case NKTLoupeStyleRound:
-                maskData_ = [[UIImage imageNamed:@"CaretLoupeMask.png"] retain];
-                overlay_ = [[UIImage imageNamed:@"CaretLoupe.png"] retain];
+                maskData_ = [[UIImage imageNamed:@"CircleLoupeMask.png"] retain];
+                overlay_ = [[UIImage imageNamed:@"CircleLoupe.png"] retain];
                 anchorOffset_ = CGPointMake(overlay_.size.width * 0.5, overlay_.size.height);
                 break;
             default:

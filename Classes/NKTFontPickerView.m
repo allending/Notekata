@@ -9,9 +9,9 @@
 @synthesize fontSizeSegmentedControl = fontSizeSegmentedControl_;
 @synthesize fontFamilyTableView = fontFamilyTableView_;
 
-static NSString * const TableViewTopCapFilename = @"NKTFontPickerViewTableViewTopCap.png";
-static NSString * const TableViewBottomCapFilename = @"NKTFontPickerViewTableViewBottomCap.png";
-static NSString * const TableViewBorderFilename = @"NKTFontPickerViewTableViewBorder.png";
+static NSString * const TableViewTopCapFilename = @"FontPickerTableTopCap.png";
+static NSString * const TableViewBottomCapFilename = @"FontPickerTableBottomCap.png";
+static NSString * const TableViewBorderFilename = @"FontPickerTableEdge.png";
 static const CGFloat FontSizeSegmentedControlHeight = 44.0;
 static const CGFloat TableViewCapWidth = 9.0;
 static const CGFloat TableViewCapHeight = 9.0;

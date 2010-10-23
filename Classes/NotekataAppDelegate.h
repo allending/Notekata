@@ -8,7 +8,6 @@
 @class NKTPageViewController;
 @class NKTRootViewController;
 
-// NotekataAppDelegate
 @interface NotekataAppDelegate : NSObject <UIApplicationDelegate>
 {
 @private
@@ -23,24 +22,29 @@
     UIWindow *window_;
 }
 
+#pragma mark -
 #pragma mark Notebooks
 
 - (void)primeNotebookData;
 
+#pragma mark -
 #pragma mark Directories
 
 - (NSString *)applicationDocumentsDirectory;
 
+#pragma mark -
 #pragma mark View Controllers
 
 @property (nonatomic, retain) IBOutlet UISplitViewController *splitViewController;
 @property (nonatomic, retain) IBOutlet NKTRootViewController *rootViewController;
 @property (nonatomic, retain) IBOutlet NKTPageViewController *pageViewController;
 
+#pragma mark -
 #pragma mark Views
 
 @property (nonatomic, retain) IBOutlet UIWindow *window;
 
+#pragma mark -
 #pragma mark Core Data
 
 @property (nonatomic, retain, readonly) NSManagedObjectContext *managedObjectContext;

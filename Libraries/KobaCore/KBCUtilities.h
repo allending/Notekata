@@ -10,3 +10,5 @@ CFRange CFRangeFromNSRange(NSRange range);
 
 NSDictionary *KBCPortableRepresentationFromRange(NSRange range);
 NSRange KBCRangeFromPortableRepresentation(NSDictionary *portableRepresentation);
+
+NSString *KBCUUIDString(void);

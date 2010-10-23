@@ -99,23 +99,23 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     creamPaperBackgroundView_ = [[UIView alloc] init];
     creamPaperBackgroundView_.opaque = YES;
     creamPaperBackgroundView_.userInteractionEnabled = NO;
-    creamPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamPaperPattern.png"]];
+    creamPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"CreamBackgroundPattern.png"]];
     plainPaperBackgroundView_ = [[UIView alloc] init];
     plainPaperBackgroundView_.opaque = YES;
     plainPaperBackgroundView_.userInteractionEnabled = NO;
-    plainPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainPaperPattern2.png"]];
+    plainPaperBackgroundView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PlainBackgroundPattern.png"]];
     
     // Configure right edge view
-    rightEdgeView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"RedCoverPattern.png"]];
+    rightEdgeView_.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PageRightEdgeBackgroundPattern.png"]];
     
     // Configure left edge view
-    UIImage *leftEdgeImage = [[UIImage imageNamed:@"DarkBgCap.png"] stretchableImageWithLeftCapWidth:6.0 topCapHeight:3.0];
+    UIImage *leftEdgeImage = [[UIImage imageNamed:@"PageLeftEdgeCap.png"] stretchableImageWithLeftCapWidth:6.0 topCapHeight:3.0];
     leftEdgeView_ = [[UIImageView alloc] initWithImage:leftEdgeImage];
     leftEdgeView_.userInteractionEnabled = NO;
     leftEdgeView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     
     // Configure left edge shadow view
-    leftEdgeShadowView_ = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"EdgeShadow.png"]];
+    leftEdgeShadowView_ = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"PageLeftEdgeShadow.png"]];
     leftEdgeShadowView_.userInteractionEnabled = NO;
     leftEdgeShadowView_.autoresizingMask = UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleBottomMargin;
     leftEdgeShadowView_.frame = CGRectMake(5.0, 0.0, 10.0, 0.0);
@@ -282,6 +282,9 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     // The controller could have asked for first responder status when the text view recognized
     // gestures, so resign first responder status whenever the view dissapears?
     [self resignFirstResponder];
+    
+    // PENDING: THIS SHOULD SAVE UNSAVED CHANGES
+    [self savePendingChanges];
     
     if ([fontPopoverController_ isPopoverVisible])
     {

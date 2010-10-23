@@ -17,47 +17,52 @@
     NSFetchedResultsController *fetchedResultsController_;
     NKTNotebook *notebook_;
     NKTPage *selectedPage_;
-    BOOL changeIsUserDriven_;
+    BOOL modelChangeIsUserDriven_;
     
     NKTPageViewController *pageViewController_;
     
     UILabel *titleLabel_;
-    UIBarButtonItem *addPageItem_;
-    UIActionSheet *addPageActionSheet_;
+    UIBarButtonItem *pageAddItem_;
+    UIActionSheet *pageAddActionSheet_;
 }
 
+#pragma mark -
 #pragma mark Notebook
 
 // Calling this also sets the page property of the page view controller.
 - (void)setNotebook:(NKTNotebook *)notebook restoreLastSelectedPage:(BOOL)restoreLastSelectedPage;
 
+#pragma mark -
 #pragma mark Pages
 
-@property (nonatomic, readonly, retain) NKTPage *selectedPage;
-
 - (NKTPage *)pageAtIndex:(NSUInteger)index;
-- (NKTPage *)addPage;
+- (NKTPage *)addPageToNotebook;
 
+#pragma mark -
 #pragma mark Actions
 
-- (void)handleAddPageItemTapped:(UIBarButtonItem *)item;
+- (void)pageAddToolbarItemTapped:(UIBarButtonItem *)item;
 - (void)addPageAndBeginEditing;
 
+#pragma mark -
 #pragma mark View Controllers
 
 @property (nonatomic, retain) IBOutlet NKTPageViewController *pageViewController;
 
+#pragma mark -
 #pragma mark Views
 
 @property (nonatomic, retain) UILabel *titleLabel;
-@property (nonatomic, retain) UIBarButtonItem *addPageItem;
-@property (nonatomic, retain) UIActionSheet *addPageActionSheet;
+@property (nonatomic, retain) UIBarButtonItem *pageAddItem;
+@property (nonatomic, retain) UIActionSheet *pageAddActionSheet;
 
-#pragma mark Table View
+#pragma mark -
+#pragma mark Table View Data Source/Delegate
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 
-#pragma mark Fetched Results Controller
+#pragma mark -
+#pragma mark Core Data
 
 @property (nonatomic, retain) NSFetchedResultsController *fetchedResultsController;
 

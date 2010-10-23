@@ -15,20 +15,17 @@ typedef enum
     NKTNotebookEditViewControllerModeEdit
 } NKTNotebookEditViewControllerMode;
 
-// NKTNotebookEditViewController
+// NKTNotebookEditViewController displays a modal interface for adding or editing a notebook.
 @interface NKTNotebookEditViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>
 {
 @private
-    // Data    
+    NSManagedObjectContext *managedObjectContext_;
     NKTNotebookEditViewControllerMode mode_;
     NKTNotebook *notebook_;
-    NSUInteger selectedPageStyleIndex_;
-    NSManagedObjectContext *managedObjectContext_;
+    NSUInteger selectedNotebookStyleIndex_;
     
-    // Delegate
     id <NKTNotebookEditViewControllerDelegate> delegate_;
     
-    // UI
     UINavigationBar *navigationBar_;
     UIBarButtonItem *doneButton_;
     UIBarButtonItem *cancelButton_;
@@ -37,18 +34,29 @@ typedef enum
     UITextField *titleField_;
 }
 
+#pragma mark -
 #pragma mark Delegate
 
 @property (nonatomic, assign) id <NKTNotebookEditViewControllerDelegate> delegate;
 
+#pragma mark -
 #pragma mark Notebooks
 
 @property (nonatomic, retain) NKTNotebook *notebook;
 
 - (NSArray *)sortedNotebooks;
-- (void)configureToAddNotebook;
-- (void)configureToEditNotebook:(NKTNotebook *)notebook;
+- (void)configureForAddingNotebook;
+- (void)configureForEditingNotebook:(NKTNotebook *)notebook;
 
+#pragma mark -
+#pragma mark Actions
+
+- (IBAction)save;
+- (IBAction)cancel;
+- (void)addNotebook;
+- (void)editNotebook;
+
+#pragma mark -
 #pragma mark Views
 
 @property (nonatomic, retain) IBOutlet UINavigationBar *navigationBar;
@@ -58,25 +66,24 @@ typedef enum
 @property (nonatomic, retain) IBOutlet UITableViewCell *titleCell;
 @property (nonatomic, retain) IBOutlet UITextField *titleField;
 
-#pragma mark Actions
+#pragma mark -
+#pragma mark Table View Data Source/Delegate
 
-- (IBAction)save;
-- (IBAction)cancel;
-- (void)addNotebook;
-- (void)editNotebook;
+- (void)configureNotebookStyleCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 
+#pragma mark -
 #pragma mark Core Data
 
 @property (nonatomic, retain) NSManagedObjectContext *managedObjectContext;
 
 @end
 
-// NKTNotebookEditViewControllerDelegate is a protocol that allows clients to receive editing related messages from an
-// NKTNotebookEditViewController.
+// NKTNotebookEditViewControllerDelegate
 @protocol NKTNotebookEditViewControllerDelegate <NSObject>
 
 @optional
 
+#pragma mark -
 #pragma mark Responding to Notebook Edit View Controller Events
 
 - (void)notebookEditViewControllerDidCancel:(NKTNotebookEditViewController *)notebookEditViewController;
