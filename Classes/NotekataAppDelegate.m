@@ -116,6 +116,7 @@
     {
         // Create notebook
         NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+        notebook.notebookStyle = [NSNumber numberWithInteger:0];
         // PENDING: localize
         notebook.title = @"My Notebook";
         
@@ -230,19 +231,6 @@
          and Data Migration Programming Guide" for details.
          
          */
-        
-        // PENDING: fix and remove after development
-        if ([error code] == NSPersistentStoreIncompatibleVersionHashError)
-        {
-            KBCLogWarning(@"core data error %@, deleting store and retrying", [error description]);
-            
-            [[NSFileManager defaultManager] removeItemAtPath:[storeURL path] error:nil];
-            
-            if ([persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
-            {
-                return persistentStoreCoordinator_;
-            }
-        }
         
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();

@@ -13,12 +13,9 @@
 
 typedef enum
 {
-    NKTPageStylePlain,
-    NKTPageStylePlainRuled,
-    NKTPageStyleCollegeRuled,
-    NKTPageStyleCream,
-    NKTPageStyleCreamRuled,
-    NKTPageStyleCollegeRuledCream
+    NKTPageStyleElegant = 0,
+    NKTPageStyleCollegeRuled = 1,
+    NKTPageStylePlain = 2,
 } NKTPageStyle;
 
 // NKTNotebookViewController manages the editing of an NKTPage. It styles its view to provide a visual page style as
@@ -33,7 +30,6 @@ typedef enum
 {
 @private
     NKTPage *page_;
-    NKTPageStyle pageStyle_;
     BOOL frozen_;
     id <NKTPageViewControllerDelegate> delegate_;
     
@@ -78,8 +74,6 @@ typedef enum
 @property (nonatomic, assign) id <NKTPageViewControllerDelegate> delegate;
 
 #pragma mark Styles
-
-@property (nonatomic) NKTPageStyle pageStyle;
 
 - (void)applyPageStyle;
 

@@ -5,6 +5,7 @@
 #import "NKTNotebookEditViewController.h"
 #import "NKTNotebook.h"
 #import "NKTPage.h"
+#import "NKTPageViewController.h"
 
 @implementation NKTNotebookEditViewController
 
@@ -90,11 +91,16 @@
     else
     {
         titleField_.text = notebook_.title;
-        navigationBar_.topItem.title = ([notebook_.title length] != 0) ? notebook_.title : @"Notebook";
+        navigationBar_.topItem.title = @"Edit Notebook";
         doneButton_.title = @"Save";
     }
     
-    [titleField_ becomeFirstResponder];
+    [tableView_ reloadData];
+    
+    if (mode_ == NKTNotebookEditViewControllerModeAdd)
+    {
+        [titleField_ becomeFirstResponder];
+    }
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -132,12 +138,14 @@
 {
     mode_ = NKTNotebookEditViewControllerModeAdd;
     self.notebook = nil;
+    selectedPageStyleIndex_ = 0;
 }
 
 - (void)configureToEditNotebook:(NKTNotebook *)notebook
 {
     mode_ = NKTNotebookEditViewControllerModeEdit;
     self.notebook = notebook;
+    selectedPageStyleIndex_ = [notebook.notebookStyle integerValue];
 }
 
 #pragma mark -
@@ -186,6 +194,7 @@
     
     // Create notebook
     NKTNotebook *addedNotebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+    addedNotebook.notebookStyle = [NSNumber numberWithUnsignedInteger:selectedPageStyleIndex_];
     addedNotebook.title = [titleField_.text length] == 0 ? @"Untitled Notebook" : titleField_.text;
     
     // Generate random uuid as the notebook id
@@ -222,6 +231,7 @@
 - (void)editNotebook
 {
     [self.titleField resignFirstResponder];
+    notebook_.notebookStyle = [NSNumber numberWithUnsignedInteger:selectedPageStyleIndex_];
     notebook_.title = titleField_.text;
     
     NSError *error = nil;
@@ -255,23 +265,113 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return 1;
+    switch (section) {
+        // Title
+        case 0:
+            return 1;
+            break;
+            
+        // Paper Type
+        case 1:
+            return 3;
+            break;
+            
+        default:
+            break;
+    }
+    
+    return 0;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    if (section == 1)
+    {
+        return @"Paper Type";
+    }
+    
+    return nil;
+}
+
+- (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
+{
+    switch (indexPath.row)
+    {
+        case NKTPageStyleElegant:
+            cell.textLabel.text = @"Elegant";
+            break;
+
+        case NKTPageStyleCollegeRuled:
+            cell.textLabel.text = @"College Ruled";
+            break;
+            
+        case NKTPageStylePlain:
+            cell.textLabel.text = @"Plain";
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (indexPath.row == selectedPageStyleIndex_)
+    {
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    else
+    {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return titleCell_;
+    if (indexPath.section == 0)
+    {
+        return titleCell_;
+    }
+    else
+    {
+        static NSString *CellIdentifier = @"Cell";
+        
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        
+        if (cell == nil)
+        {
+            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+        }
+        
+        [self configureCell:cell atIndexPath:indexPath];
+        return cell;
+    }
 }
 
 #pragma mark -
 #pragma mark Table View Delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{}
+{
+    if (indexPath.section == 0)
+    {
+        return;
+    }
+    
+    [titleField_ resignFirstResponder];
+    
+    if (selectedPageStyleIndex_ != indexPath.row)
+    {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:selectedPageStyleIndex_ inSection:1]];
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    
+    selectedPageStyleIndex_ = indexPath.row;
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
 
 @end

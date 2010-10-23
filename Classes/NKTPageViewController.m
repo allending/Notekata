@@ -11,7 +11,6 @@
 @implementation NKTPageViewController
 
 @synthesize page = page_;
-@synthesize pageStyle = pageStyle_;
 @synthesize delegate = delegate_;
 
 @synthesize fontPopoverController = fontPopoverController_;
@@ -40,24 +39,6 @@
 
 static const CGFloat KeyboardOverlapTolerance = 1.0;
 static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notekata.attributedstringportablerepresentation";
-
-#pragma mark -
-#pragma mark Initializing
-
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]))
-    {
-        pageStyle_ = NKTPageStyleCollegeRuledCream;
-    }
-    
-    return self;
-}
-
-- (void)awakeFromNib
-{
-    pageStyle_ = NKTPageStyleCollegeRuledCream;
-}
 
 #pragma mark -
 #pragma mark Memory
@@ -181,7 +162,6 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     
     // Set up the text view
     textView_.delegate = self;
-    [self applyPageStyle];
     
     if (page_ != nil)
     {
@@ -314,6 +294,12 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     //[textView_ resignFirstResponder];
     //[self savePendingChanges];
     
+    if (page_ != nil)
+    {
+        [page_.notebook removeObserver:self forKeyPath:@"title"];
+        [page_.notebook removeObserver:self forKeyPath:@"notebookStyle"];
+    }
+    
     [page_ release];
     page_ = [page retain];
     
@@ -321,7 +307,11 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     if (page_ != nil)
     {
         [self configureForNonNilPageAnimated:NO];
+        // Apply the style of the notebook the page belongs to
+        [self applyPageStyle];
         [self updatePageViews];
+        [page_.notebook addObserver:self forKeyPath:@"title" options:0 context:nil];
+        [page_.notebook addObserver:self forKeyPath:@"notebookStyle" options:0 context:nil];
     }
     else
     {
@@ -353,35 +343,41 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 }
 
 #pragma mark -
+#pragma mark Notebook
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if (object == page_.notebook)
+    {
+        if ([keyPath isEqualToString:@"title"])
+        {
+            [self updateNotebookItem];
+        }
+        else if ([keyPath isEqualToString:@"notebookStyle"])
+        {
+            [self applyPageStyle];
+        }
+    }
+}
+
+#pragma mark -
 #pragma mark Styles
 
-- (void)setPageStyle:(NKTPageStyle)pageStyle
+- (void)applyPageStyle
 {
-    if (pageStyle_ == pageStyle)
+    if (page_ == nil)
     {
         return;
     }
     
-    pageStyle_ = pageStyle;
-    [self applyPageStyle];
-}
-
-- (void)applyPageStyle
-{
-    switch (pageStyle_)
+    NSUInteger notebookStyle = [page_.notebook.notebookStyle unsignedIntegerValue];
+    
+    switch (notebookStyle)
     {
         case NKTPageStylePlain:
             self.textView.backgroundView = plainPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = NO;
-            self.textView.verticalMarginEnabled = NO;
-            break;
-            
-        case NKTPageStylePlainRuled:
-            self.textView.backgroundView = plainPaperBackgroundView_;
-            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
-            self.textView.horizontalRulesEnabled = YES;
-            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.84 green:0.84 blue:0.88 alpha:1.0];
             self.textView.verticalMarginEnabled = NO;
             break;
             
@@ -395,22 +391,7 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
             self.textView.verticalMarginInset = 60.0;
             break;
             
-        case NKTPageStyleCream:
-            self.textView.backgroundView = creamPaperBackgroundView_;
-            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
-            self.textView.horizontalRulesEnabled = NO;
-            self.textView.verticalMarginEnabled = NO;
-            break;
-            
-        case NKTPageStyleCreamRuled:
-            self.textView.backgroundView = creamPaperBackgroundView_;
-            self.textView.margins = UIEdgeInsetsMake(60.0, 60.0, 60.0, 60.0);
-            self.textView.horizontalRulesEnabled = YES;
-            self.textView.horizontalRuleColor = [UIColor colorWithRed:0.72 green:0.72 blue:0.59 alpha:1.0];
-            self.textView.verticalMarginEnabled = NO;
-            break;
-            
-        case NKTPageStyleCollegeRuledCream:
+        case NKTPageStyleElegant:
             self.textView.backgroundView = creamPaperBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;

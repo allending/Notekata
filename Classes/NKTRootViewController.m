@@ -256,6 +256,7 @@ static const NSUInteger DeleteConfirmationActionSheetTag = 0;
     {
         // Create notebook
         NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:@"Notebook" inManagedObjectContext:managedObjectContext_];
+        notebook.notebookStyle = [NSNumber numberWithInteger:0];
         notebook.title = @"My Notebook";
         // Generate random uuid as the notebook id
         CFUUIDRef uuid = CFUUIDCreate(NULL);

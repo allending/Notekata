@@ -22,6 +22,7 @@ typedef enum
     // Data    
     NKTNotebookEditViewControllerMode mode_;
     NKTNotebook *notebook_;
+    NSUInteger selectedPageStyleIndex_;
     NSManagedObjectContext *managedObjectContext_;
     
     // Delegate
