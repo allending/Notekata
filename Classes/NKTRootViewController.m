@@ -24,15 +24,16 @@
 @synthesize notebookEditViewController = notebookEditViewController_;
 
 @synthesize notebookAddItem = notebookAddItem_;
-@synthesize notebookAddActionSheet = notebookAddActionSheet_;
 @synthesize notebookDeleteIndexPath = notebookDeleteIndexPath_;
-@synthesize notebookDeleteConfirmationActionSheet = notebookDeleteConfirmationActionSheet;
 
 @synthesize managedObjectContext = managedObjectContext_;
 @synthesize fetchedResultsController = fetchedResultsController_;
 
 static NSString *SelectedNotebookIdKey = @"SelectedNotebookId";
 static const NSUInteger AddNotebookButtonIndex = 0;
+
+static const NSUInteger AddActionSheetTag = 0;
+static const NSUInteger DeleteConfirmationActionSheetTag = 0;
 
 #pragma mark -
 #pragma mark Memory
@@ -46,9 +47,9 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [pageViewController_ release];
     
     [notebookAddItem_ release];
-    [notebookAddActionSheet_ release];
+//    [notebookAddActionSheet_ release];
     [notebookDeleteIndexPath_ release];
-    [notebookDeleteConfirmationActionSheet_ release];
+    [deleteConfirmationActionSheet_ release];
     
     [managedObjectContext_ release];
     [fetchedResultsController_ release];
@@ -75,11 +76,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     notebookEditViewController_.contentSizeForViewInPopover = CGSizeMake(320.0, 600.0);
     notebookEditViewController_.managedObjectContext = managedObjectContext_;
     notebookEditViewController_.delegate = self;
-    
-    // Create action sheets
-    notebookAddActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Notebook", nil];
-    notebookDeleteConfirmationActionSheet_ = [[UIActionSheet alloc] initWithTitle:@"Are You Sure?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Delete" otherButtonTitles:nil];
-    
+        
     // Create custom navigation title
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
     label.text = @"Notebooks";
@@ -109,9 +106,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
     [super viewDidUnload];
     self.notebookEditViewController = nil;
     self.notebookAddItem = nil;
-    self.notebookAddActionSheet = nil;
     self.notebookDeleteIndexPath = nil;
-    self.notebookDeleteConfirmationActionSheet = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -144,10 +139,12 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 {
     // Stop editing when rotation occurs so the page view controller is in an unfrozen state
     [self setEditing:NO animated:NO];
-    // Dismiss open modals and sheets
-    [notebookAddActionSheet_ dismissWithClickedButtonIndex:notebookAddActionSheet_.cancelButtonIndex animated:NO];
-    [notebookDeleteConfirmationActionSheet_ dismissWithClickedButtonIndex:notebookDeleteConfirmationActionSheet_.cancelButtonIndex animated:NO];
-    [self dismissModalViewControllerAnimated:NO];
+    // PENDING: is this really needed?
+    // Dismiss open sheets
+    [addActionSheet_ dismissWithClickedButtonIndex:addActionSheet_.cancelButtonIndex animated:NO];
+    addActionSheet_ = nil;
+    [deleteConfirmationActionSheet_ dismissWithClickedButtonIndex:deleteConfirmationActionSheet_.cancelButtonIndex animated:NO];
+    deleteConfirmationActionSheet_ = nil;
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
@@ -290,14 +287,16 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)addNotebookTapped:(id)sender
 {
-    if (!notebookAddActionSheet_.visible)
+    if (addActionSheet_.visible)
     {
-        [notebookAddActionSheet_ showFromBarButtonItem:notebookAddItem_ animated:YES];
+        [addActionSheet_ dismissWithClickedButtonIndex:addActionSheet_.cancelButtonIndex animated:YES];
+        addActionSheet_ = nil;
+        return;
     }
-    else
-    {
-        [notebookAddActionSheet_ dismissWithClickedButtonIndex:notebookAddActionSheet_.cancelButtonIndex animated:YES];
-    }
+    
+    addActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Notebook", nil];
+    [addActionSheet_ showFromBarButtonItem:notebookAddItem_ animated:YES];
+    [addActionSheet_ release];
 }
 
 - (void)presentNotebookAddViewController
@@ -315,25 +314,15 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)presentNotebookDeleteConfirmationForNotebookAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (notebookDeleteConfirmationActionSheet_.visible)
-    {
-        return;
-    }
-    
     self.notebookDeleteIndexPath = indexPath;
-    [notebookDeleteConfirmationActionSheet_ showInView:self.view];
+    deleteConfirmationActionSheet_ = [[UIActionSheet alloc] initWithTitle:@"Are You Sure?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Delete" otherButtonTitles:nil];
+    [deleteConfirmationActionSheet_ showInView:self.view];
+    [deleteConfirmationActionSheet_ release];
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (actionSheet == notebookAddActionSheet_)
-    {
-        if (buttonIndex == AddNotebookButtonIndex)
-        {
-            [self presentNotebookAddViewController];
-        }
-    }
-    else if (actionSheet == notebookDeleteConfirmationActionSheet_)
+    if (actionSheet == deleteConfirmationActionSheet_)
     {
         if (buttonIndex == actionSheet.destructiveButtonIndex)
         {
@@ -341,11 +330,30 @@ static const NSUInteger AddNotebookButtonIndex = 0;
         }
         
         self.notebookDeleteIndexPath = nil;
+        deleteConfirmationActionSheet_ = nil;
+    }
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (actionSheet == addActionSheet_)
+    {
+        if (buttonIndex == addActionSheet_.firstOtherButtonIndex)
+        {
+            [self presentNotebookAddViewController];
+        }
+        
+        addActionSheet_ = nil;
     }
 }
 
 #pragma mark -
 #pragma mark Notebook Edit View Controller
+
+- (void)notebookEditViewControllerDidCancel:(NKTNotebookEditViewController *)notebookEditViewController
+{
+    [self dismissModalViewControllerAnimated:YES];
+}
 
 - (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didAddNotebook:(NKTNotebook *)notebook
 {
@@ -370,7 +378,7 @@ static const NSUInteger AddNotebookButtonIndex = 0;
 
 - (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didEditNotebook:(NKTNotebook *)notebook
 {
-    [self dismissModalViewControllerAnimated:YES];    
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 #pragma mark -

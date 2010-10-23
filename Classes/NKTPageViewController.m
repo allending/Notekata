@@ -547,7 +547,9 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
 
 - (void)actionItemTapped:(id)sender
 {
-    self.pageStyle = (self.pageStyle + 1) % 6;
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Email Page", nil];
+    [actionSheet showFromBarButtonItem:actionItem_ animated:YES];
+    [actionSheet release];
 }
 
 - (void)fontItemTapped:(id)sender
@@ -620,6 +622,27 @@ static NSString *NotekataAttributedStringDataTypeIdentifier = @"com.kobaru.notek
     }
     
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
+}
+
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == actionSheet.firstOtherButtonIndex)
+    {
+        MFMailComposeViewController *mailComposeViewController = [[MFMailComposeViewController alloc] init];
+        mailComposeViewController.mailComposeDelegate = self;
+        NSString *subjectSnippet = KUITrimmedSnippetFromString([textView_.text string], 100);
+        NSString *subject = [NSString stringWithFormat:@"%@ - %@", page_.notebook.title, subjectSnippet];
+        [mailComposeViewController setSubject:subject];
+        [mailComposeViewController setMessageBody:[textView_.text string] isHTML:NO];
+        [textView_ resignFirstResponder];
+        [self presentModalViewController:mailComposeViewController animated:YES];
+        [mailComposeViewController release];
+    }
+}
+
+- (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error 
+{
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 #pragma mark -

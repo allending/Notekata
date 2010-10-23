@@ -146,7 +146,11 @@
 - (void)cancel
 {
     [self.titleField resignFirstResponder];
-    [self.parentViewController dismissModalViewControllerAnimated:YES];
+    
+    if ([delegate_ respondsToSelector:@selector(notebookEditViewControllerDidCancel:)])
+    {
+        [delegate_ notebookEditViewControllerDidCancel:self];
+    }
 }
 
 - (void)save

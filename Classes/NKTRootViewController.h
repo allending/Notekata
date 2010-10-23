@@ -22,9 +22,9 @@
     NKTNotebookEditViewController *notebookEditViewController_;
     
     UIBarButtonItem *notebookAddItem_;
-    UIActionSheet *notebookAddActionSheet_;
+    UIActionSheet *addActionSheet_;
     NSIndexPath *notebookDeleteIndexPath_;
-    UIActionSheet *notebookDeleteConfirmationActionSheet_;
+    UIActionSheet *deleteConfirmationActionSheet_;
     
     NSManagedObjectContext *managedObjectContext_;
     NSFetchedResultsController *fetchedResultsController_;
@@ -59,9 +59,7 @@
 #pragma mark Views
 
 @property (nonatomic, retain) UIBarButtonItem *notebookAddItem;
-@property (nonatomic, retain) UIActionSheet *notebookAddActionSheet;
 @property (nonatomic, retain) NSIndexPath *notebookDeleteIndexPath;
-@property (nonatomic, retain) UIActionSheet *notebookDeleteConfirmationActionSheet;
 
 #pragma mark -
 #pragma mark Table View

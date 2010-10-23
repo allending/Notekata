@@ -5,6 +5,7 @@
 #import "KobaUI.h"
 #import "NKTFontPickerViewController.h"
 #import "NKTTextView.h"
+#import <MessageUI/MessageUI.h>
 
 @class NKTPage;
 
@@ -22,7 +23,13 @@ typedef enum
 
 // NKTNotebookViewController manages the editing of an NKTPage. It styles its view to provide a visual page style as
 // specified in the page parameter.
-@interface NKTPageViewController : UIViewController <UISplitViewControllerDelegate, UIPopoverControllerDelegate, NKTTextViewDelegate, NKTFontPickerViewControllerDelegate>
+@interface NKTPageViewController : UIViewController <
+    UISplitViewControllerDelegate,
+    UIPopoverControllerDelegate,
+    NKTTextViewDelegate,
+    NKTFontPickerViewControllerDelegate,
+    MFMailComposeViewControllerDelegate,
+    UIActionSheetDelegate>
 {
 @private
     NKTPage *page_;
@@ -146,7 +153,6 @@ typedef enum
 - (NSDictionary *)attributesBySettingFontFamilyNameOfAttributes:(NSDictionary *)attributes;
 
 #pragma mark Menu
-
 
 - (void)presentMenu;
 - (void)updateMenuForTemporaryViewChangesEnded;

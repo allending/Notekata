@@ -78,6 +78,7 @@ typedef enum
 
 #pragma mark Responding to Notebook Edit View Controller Events
 
+- (void)notebookEditViewControllerDidCancel:(NKTNotebookEditViewController *)notebookEditViewController;
 - (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didAddNotebook:(NKTNotebook *)notebook;
 - (void)notebookEditViewController:(NKTNotebookEditViewController *)notebookEditViewController didEditNotebook:(NKTNotebook *)notebook;
 

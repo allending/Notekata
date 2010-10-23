@@ -32,6 +32,7 @@
 		9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */; };
 		9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */; };
 		9F1665271255B9B800AEA16F /* Notes.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F1665261255B9B800AEA16F /* Notes.txt */; };
+		9F267F0D1271ED98007C6F04 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F267F0C1271ED98007C6F04 /* MessageUI.framework */; };
 		9F29982D1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */; };
 		9F327E6E125951A50026DCA7 /* NSString+KobaCoreAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */; };
 		9F34A32B126C92390067CC61 /* NKTPage.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F34A328126C92390067CC61 /* NKTPage.m */; };
@@ -138,6 +139,7 @@
 		9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFontFamilyDescriptor.h; sourceTree = "<group>"; };
 		9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFontFamilyDescriptor.m; sourceTree = "<group>"; };
 		9F1665261255B9B800AEA16F /* Notes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Notes.txt; sourceTree = "<group>"; };
+		9F267F0C1271ED98007C6F04 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		9F29982C1249B17200AA62DD /* NKTFontPickerViewTableViewBorder.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = NKTFontPickerViewTableViewBorder.png; sourceTree = "<group>"; };
 		9F327E6C125951A50026DCA7 /* NSString+KobaCoreAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+KobaCoreAdditions.h"; sourceTree = "<group>"; };
 		9F327E6D125951A50026DCA7 /* NSString+KobaCoreAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+KobaCoreAdditions.m"; sourceTree = "<group>"; };
@@ -243,6 +245,7 @@
 				9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */,
 				9F47F0B51260C27B00E5E6BB /* CoreData.framework in Frameworks */,
 				9F45C73A1271449400E56239 /* MobileCoreServices.framework in Frameworks */,
+				9F267F0D1271ED98007C6F04 /* MessageUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,13 +312,14 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
-				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				9F47F0B41260C27B00E5E6BB /* CoreData.framework */,
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
 				F5632B0111DD9D1000868F7B /* CoreText.framework */,
-				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
-				9F47F0B41260C27B00E5E6BB /* CoreData.framework */,
+				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				9F267F0C1271ED98007C6F04 /* MessageUI.framework */,
 				9F45C7391271449400E56239 /* MobileCoreServices.framework */,
+				9F6711CA122B9F4D00B0811B /* QuartzCore.framework */,
+				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
