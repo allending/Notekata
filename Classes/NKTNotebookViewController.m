@@ -223,8 +223,8 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     NSError *error = nil;
     if (![notebook_.managedObjectContext save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     
@@ -396,8 +396,8 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     NSError *error = nil;
     if (![notebook_.managedObjectContext save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     
@@ -469,8 +469,8 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     NSError *error = nil;
     if (![notebook_.managedObjectContext save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     
@@ -520,8 +520,8 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     NSError *error = nil;
     if (![fetchedResultsController_ performFetch:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to perform fetch: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     

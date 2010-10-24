@@ -8,6 +8,8 @@
 // A simple logging framework.
 //--------------------------------------------------------------------------------------------------
 
+NSString *KBCDetailedCoreDataErrorStringFromError(NSError *error);
+
 void KBCLog(const char *functionName, NSString *fmt, ...);
 
 #define KBCLogTrace() KBCLog(__PRETTY_FUNCTION__, nil)

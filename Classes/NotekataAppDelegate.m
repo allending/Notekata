@@ -77,11 +77,14 @@ static NSString *ModelType = @"mom";
 {
     if (managedObjectContext_ != nil)
     {
+        // Final chance for page view controller to save changes
+        [pageViewController_ savePendingChanges];
+        
         NSError *error = nil;
         if ([managedObjectContext_ hasChanges] && ![managedObjectContext_ save:&error])
         {
-            // PENDING: fix and log
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+            KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+            KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
             abort();
         }
     }
@@ -97,8 +100,8 @@ static NSString *ModelType = @"mom";
     NSArray *notebooks = [NKTNotebook fetchNotebooksInManagedObjectContext:managedObjectContext_ fetchLimit:1 error:&error];
     if (error != nil)
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to perform fetch: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     
@@ -109,8 +112,8 @@ static NSString *ModelType = @"mom";
         error = nil;
         if (![managedObjectContext_ save:&error])
         {
-            // PENDING: fix and log
-            KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+            KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+            KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
             abort();
         }
     }
@@ -203,7 +206,8 @@ static NSString *ModelType = @"mom";
          */
         
         // PENDING: fix and log
-        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to create persistent store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     

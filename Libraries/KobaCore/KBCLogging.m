@@ -3,6 +3,28 @@
 //--------------------------------------------------------------------------------------------------
 
 #import "KBCLogging.h"
+#import <CoreData/CoreData.h>
+
+NSString *KBCDetailedCoreDataErrorStringFromError(NSError *error)
+{
+    NSArray* detailedErrors = [[error userInfo] objectForKey:NSDetailedErrorsKey];
+    
+    if(detailedErrors != nil && [detailedErrors count] > 0)
+    {
+        NSMutableString *detailedErrorString = [NSMutableString string];
+        
+        for (NSError* detailedError in detailedErrors)
+        {
+            [detailedErrorString appendFormat:@"  DetailedError: %@\n", [detailedError userInfo]];
+        }
+        
+        return detailedErrorString;
+    }
+    else
+    {
+        return [NSString stringWithFormat:@"%@", [error userInfo]];
+    }
+}
 
 void KBCLog(const char *functionName, NSString *format, ...)
 {

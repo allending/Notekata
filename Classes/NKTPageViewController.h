@@ -24,6 +24,9 @@
 @private
     NKTPage *page_;
     BOOL frozen_;
+    NSUInteger changeCountSinceSave_;
+    NSUInteger textLengthBeforeChange_;
+    NSUInteger totalTextLengthChangeSinceSave_;
     
     id <NKTPageViewControllerDelegate> delegate_;
     UIPopoverController *notebookPopoverController_;
@@ -60,6 +63,7 @@
 // Setting a new page causes any pending changes to be saved.
 @property (nonatomic, retain) NKTPage *page;
 
+- (void)enterSaveCheckpointForTextDidChange;
 - (void)savePendingChanges;
 
 #pragma mark -

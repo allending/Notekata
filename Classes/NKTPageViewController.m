@@ -37,6 +37,8 @@
 @synthesize italicToggleButton = italicToggleButton_;
 @synthesize underlineToggleButton = underlineToggleButton_;
 
+const NSUInteger SaveCheckpointChangeCountThreshold = 50;
+const NSUInteger SaveCheckpointTotalTextLengthChangeThreshold = 50;
 static const NSUInteger TitleSnippetSourceLength = 50;
 static const CGFloat KeyboardOverlapTolerance = 1.0;
 static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notekata.codedattributedstringdata";
@@ -277,24 +279,25 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 
 - (void)setPage:(NKTPage *)page
 {
+    // Make sure to save any pending changes
+    [self savePendingChanges];
+    
     if (page_ == page)
     {
         return;
     }
     
-    // The controller could have asked for first responder status when the text view recognized
-    // gestures, so resign first responder status whenever the view dissapears?
+    // The controller might have asked for first responder status when the text view recognized
+    // gestures, so resign first responder status whenever the page is set
     [self resignFirstResponder];
     
+    // Dismiss font popover
     if ([fontPopoverController_ isPopoverVisible])
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
     
-    // Make sure to save pending changes to current page before changing
-    [self savePendingChanges];
-    
-    // Clean up
+    // Stop observing current page
     if (page_ != nil)
     {
         [page_.notebook removeObserver:self forKeyPath:@"title"];
@@ -304,16 +307,24 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     [page_ release];
     page_ = [page retain];
     
-    // A special view configuration is shown if the page is nil
+    // A different view setup is displayed if the page is nil
     if (page_ != nil)
     {
-        // Need to know when certain notebook properties change
+        // PENDING: make sure this is ok if notebook is deleted
+        // Observe changes in notebook
         [page_.notebook addObserver:self forKeyPath:@"title" options:0 context:nil];
         [page_.notebook addObserver:self forKeyPath:@"notebookStyle" options:0 context:nil];
         
         [self configureViewsForNonNilPageAnimated:NO];
         [self applyNotebookStyle];
         [self updatePageDependentViews];
+        
+        // Reset save checkpoint variables
+        changeCountSinceSave_ = 0;
+        textLengthBeforeChange_ = [textView_.text length];
+        totalTextLengthChangeSinceSave_ = 0;
+        
+        KBCLogDebug(@"Page set with text of length %d.", [page_.textString length]);
     }
     else
     {
@@ -321,26 +332,64 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     }
 }
 
+- (void)enterSaveCheckpointForTextDidChange
+{
+    // We push changes in the text view periodically to the data model and persistent storage
+    // depending on the number of changes that have occured
+    ++changeCountSinceSave_;
+    NSInteger textLength = (NSInteger)[textView_.text length];
+    NSUInteger changeInLength = abs(textLength - (NSInteger)textLengthBeforeChange_);
+    textLengthBeforeChange_ = textLength;
+    totalTextLengthChangeSinceSave_ += changeInLength;
+    
+    if (changeCountSinceSave_ >= SaveCheckpointChangeCountThreshold || totalTextLengthChangeSinceSave_ >= SaveCheckpointTotalTextLengthChangeThreshold)
+    {
+        [self savePendingChanges];
+    }
+}
+
 - (void)savePendingChanges
 {
     if (page_ == nil)
     {
+        KBCLogDebug(@"Page is nil. Returning.");
         return;
     }
     
-    // PENDING: store a dirty flag to avoid needless saving
-    // Get text of the page from the text view and save to page
+    if (changeCountSinceSave_ == 0)
+    {
+        //KBCLogDebug(@"No text changes since last save. Returning.");
+        return;
+    }
+    
+    // Some logging and statistics
+    NSDate *startDate = [NSDate date];
+    
     NSAttributedString *text = textView_.text;
-    page_.textString = [text string];
-    page_.textStyleString = [KBTAttributedStringCodec styleStringForAttributedString:text];
+    // Must make a copy for core data or this will fail badly (the text property of the textview
+    // returns the backing attributed string)!
+    NSString *string = [[text string] copy];
+    NSString *styleString = [KBTAttributedStringCodec styleStringForAttributedString:text];
+    page_.textString = string;
+    page_.textStyleString = styleString;
     
     NSError *error = nil;
     if (![page_.managedObjectContext save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
+    
+    // Update save checkpoint counters
+    changeCountSinceSave_ = 0;
+    totalTextLengthChangeSinceSave_ = 0;
+    
+    // Finish up logging and statistics
+    NSDate *endDate = [NSDate date];
+    NSTimeInterval elapsedTime = [endDate timeIntervalSinceDate:startDate];
+    KBCLogDebug(@"Saved text of length %d in %f seconds.", [string length], elapsedTime);
+    [string release];
 }
 
 #pragma mark -
@@ -882,6 +931,10 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 
 - (void)textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition
 {
+    // Text view changes are saved at a certain frequency depending on the number and size of
+    // changes
+    [self enterSaveCheckpointForTextDidChange];
+    
     if (notebookPopoverController_.popoverVisible)
     {
         [notebookPopoverController_ dismissPopoverAnimated:YES];
@@ -891,7 +944,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
-        
+    
     // Only update title label when change occurs in the range of text the title is generated from
     if (textPosition.location < TitleSnippetSourceLength)
     {

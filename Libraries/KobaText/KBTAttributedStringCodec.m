@@ -29,9 +29,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
     while (index < length)
     {
         NSRange effectiveRange = NSMakeRange(NSNotFound, 0);
-        NSDictionary *attributes = [attributedString attributesAtIndex:index
-                                                 longestEffectiveRange:&effectiveRange
-                                                               inRange:entireRange];
+        NSDictionary *attributes = [attributedString attributesAtIndex:index longestEffectiveRange:&effectiveRange inRange:entireRange];
         KBTStyleDescriptor *descriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:attributes];
         [styles addObject:[descriptor portableRepresentation]];
         [styleRanges addObject:KBCPortableRepresentationFromRange(effectiveRange)];
@@ -59,7 +57,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
     if (error != nil)
     {
         // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Unresolved error while serializing style string: %@, %@", error, [error userInfo]);
         abort();
     }
     
@@ -84,7 +82,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
     if (error != nil)
     {
         // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Unresolved error while serializing data: %@, %@", error, [error userInfo]);
         abort();
     }
     
@@ -99,7 +97,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
     if (error != nil)
     {
         // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Unresolved error while deserializing data: %@, %@", error, [error userInfo]);
         abort();
     }
     
@@ -133,7 +131,7 @@ static NSString *StyleRangesKey = @"StyleRanges";
         if (error != nil)
         {
             // PENDING: fix and log
-            KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+            KBCLogWarning(@"Unresolved error while deserializing style string: %@, %@", error, [error userInfo]);
             abort();
         }
         
@@ -154,13 +152,13 @@ static NSString *StyleRangesKey = @"StyleRanges";
             
             if (styleRange.location >= length)
             {
-                KBCLogWarning(@"Detected style range start exceeding string length. Breaking.");
+                KBCLogWarning(@"Detected style range start (%d) exceeding string length (%d). Remaining styles will not be applied.", styleRange.location, length);
                 break;
             }
             
             if (NSMaxRange(styleRange) > length)
             {
-                KBCLogWarning(@"Detected invalid style range end. Forcing style range end to end of string.");
+                KBCLogWarning(@"Detected invalid style range end (%d) exceeding string length (%d). Forcing style range end to end of string.", NSMaxRange(styleRange), length);
                 styleRange = NSMakeRange(styleRange.location, length - styleRange.location);
             }
             

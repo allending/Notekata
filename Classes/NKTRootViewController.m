@@ -83,8 +83,8 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
     NSError *error = nil;
     if (![self.fetchedResultsController performFetch:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to perform fetch: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
 }
@@ -241,8 +241,8 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
 }
@@ -461,8 +461,8 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     

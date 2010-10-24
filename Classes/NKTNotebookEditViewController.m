@@ -123,8 +123,8 @@ static const NSUInteger NotebookStyleSection = 1;
     NSArray *notebooks = [managedObjectContext_ executeFetchRequest:fetchRequest error:&error];
     if (error != nil)
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to execute fetch request: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     
@@ -194,8 +194,8 @@ static const NSUInteger NotebookStyleSection = 1;
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     
@@ -216,8 +216,8 @@ static const NSUInteger NotebookStyleSection = 1;
     NSError *error = nil;
     if (![managedObjectContext_ save:&error])
     {
-        // PENDING: fix and log
-        KBCLogWarning(@"Unresolved error %@, %@", error, [error userInfo]);
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
         abort();
     }
     

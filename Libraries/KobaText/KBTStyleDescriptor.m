@@ -21,7 +21,16 @@ static NSString *UnderlinedKey = @"Underlined";
 {
     if ((self = [super init]))
     {
-        coreTextAttributes_ = [coreTextAttributes copy];
+        if ([coreTextAttributes count] == 0)
+        {
+            KBCLogWarning(@"Core text attributes dictionary is empty. Initializing with default attributes.");
+            fontFamilyName_ = @"Helvetica Neue";
+            fontSize_ = 16.0;
+        }
+        else
+        {
+            coreTextAttributes_ = [coreTextAttributes copy];
+        }
     }
     
     return self;
@@ -37,9 +46,14 @@ static NSString *UnderlinedKey = @"Underlined";
     {
         if (fontFamilyName == nil)
         {
-            KBCLogWarning(@"font family name must not be nil, returning nil");
-            [self release];
-            return nil;
+            KBCLogWarning(@"Font family name is nil. Using Helvetica Neue.");
+            fontFamilyName = @"Helvetica Neue";
+        }
+
+        if (fontSize == 0.0)
+        {
+            KBCLogWarning(@"Font size is 0.0. Using 16.0.");
+            fontSize = 16.0;
         }
         
         fontFamilyName_ = [fontFamilyName copy];
@@ -109,7 +123,7 @@ static NSString *UnderlinedKey = @"Underlined";
     
     if (font == NULL)
     {
-        KBCLogWarning(@"could get font attribute from style attributes, returning nil");
+        KBCLogWarning(@"Could not get font attribute from style attributes. Returning nil.");
         return nil;
     }
     
@@ -124,7 +138,7 @@ static NSString *UnderlinedKey = @"Underlined";
     
     if (font == NULL)
     {
-        KBCLogWarning(@"could get font attribute from style attributes, returning nil");
+        KBCLogWarning(@"Could not get font attribute from style attributes. Returning nil.");
         return nil;
     }
     
@@ -139,7 +153,7 @@ static NSString *UnderlinedKey = @"Underlined";
     
     if (font == NULL)
     {
-        KBCLogWarning(@"could get font attribute from style attributes, returning 0.0");
+        KBCLogWarning(@"Could not get font attribute from style attributes. Returning 0.0.");
         return 0.0;
     }
     
@@ -314,7 +328,7 @@ static NSString *UnderlinedKey = @"Underlined";
     
     if (bestFont == NULL)
     {
-        KBCLogWarning(@"could not create Core Text font with font name %@. returning nil.", bestFontName);
+        KBCLogWarning(@"Could not create Core Text font with font name %@. Returning nil.", bestFontName);
         return nil;
     }
     
