@@ -172,6 +172,6 @@
 
 @optional
 
-- (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView;
+- (void)pageViewController:(NKTPageViewController *)pageViewController textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition;
 
 @end

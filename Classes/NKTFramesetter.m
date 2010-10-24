@@ -209,6 +209,14 @@
 - (void)textChangedFromTextPosition:(NKTTextPosition *)textPosition
 {
     NKTLine *line = [self lineForCaretAtTextPosition:textPosition];
+    
+    // Typeset beginning from the previous line because a change might cause text to be shifted
+    // backwards to end of the previous line
+    if (line.index > 0)
+    {
+        line = [self.lines objectAtIndex:line.index - 1];
+    }
+    
     [self invalidateTypesetter];
     [self typesetFromLineAtIndex:line.index];
 }

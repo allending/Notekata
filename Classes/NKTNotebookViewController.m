@@ -23,6 +23,7 @@
 @synthesize pageAddItem = pageAddItem_;
 @synthesize pageAddActionSheet = pageAddActionSheet_;
 
+static const NSUInteger TitleSnippetSourceLength = 50;
 static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
 
 #pragma mark -
@@ -283,12 +284,15 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
 #pragma mark -
 #pragma mark Page View Controller Delegate
 
-- (void)pageViewController:(NKTPageViewController *)pageViewController textViewDidChange:(NKTTextView *)textView
+- (void)pageViewController:(NKTPageViewController *)pageViewController textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition
 {
-    // PENDING: can optimize if text position is given
-    NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
-    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    [self configureCell:cell atIndexPath:indexPath];
+    // Only update cell when change occurs in the range of text the cell text is generated from
+    if (textPosition.location < TitleSnippetSourceLength)
+    {
+        NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:selectedPage_];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        [self configureCell:cell atIndexPath:indexPath];
+    }
 }
 
 #pragma mark -
@@ -337,7 +341,7 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
         snippetSource = page.textString;
     }
     
-    NSString *snippet = KUITrimmedSnippetFromString(snippetSource, 50);
+    NSString *snippet = KUITrimmedSnippetFromString(snippetSource, TitleSnippetSourceLength);
     
     if ([snippet length] == 0)
     {

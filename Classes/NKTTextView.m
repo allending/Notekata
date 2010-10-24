@@ -38,11 +38,17 @@
 @property (nonatomic, readonly) NKTFramesetter *framesetter;
 
 - (void)invalidateFramesetter;
-- (void)regenerateTextFrame;
+- (void)updateTextFrame;
+- (void)updateTextFrameForChangeFromTextPosition:(NKTTextPosition *)textPosition;
 - (CGPoint)convertPointToFramesetter:(CGPoint)point;
 - (CGPoint)convertPointFromFramesetter:(CGPoint)point;
 - (CGAffineTransform)viewToFramesetterTransform;
 - (CGAffineTransform)framesetterToViewTransform;
+
+#pragma mark -
+#pragma mark Notifying the Delegate
+
+- (void)notifyDelegateOfChangeFromTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Responding to Gestures
 
@@ -301,7 +307,7 @@
     // property instead before doing any further processing.
     if (text_ != nil)
     {
-        [self regenerateTextFrame];
+        [self updateTextFrame];
         [selectionDisplayController_ updateSelectionDisplay];
     }
 }
@@ -337,7 +343,7 @@
     [inputDelegate_ textWillChange:self];
     [text_ release];
     text_ = [[NSMutableAttributedString alloc] initWithAttributedString:text];
-    [self regenerateTextFrame];
+    [self updateTextFrame];
     [inputDelegate_ textDidChange:self];
     
     self.contentOffset = CGPointZero;
@@ -426,9 +432,7 @@
     while (currentLocation < textRange.end.location)
     {
         NSRange longestEffectiveRange;
-        NSDictionary *attributes = [text_ attributesAtIndex:currentLocation
-                                      longestEffectiveRange:&longestEffectiveRange
-                                                    inRange:selectedTextRange_.nsRange];
+        NSDictionary *attributes = [text_ attributesAtIndex:currentLocation longestEffectiveRange:&longestEffectiveRange inRange:selectedTextRange_.nsRange];
         NSDictionary *newAttributes = [target performSelector:selector withObject:attributes];
         
         if (newAttributes != attributes)
@@ -439,8 +443,8 @@
         currentLocation = longestEffectiveRange.location + longestEffectiveRange.length;
     }
     
-    // PENDING: frameset intelligently
-    [self regenerateTextFrame];
+    [self updateTextFrameForChangeFromTextPosition:textRange.start];
+    [self notifyDelegateOfChangeFromTextPosition:textRange.start];
 }
 
 #pragma mark -
@@ -449,14 +453,14 @@
 - (void)setMargins:(UIEdgeInsets)margins
 {
     margins_ = margins;
-    [self regenerateTextFrame];
+    [self updateTextFrame];
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
 - (void)setLineHeight:(CGFloat)lineHeight 
 {
     lineHeight_ = lineHeight;
-    [self regenerateTextFrame];
+    [self updateTextFrame];
     [selectionDisplayController_ updateSelectionDisplay];
 }
 
@@ -635,9 +639,17 @@
     framesetter_ = nil;
 }
 
-- (void)regenerateTextFrame
+- (void)updateTextFrame
 {
     [self invalidateFramesetter];
+    [self untileVisibleSections];
+    [self tileSections];
+    [self updateContentSize];
+}
+
+- (void)updateTextFrameForChangeFromTextPosition:(NKTTextPosition *)textPosition
+{
+    [self.framesetter textChangedFromTextPosition:textPosition];
     [self untileVisibleSections];
     [self tileSections];
     [self updateContentSize];
@@ -661,6 +673,17 @@
 - (CGAffineTransform)framesetterToViewTransform
 {
     return CGAffineTransformMakeTranslation(margins_.left, margins_.top);
+}
+
+#pragma mark -
+#pragma mark Notifying the Delegate
+
+- (void)notifyDelegateOfChangeFromTextPosition:(NKTTextPosition *)textPosition
+{
+    if ([self.delegate respondsToSelector:@selector(textView:didChangeFromTextPosition:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textView:self didChangeFromTextPosition:textPosition];
+    }
 }
 
 #pragma mark -
@@ -1313,16 +1336,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [attributedString release];
     }
     
-    // PENDING: extract a method for this block
-    [self.framesetter textChangedFromTextPosition:insertionTextRange.start];
-    [self untileVisibleSections];
-    [self tileSections];
-    [self updateContentSize];
-    
-    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
-    {
-        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
-    }
+    [self updateTextFrameForChangeFromTextPosition:insertionTextRange.start];
+    [self notifyDelegateOfChangeFromTextPosition:insertionTextRange.start];
     
     NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:insertionTextRange.start.location + [text length]
                                                                      affinity:UITextStorageDirectionForward];
@@ -1372,13 +1387,9 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     
     [text_ deleteCharactersInRange:deletionTextRange.nsRange];
-    // PENDING: frameset intelligently
-    [self regenerateTextFrame];
     
-    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
-    {
-        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
-    }
+    [self updateTextFrameForChangeFromTextPosition:deletionTextRange.start];
+    [self notifyDelegateOfChangeFromTextPosition:deletionTextRange.start];
     
     NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:deletionTextRange.start.location
                                                                      affinity:UITextStorageDirectionForward];
@@ -1497,19 +1508,14 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [attributedString release];
     }
     
-    // PENDING: frameset intelligently
-    [self regenerateTextFrame];
+    [self updateTextFrameForChangeFromTextPosition:textRange.start];
     
     if (notifyInputDelegate)
     {
         [inputDelegate_ textDidChange:self];
     }
     
-    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
-    {
-        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
-    }
-    
+    [self notifyDelegateOfChangeFromTextPosition:textRange.start];
     [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
 }
 
@@ -1534,19 +1540,14 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     
     [text_ replaceCharactersInRange:textRange.nsRange withAttributedString:attributedString];
     
-    // PENDING: frameset intelligently
-    [self regenerateTextFrame];
+    [self updateTextFrameForChangeFromTextPosition:textRange.start];
     
     if (notifyInputDelegate)
     {
         [inputDelegate_ textDidChange:self];
     }
     
-    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
-    {
-        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
-    }
-    
+    [self notifyDelegateOfChangeFromTextPosition:textRange.start];    
     [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
 }
 
@@ -1680,13 +1681,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
     [attributedString release];
     
-    // PENDING: frameset intelligently
-    [self regenerateTextFrame];
-    
-    if ([self.delegate respondsToSelector:@selector(textViewDidChange:)])
-    {
-        [(id <NKTTextViewDelegate>)self.delegate textViewDidChange:self];
-    }
+    [self updateTextFrameForChangeFromTextPosition:replacementTextRange.start];
+    [self notifyDelegateOfChangeFromTextPosition:replacementTextRange.start];
     
     NKTTextRange *newMarkedTextRange = nil;
     NKTTextRange *newSelectedTextRange = nil;

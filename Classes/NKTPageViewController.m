@@ -37,6 +37,7 @@
 @synthesize italicToggleButton = italicToggleButton_;
 @synthesize underlineToggleButton = underlineToggleButton_;
 
+static const NSUInteger TitleSnippetSourceLength = 50;
 static const CGFloat KeyboardOverlapTolerance = 1.0;
 static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notekata.codedattributedstringdata";
 
@@ -702,7 +703,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 
 - (void)updateTitleLabel
 {
-    NSString *snippet = KUITrimmedSnippetFromString([textView_.text string], 50);
+    NSString *snippet = KUITrimmedSnippetFromString([textView_.text string], TitleSnippetSourceLength);
     
     if ([snippet length] == 0)
     {
@@ -879,7 +880,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     [self dismissMenu];
 }
 
-- (void)textViewDidChange:(NKTTextView *)textView
+- (void)textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition
 {
     if (notebookPopoverController_.popoverVisible)
     {
@@ -890,16 +891,21 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     {
         [fontPopoverController_ dismissPopoverAnimated:YES];
     }
-    
-    if ([delegate_ respondsToSelector:@selector(pageViewController:textViewDidChange:)])
+        
+    // Only update title label when change occurs in the range of text the title is generated from
+    if (textPosition.location < TitleSnippetSourceLength)
     {
-        [delegate_ pageViewController:self textViewDidChange:textView_];
+        [self updateTitleLabel];
     }
-    
-    [self updateTitleLabel];
     
     menuEnabledForSelectedTextRange_ = NO;
     [self dismissMenu];
+    
+    // Delegate might care about this too
+    if ([delegate_ respondsToSelector:@selector(pageViewController:textView:didChangeFromTextPosition:)])
+    {
+        [delegate_ pageViewController:self textView:textView_ didChangeFromTextPosition:textPosition];
+    }
 }
 
 #pragma mark -
@@ -1056,7 +1062,6 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         
         if (CGRectIsNull(targetRect))
         {
-            KBCLogDebug(@"target rect is outside of view bounds, returning");
             return;
         }
         
