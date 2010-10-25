@@ -16,9 +16,9 @@
 
 @synthesize window = window_;
 
-static NSString *StorePath = @"Notekata.sqlite";
+static NSString *StorePath = @"Notebooks.sqlite";
 static NSString *ModelResource = @"Notekata";
-static NSString *ModelType = @"mom";
+static NSString *ModelType = @"momd";
 
 #pragma mark -
 #pragma mark Memory
@@ -190,12 +190,15 @@ static NSString *ModelType = @"mom";
         return persistentStoreCoordinator_;
     }
     
+    persistentStoreCoordinator_ = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
     NSString *storePath = [[self applicationDocumentsDirectory] stringByAppendingPathComponent:StorePath];
     NSURL *storeURL = [NSURL fileURLWithPath:storePath];
-    persistentStoreCoordinator_ = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
+        [NSNumber numberWithBool:YES], NSMigratePersistentStoresAutomaticallyOption,
+        [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption, nil];
     
     NSError *error = nil;
-    if (![persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
+    if (![persistentStoreCoordinator_ addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
     {
         /*
          Replace this implementation with code to handle the error appropriately.

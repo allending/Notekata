@@ -17,6 +17,7 @@ static NSString *DefaultNotebookTitle = @"My Notebook";
 {
     NKTNotebook *notebook = [NSEntityDescription insertNewObjectForEntityForName:NotebookEntityName inManagedObjectContext:managedObjectContext];
     notebook.notebookStyle = [NSNumber numberWithInteger:0];
+    notebook.creationDate = [NSDate date];
     notebook.title = DefaultNotebookTitle;
     notebook.displayOrder = [NSNumber numberWithUnsignedInt:0];
     notebook.notebookId = KBCUUIDString();

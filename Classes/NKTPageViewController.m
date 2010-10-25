@@ -378,6 +378,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     NSString *styleString = [KBTAttributedStringCodec styleStringForAttributedString:text];
     page_.textString = string;
     page_.textStyleString = styleString;
+    page_.textModifiedDate = [NSDate date];
     
     NSError *error = nil;
     if (![page_.managedObjectContext save:&error])
