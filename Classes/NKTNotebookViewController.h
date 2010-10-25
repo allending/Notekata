@@ -24,6 +24,8 @@
     UILabel *titleLabel_;
     UIBarButtonItem *pageAddItem_;
     UIActionSheet *pageAddActionSheet_;
+    NSIndexPath *pageDeleteIndexPath_;
+    UIActionSheet *pageDeleteConfirmationActionSheet_;
 }
 
 #pragma mark -
@@ -37,6 +39,7 @@
 
 - (NKTPage *)pageAtIndex:(NSUInteger)index;
 - (NKTPage *)addPageToNotebook;
+- (void)presentPageDeleteConfirmationForPageAtIndexPath:(NSIndexPath *)indexPath;
 
 #pragma mark -
 #pragma mark Actions
@@ -55,6 +58,7 @@
 @property (nonatomic, retain) UILabel *titleLabel;
 @property (nonatomic, retain) UIBarButtonItem *pageAddItem;
 @property (nonatomic, retain) UIActionSheet *pageAddActionSheet;
+@property (nonatomic, retain) NSIndexPath *pageDeleteIndexPath;
 
 #pragma mark -
 #pragma mark Table View Data Source/Delegate

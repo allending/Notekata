@@ -22,6 +22,7 @@
 @synthesize titleLabel = titleLabel_;
 @synthesize pageAddItem = pageAddItem_;
 @synthesize pageAddActionSheet = pageAddActionSheet_;
+@synthesize pageDeleteIndexPath = pageDeleteIndexPath_;
 
 static const NSUInteger TitleSnippetSourceLength = 50;
 static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
@@ -40,6 +41,8 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     [titleLabel_ release];
     [pageAddItem_ release];
     [pageAddActionSheet_ release];
+    [pageDeleteIndexPath_ release];
+    [pageDeleteConfirmationActionSheet_ release];
     [super dealloc];
 }
 
@@ -76,6 +79,7 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     self.titleLabel = nil;
     self.pageAddItem = nil;
     self.pageAddActionSheet = nil;
+    self.pageDeleteIndexPath = nil;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -133,6 +137,9 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
 {
     [self setEditing:NO animated:NO];
     [pageAddActionSheet_ dismissWithClickedButtonIndex:pageAddActionSheet_.cancelButtonIndex animated:NO];
+    [pageDeleteConfirmationActionSheet_ dismissWithClickedButtonIndex:pageDeleteConfirmationActionSheet_.cancelButtonIndex animated:NO];
+    pageDeleteConfirmationActionSheet_ = nil;
+    self.pageDeleteIndexPath = nil;
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
@@ -231,6 +238,70 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     return page;
 }
 
+- (void)deletePageAtIndexPath:(NSIndexPath *)indexPath
+{
+    NKTPage *pageToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    NSUInteger numberOfPages = [[notebook_ pages] count];
+    BOOL deletingSelectedPage = (pageToDelete == selectedPage_);
+    BOOL deletingLastPage = (numberOfPages == 1);
+    
+    if (deletingSelectedPage)
+    {
+        pageViewController_.page = nil;
+    }
+    
+    // Reorder the pages first
+    NSUInteger reorderRangeStart = indexPath.row + 1;
+    NSUInteger reorderRangeEnd = numberOfPages;
+    for (NSUInteger index = reorderRangeStart; index < reorderRangeEnd; ++index)
+    {
+        NSIndexPath *reorderIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+        NKTPage *pageToReorder = [self.fetchedResultsController objectAtIndexPath:reorderIndexPath];
+        pageToReorder.pageNumber = [NSNumber numberWithInteger:index - 1];
+    }
+    
+    // Delete the page
+    [notebook_ removePagesObject:pageToDelete];
+    [notebook_.managedObjectContext deleteObject:pageToDelete];
+    
+    // Add a page if the deleted page was the last one
+    if (deletingLastPage)
+    {
+        NKTPage *page = [NKTPage insertPageInManagedObjectContext:notebook_.managedObjectContext];
+        [notebook_ addPagesObject:page];
+    }
+    
+    NSError *error = nil;
+    if (![notebook_.managedObjectContext save:&error])
+    {
+        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
+        abort();
+    }
+    
+    // Select new page if the deleted page was the selected page
+    if (deletingSelectedPage)
+    {
+        // Select the new page occupying the deleted page number's spot, or the last page of the notebook
+        NKTPage *pageToSelect = nil;
+        // Number of pages might have changed
+        numberOfPages = [[notebook_ pages] count];
+        
+        if (indexPath.row < numberOfPages)
+        {
+            pageToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        }
+        else
+        {
+            NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:numberOfPages - 1 inSection:0];
+            pageToSelect = [self.fetchedResultsController objectAtIndexPath:newIndexPath];
+        }
+        
+        self.selectedPage = pageToSelect;
+        pageViewController_.page = pageToSelect;
+    }
+}
+
 #pragma mark -
 #pragma mark Actions
 
@@ -255,7 +326,7 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     
     // Scroll to added page
     NSIndexPath *indexPath = [self.fetchedResultsController indexPathForObject:page];
-    [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
+    [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionTop];
     
     // Select added page
     self.selectedPage = page;
@@ -266,7 +337,7 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     [pageViewController_.textView becomeFirstResponder];
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     // Present the next view after the sheet has been dismissed to prevent some animation
     // artifacts
@@ -276,9 +347,29 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
         {
             [self addPageAndBeginEditing];
         }
-        
+
+        // Dismiss action sheet without animation to provide smoother transition
+        [pageAddActionSheet_ dismissWithClickedButtonIndex:pageAddActionSheet_.firstOtherButtonIndex animated:NO];
         pageAddActionSheet_ = nil;
     }
+    else if (actionSheet == pageDeleteConfirmationActionSheet_)
+    {
+        if (buttonIndex == pageDeleteConfirmationActionSheet_.destructiveButtonIndex)
+        {
+            [self deletePageAtIndexPath:pageDeleteIndexPath_];
+        }
+        
+        self.pageDeleteIndexPath = nil;
+        pageDeleteConfirmationActionSheet_ = nil;
+    }
+}
+
+- (void)presentPageDeleteConfirmationForPageAtIndexPath:(NSIndexPath *)indexPath
+{
+    self.pageDeleteIndexPath = indexPath;
+    pageDeleteConfirmationActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Delete Page" otherButtonTitles:nil];
+    [pageDeleteConfirmationActionSheet_ showInView:self.view];
+    [pageDeleteConfirmationActionSheet_ release];
 }
 
 #pragma mark -
@@ -354,73 +445,13 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     }
 }
 
+
+
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (editingStyle != UITableViewCellEditingStyleDelete)
+    if (editingStyle == UITableViewCellEditingStyleDelete)
     {
-        KBCLogWarning(@"Unexpected editing style. Returning.");
-        return;
-    }
-    
-    NKTPage *pageToDelete = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    NSUInteger numberOfPages = [[notebook_ pages] count];
-    BOOL deletingSelectedPage = (pageToDelete == selectedPage_);
-    BOOL deletingLastPage = (numberOfPages == 1);
-    
-    if (deletingSelectedPage)
-    {
-        pageViewController_.page = nil;
-    }
-    
-    // Reorder the pages first
-    NSUInteger reorderRangeStart = indexPath.row + 1;
-    NSUInteger reorderRangeEnd = numberOfPages;
-    for (NSUInteger index = reorderRangeStart; index < reorderRangeEnd; ++index)
-    {
-        NSIndexPath *reorderIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
-        NKTPage *pageToReorder = [self.fetchedResultsController objectAtIndexPath:reorderIndexPath];
-        pageToReorder.pageNumber = [NSNumber numberWithInteger:index - 1];
-    }
-    
-    // Delete the page
-    [notebook_ removePagesObject:pageToDelete];
-    [notebook_.managedObjectContext deleteObject:pageToDelete];
-    
-    // Add a page if the deleted page was the last one
-    if (deletingLastPage)
-    {
-        NKTPage *page = [NKTPage insertPageInManagedObjectContext:notebook_.managedObjectContext];
-        [notebook_ addPagesObject:page];
-    }
-    
-    NSError *error = nil;
-    if (![notebook_.managedObjectContext save:&error])
-    {
-        KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
-        KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
-        abort();
-    }
-    
-    // Select new page if the deleted page was the selected page
-    if (deletingSelectedPage)
-    {
-        // Select the new page occupying the deleted page number's spot, or the last page of the notebook
-        NKTPage *pageToSelect = nil;
-        // Number of pages might have changed
-        numberOfPages = [[notebook_ pages] count];
-        
-        if (indexPath.row < numberOfPages)
-        {
-            pageToSelect = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        }
-        else
-        {
-            NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:numberOfPages - 1 inSection:0];
-            pageToSelect = [self.fetchedResultsController objectAtIndexPath:newIndexPath];
-        }
-        
-        self.selectedPage = pageToSelect;
-        pageViewController_.page = pageToSelect;
+        [self presentPageDeleteConfirmationForPageAtIndexPath:indexPath];
     }
 }
 

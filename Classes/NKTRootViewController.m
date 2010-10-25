@@ -129,6 +129,7 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
     notebookAddActionSheet_ = nil;
     [notebookDeleteConfirmationActionSheet_ dismissWithClickedButtonIndex:notebookDeleteConfirmationActionSheet_.cancelButtonIndex animated:NO];
     notebookDeleteConfirmationActionSheet_ = nil;
+    self.notebookDeleteIndexPath = nil;
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
@@ -281,7 +282,7 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
 - (void)presentNotebookDeleteConfirmationForNotebookAtIndexPath:(NSIndexPath *)indexPath
 {
     self.notebookDeleteIndexPath = indexPath;
-    notebookDeleteConfirmationActionSheet_ = [[UIActionSheet alloc] initWithTitle:@"Are You Sure?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Delete" otherButtonTitles:nil];
+    notebookDeleteConfirmationActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Delete Notebook" otherButtonTitles:nil];
     [notebookDeleteConfirmationActionSheet_ showInView:self.view];
     [notebookDeleteConfirmationActionSheet_ release];
 }
