@@ -306,8 +306,8 @@ static const NSUInteger NotebookStyleSection = 1;
             cell.textLabel.text = @"Elegant";
             break;
             
-        case NKTNotebookStyleCollegeRuled:
-            cell.textLabel.text = @"College Ruled";
+        case NKTNotebookStyleCollege:
+            cell.textLabel.text = @"College";
             break;
             
         case NKTNotebookStylePlain:

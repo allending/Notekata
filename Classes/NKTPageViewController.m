@@ -675,7 +675,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
             self.textView.verticalMarginEnabled = NO;
             break;
             
-        case NKTNotebookStyleCollegeRuled:
+        case NKTNotebookStyleCollege:
             self.textView.backgroundView = plainBackgroundView_;
             self.textView.margins = UIEdgeInsetsMake(60.0, 80.0, 60.0, 60.0);
             self.textView.horizontalRulesEnabled = YES;

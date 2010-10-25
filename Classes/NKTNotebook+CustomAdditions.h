@@ -8,7 +8,7 @@
 typedef enum
 {
     NKTNotebookStyleElegant = 0,
-    NKTNotebookStyleCollegeRuled = 1,
+    NKTNotebookStyleCollege = 1,
     NKTNotebookStylePlain = 2,
 } NKTNotebookStyle;
 
