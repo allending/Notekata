@@ -338,7 +338,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     }
 }
 
-- (void)enterSaveCheckpointForTextDidChange
+- (void)enterSaveCheckpointForTextChange
 {
     // We push changes in the text view periodically to the data model and persistent storage
     // depending on the number of changes that have occured
@@ -940,7 +940,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 {
     // Text view changes are saved at a certain frequency depending on the number and size of
     // changes
-    [self enterSaveCheckpointForTextDidChange];
+    [self enterSaveCheckpointForTextChange];
     
     if (notebookPopoverController_.popoverVisible)
     {
@@ -966,6 +966,14 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     {
         [delegate_ pageViewController:self textView:textView_ didChangeFromTextPosition:textPosition];
     }
+}
+
+- (void)textView:(NKTTextView *)textView didChangeStyleFromTextPosition:(NKTTextPosition *)textPosition
+{
+    [self enterSaveCheckpointForTextChange];
+    
+    menuEnabledForSelectedTextRange_ = NO;
+    [self dismissMenu];
 }
 
 #pragma mark -

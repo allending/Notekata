@@ -68,7 +68,7 @@
 // Setting a new page causes any pending changes to be saved.
 @property (nonatomic, retain) NKTPage *page;
 
-- (void)enterSaveCheckpointForTextDidChange;
+- (void)enterSaveCheckpointForTextChange;
 - (void)savePendingChanges;
 
 #pragma mark -

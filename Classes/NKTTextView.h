@@ -155,6 +155,7 @@
 - (void)textViewDidBeginEditing:(NKTTextView *)textView;
 - (void)textViewDidEndEditing:(NKTTextView *)textView;
 - (void)textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)textView:(NKTTextView *)textView didChangeStyleFromTextPosition:(NKTTextPosition *)textPosition;
 - (void)textViewDidChangeSelection:(NKTTextView *)textView;
 
 #pragma mark Gestures

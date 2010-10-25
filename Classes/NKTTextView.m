@@ -49,6 +49,7 @@
 #pragma mark Notifying the Delegate
 
 - (void)notifyDelegateOfChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)notifyDelegateOfStyleChangeFromTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Responding to Gestures
 
@@ -452,7 +453,7 @@
     }
     
     [self updateTextFrameForChangeFromTextPosition:textRange.start];
-    [self notifyDelegateOfChangeFromTextPosition:textRange.start];
+    [self notifyDelegateOfStyleChangeFromTextPosition:textRange.start];
 }
 
 #pragma mark -
@@ -691,6 +692,14 @@
     if ([self.delegate respondsToSelector:@selector(textView:didChangeFromTextPosition:)])
     {
         [(id <NKTTextViewDelegate>)self.delegate textView:self didChangeFromTextPosition:textPosition];
+    }
+}
+
+- (void)notifyDelegateOfStyleChangeFromTextPosition:(NKTTextPosition *)textPosition
+{
+    if ([self.delegate respondsToSelector:@selector(textView:didChangeStyleFromTextPosition:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textView:self didChangeStyleFromTextPosition:textPosition];
     }
 }
 

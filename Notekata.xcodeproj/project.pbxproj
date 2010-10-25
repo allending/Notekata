@@ -52,10 +52,6 @@
 		9F6CB33D122E99DA00D914B4 /* NKTSelectionDisplayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6CB33C122E99DA00D914B4 /* NKTSelectionDisplayController.m */; };
 		9F6E4E4E1258E342005721FB /* KobaCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F6E4E4D1258E342005721FB /* KobaCore.m */; };
 		9F70F9C012545C0200F3025B /* NKTTextViewTokenizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */; };
-		9F792A8212751B5E00C4A953 /* TexturedBackgroundLaunchImage-Landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F792A8012751B5E00C4A953 /* TexturedBackgroundLaunchImage-Landscape.png */; };
-		9F792A8312751B5E00C4A953 /* TexturedBackgroundLaunchImage-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F792A8112751B5E00C4A953 /* TexturedBackgroundLaunchImage-Portrait.png */; };
-		9F792AAD12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F792AAB12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Landscape.png */; };
-		9F792AAE12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F792AAC12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Portrait.png */; };
 		9F792ACE1275240B00C4A953 /* PlainBackgroundLaunchImage-Landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F792ACC1275240B00C4A953 /* PlainBackgroundLaunchImage-Landscape.png */; };
 		9F792ACF1275240B00C4A953 /* PlainBackgroundLaunchImage-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F792ACD1275240B00C4A953 /* PlainBackgroundLaunchImage-Portrait.png */; };
 		9F7D2BA412585738006D23DD /* NKTFramesetter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F7D2BA312585738006D23DD /* NKTFramesetter.m */; };
@@ -177,10 +173,6 @@
 		9F6E4E4D1258E342005721FB /* KobaCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KobaCore.m; sourceTree = "<group>"; };
 		9F70F9BE12545C0200F3025B /* NKTTextViewTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTTextViewTokenizer.h; sourceTree = "<group>"; };
 		9F70F9BF12545C0200F3025B /* NKTTextViewTokenizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NKTTextViewTokenizer.m; sourceTree = "<group>"; wrapsLines = 0; };
-		9F792A8012751B5E00C4A953 /* TexturedBackgroundLaunchImage-Landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TexturedBackgroundLaunchImage-Landscape.png"; sourceTree = "<group>"; };
-		9F792A8112751B5E00C4A953 /* TexturedBackgroundLaunchImage-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "TexturedBackgroundLaunchImage-Portrait.png"; sourceTree = "<group>"; };
-		9F792AAB12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ElegantBackgroundLaunchImage-Landscape.png"; sourceTree = "<group>"; };
-		9F792AAC12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ElegantBackgroundLaunchImage-Portrait.png"; sourceTree = "<group>"; };
 		9F792ACC1275240B00C4A953 /* PlainBackgroundLaunchImage-Landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PlainBackgroundLaunchImage-Landscape.png"; sourceTree = "<group>"; };
 		9F792ACD1275240B00C4A953 /* PlainBackgroundLaunchImage-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "PlainBackgroundLaunchImage-Portrait.png"; sourceTree = "<group>"; };
 		9F7D2BA212585738006D23DD /* NKTFramesetter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTFramesetter.h; sourceTree = "<group>"; };
@@ -407,14 +399,10 @@
 		9F47F0DF1260C31000E5E6BB /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				9F792ACC1275240B00C4A953 /* PlainBackgroundLaunchImage-Landscape.png */,
-				9F792ACD1275240B00C4A953 /* PlainBackgroundLaunchImage-Portrait.png */,
 				9FA5410C122A59530005323E /* CaretHandle.png */,
 				9FA5410D122A59530005323E /* CircleLoupe.png */,
 				9FA5410E122A59530005323E /* CircleLoupeMask.png */,
 				F54453AF11ED6371009D392B /* CreamBackgroundPattern.png */,
-				9F792AAB12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Landscape.png */,
-				9F792AAC12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Portrait.png */,
 				9F65A42C1249A37F0006BD17 /* FontPickerTableBottomCap.png */,
 				9F29982C1249B17200AA62DD /* FontPickerTableEdge.png */,
 				9F65A3BF12499D2D0006BD17 /* FontPickerTableTopCap.png */,
@@ -422,11 +410,11 @@
 				9FFD7FF2126400F700CB082D /* PageLeftEdgeCap.png */,
 				9FFD80091264031800CB082D /* PageLeftEdgeShadow.png */,
 				F54453B111ED6371009D392B /* PageRightEdgeBackgroundPattern.png */,
+				9F792ACC1275240B00C4A953 /* PlainBackgroundLaunchImage-Landscape.png */,
+				9F792ACD1275240B00C4A953 /* PlainBackgroundLaunchImage-Portrait.png */,
 				9FA564DF12517E14002EFFC7 /* PlainBackgroundPattern.png */,
 				9FA5410A122A59530005323E /* RectangleLoupe.png */,
 				9FA5410B122A59530005323E /* RectangleLoupeMask.png */,
-				9F792A8012751B5E00C4A953 /* TexturedBackgroundLaunchImage-Landscape.png */,
-				9F792A8112751B5E00C4A953 /* TexturedBackgroundLaunchImage-Portrait.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -629,10 +617,6 @@
 				9FFD7FF3126400F700CB082D /* PageLeftEdgeCap.png in Resources */,
 				9FFD800A1264031800CB082D /* PageLeftEdgeShadow.png in Resources */,
 				9FAF0C30126BD52800B58D59 /* NKTNotebookEditViewController.xib in Resources */,
-				9F792A8212751B5E00C4A953 /* TexturedBackgroundLaunchImage-Landscape.png in Resources */,
-				9F792A8312751B5E00C4A953 /* TexturedBackgroundLaunchImage-Portrait.png in Resources */,
-				9F792AAD12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Landscape.png in Resources */,
-				9F792AAE12751E6D00C4A953 /* ElegantBackgroundLaunchImage-Portrait.png in Resources */,
 				9F792ACE1275240B00C4A953 /* PlainBackgroundLaunchImage-Landscape.png in Resources */,
 				9F792ACF1275240B00C4A953 /* PlainBackgroundLaunchImage-Portrait.png in Resources */,
 			);
