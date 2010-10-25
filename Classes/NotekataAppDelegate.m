@@ -73,6 +73,28 @@ static NSString *ModelType = @"mom";
      */
 }
 
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    if (managedObjectContext_ != nil)
+    {
+        // Final chance for page view controller to save changes
+        [pageViewController_ savePendingChanges];
+        [pageViewController_ purgeCachedResources];
+        
+        NSError *error = nil;
+        if ([managedObjectContext_ hasChanges] && ![managedObjectContext_ save:&error])
+        {
+            KBCLogWarning(@"Failed to save to data store: %@", [error localizedDescription]);
+            KBCLogWarning(@"%@", KBCDetailedCoreDataErrorStringFromError(error));
+            abort();
+        }
+    }
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application
+{
+}
+
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     if (managedObjectContext_ != nil)

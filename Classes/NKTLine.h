@@ -36,6 +36,11 @@
                 height:(CGFloat)height
               lastLine:(BOOL)lastLine;
 
+#pragma mark -
+#pragma mark Memory
+
+- (void)purgeCachedResources;
+
 #pragma mark Accessing the Index
 
 @property (nonatomic, readonly) NSUInteger index;

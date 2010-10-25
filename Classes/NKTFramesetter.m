@@ -43,6 +43,9 @@
     return self;
 }
 
+#pragma mark -
+#pragma mark Memory
+
 - (void)dealloc
 {
     [text_ release];
@@ -54,6 +57,16 @@
     
     [lines_ release];
     [super dealloc];
+}
+
+- (void)purgeCachedResources
+{
+    for (NKTLine *line in lines_)
+    {
+        [line purgeCachedResources];
+    }
+    
+    [self invalidateTypesetter];
 }
 
 #pragma mark -

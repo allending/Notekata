@@ -58,6 +58,11 @@
 }
 
 #pragma mark -
+#pragma mark Memory
+
+- (void)purgeCachedResources;
+
+#pragma mark -
 #pragma mark Page
 
 // Setting a new page causes any pending changes to be saved.

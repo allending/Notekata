@@ -25,6 +25,10 @@
 
 - (id)initWithText:(NSAttributedString *)text lineWidth:(CGFloat)lineWidth lineHeight:(CGFloat)lineHeight;
 
+#pragma mark Memory
+
+- (void)purgeCachedResources;
+
 #pragma mark Getting the Frame Size
 
 // Returns the size of the text frame based on the number of typeset lines.

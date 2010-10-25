@@ -81,6 +81,12 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
+    [self purgeCachedResources];
+}
+
+- (void)purgeCachedResources
+{
+    [textView_ purgeCachedResources];
 }
 
 #pragma mark -

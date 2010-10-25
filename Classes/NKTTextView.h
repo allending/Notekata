@@ -74,6 +74,10 @@
     NKTDragGestureRecognizer *forwardHandleGestureRecognizer_;
 }
 
+#pragma mark Memory
+
+- (void)purgeCachedResources;
+
 #pragma mark Accessing the Text
 
 @property (nonatomic, copy) NSAttributedString *text;

@@ -210,6 +210,9 @@
     [selectionDisplayController_.forwardHandle addGestureRecognizer:forwardHandleGestureRecognizer_];
 }
 
+#pragma mark -
+#pragma mark Memory
+
 - (void)dealloc
 {
     [text_ release];
@@ -250,6 +253,11 @@
     [forwardHandleGestureRecognizer_ release];
     
     [super dealloc];
+}
+
+- (void)purgeCachedResources
+{
+    [self.framesetter purgeCachedResources];
 }
 
 #pragma mark -

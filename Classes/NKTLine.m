@@ -14,6 +14,8 @@
 
 @property (nonatomic, readonly) CTLineRef line;
 
+- (void)invalidateLine;
+
 @end
 
 #pragma mark -
@@ -51,6 +53,9 @@
     return self;
 }
 
+#pragma mark -
+#pragma mark Memory
+
 - (void)dealloc
 {
     [textRange_ release];
@@ -61,6 +66,11 @@
     }
     
     [super dealloc];
+}
+
+- (void)purgeCachedResources
+{
+    [self invalidateLine];
 }
 
 #pragma mark -
@@ -76,6 +86,15 @@
     }
     
     return line_;
+}
+
+- (void)invalidateLine
+{
+    if (line_ != NULL)
+    {
+        CFRelease(line_);
+        line_ = NULL;
+    }
 }
 
 #pragma mark -
