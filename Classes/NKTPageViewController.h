@@ -36,6 +36,7 @@
     NKTFontPickerViewController *fontPickerViewController_;
     BOOL menuEnabledForSelectedTextRange_;
     BOOL menuDisabledForKeyboard_;
+    UIActionSheet *mailActionSheet_;
     
     NKTTextView *textView_;
     UIView *creamBackgroundView_;

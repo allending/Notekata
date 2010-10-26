@@ -109,6 +109,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     [notebookPopoverController_ release];
     [fontPopoverController_ release];
     [fontPickerViewController_ release];
+    [mailActionSheet_ release];
     
     [textView_ release];
     [creamBackgroundView_ release];
@@ -534,15 +535,40 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     else
     {
         [self.textView resignFirstResponder];
+        
+        if (mailActionSheet_.visible)
+        {
+            [mailActionSheet_ dismissWithClickedButtonIndex:mailActionSheet_.cancelButtonIndex animated:YES];
+            mailActionSheet_ = nil;
+        }
+        
         [notebookPopoverController_ presentPopoverFromBarButtonItem:notebookItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
 }
 
 - (void)actionItemTapped:(id)sender
 {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Email Page", nil];
-    [actionSheet showFromBarButtonItem:actionItem_ animated:YES];
-    [actionSheet release];
+    if (mailActionSheet_.visible)
+    {
+        [mailActionSheet_ dismissWithClickedButtonIndex:mailActionSheet_.cancelButtonIndex animated:YES];
+        mailActionSheet_ = nil;
+    }
+    else
+    {
+        if (notebookPopoverController_.popoverVisible && !frozen_)
+        {
+            [notebookPopoverController_ dismissPopoverAnimated:YES];
+        }
+        
+        if (fontPopoverController_.popoverVisible)
+        {
+            [fontPopoverController_ dismissPopoverAnimated:YES];
+        }
+        
+        mailActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Email Page", nil];
+        [mailActionSheet_ showFromBarButtonItem:actionItem_ animated:YES];
+        [mailActionSheet_ release];
+    }
 }
 
 - (void)fontItemTapped:(id)sender
@@ -553,6 +579,12 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     }
     else
     {
+        if (mailActionSheet_.visible)
+        {
+            [mailActionSheet_ dismissWithClickedButtonIndex:mailActionSheet_.cancelButtonIndex animated:YES];
+            mailActionSheet_ = nil;
+        }
+        
         [fontPopoverController_ presentPopoverFromBarButtonItem:fontItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
     }
 }
@@ -649,17 +681,22 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    if (buttonIndex == actionSheet.firstOtherButtonIndex)
+    if (actionSheet == mailActionSheet_)
     {
-        MFMailComposeViewController *mailComposeViewController = [[MFMailComposeViewController alloc] init];
-        mailComposeViewController.mailComposeDelegate = self;
-        NSString *subjectSnippet = KUITrimmedSnippetFromString([textView_.text string], 100);
-        NSString *subject = [NSString stringWithFormat:@"%@ - %@", page_.notebook.title, subjectSnippet];
-        [mailComposeViewController setSubject:subject];
-        [mailComposeViewController setMessageBody:[textView_.text string] isHTML:NO];
-        [textView_ resignFirstResponder];
-        [self presentModalViewController:mailComposeViewController animated:YES];
-        [mailComposeViewController release];
+        if (buttonIndex == actionSheet.firstOtherButtonIndex)
+        {
+            MFMailComposeViewController *mailComposeViewController = [[MFMailComposeViewController alloc] init];
+            mailComposeViewController.mailComposeDelegate = self;
+            NSString *subjectSnippet = KUITrimmedSnippetFromString([textView_.text string], 100);
+            NSString *subject = [NSString stringWithFormat:@"%@ - %@", page_.notebook.title, subjectSnippet];
+            [mailComposeViewController setSubject:subject];
+            [mailComposeViewController setMessageBody:[textView_.text string] isHTML:NO];
+            [textView_ resignFirstResponder];
+            [self presentModalViewController:mailComposeViewController animated:YES];
+            [mailComposeViewController release];
+        }
+        
+        mailActionSheet_ = nil;
     }
 }
 
