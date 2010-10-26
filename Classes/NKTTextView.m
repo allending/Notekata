@@ -48,8 +48,10 @@
 #pragma mark -
 #pragma mark Notifying the Delegate
 
-- (void)notifyDelegateOfChangeFromTextPosition:(NKTTextPosition *)textPosition;
-- (void)notifyDelegateOfStyleChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)notifyDelegateOfTextWillChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)notifyDelegateOfTextDidChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)notifyDelegateOfStyleWillChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)notifyDelegateOfStyleDidChangeFromTextPosition:(NKTTextPosition *)textPosition;
 
 #pragma mark Responding to Gestures
 
@@ -436,8 +438,9 @@
         return;
     }
     
-    NSUInteger currentLocation = textRange.start.location;
+    [self notifyDelegateOfStyleWillChangeFromTextPosition:textRange.start];
     
+    NSUInteger currentLocation = textRange.start.location;
     while (currentLocation < textRange.end.location)
     {
         NSRange longestEffectiveRange;
@@ -453,7 +456,7 @@
     }
     
     [self updateTextFrameForChangeFromTextPosition:textRange.start];
-    [self notifyDelegateOfStyleChangeFromTextPosition:textRange.start];
+    [self notifyDelegateOfStyleDidChangeFromTextPosition:textRange.start];
 }
 
 #pragma mark -
@@ -687,15 +690,31 @@
 #pragma mark -
 #pragma mark Notifying the Delegate
 
-- (void)notifyDelegateOfChangeFromTextPosition:(NKTTextPosition *)textPosition
+- (void)notifyDelegateOfTextWillChangeFromTextPosition:(NKTTextPosition *)textPosition
 {
-    if ([self.delegate respondsToSelector:@selector(textView:didChangeFromTextPosition:)])
+    if ([self.delegate respondsToSelector:@selector(textView:willChangeTextFromTextPosition:)])
     {
-        [(id <NKTTextViewDelegate>)self.delegate textView:self didChangeFromTextPosition:textPosition];
+        [(id <NKTTextViewDelegate>)self.delegate textView:self willChangeTextFromTextPosition:textPosition];
     }
 }
 
-- (void)notifyDelegateOfStyleChangeFromTextPosition:(NKTTextPosition *)textPosition
+- (void)notifyDelegateOfTextDidChangeFromTextPosition:(NKTTextPosition *)textPosition
+{
+    if ([self.delegate respondsToSelector:@selector(textView:didChangeTextFromTextPosition:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textView:self didChangeTextFromTextPosition:textPosition];
+    }
+}
+
+- (void)notifyDelegateOfStyleWillChangeFromTextPosition:(NKTTextPosition *)textPosition
+{
+    if ([self.delegate respondsToSelector:@selector(textView:willChangeStyleFromTextPosition:)])
+    {
+        [(id <NKTTextViewDelegate>)self.delegate textView:self willChangeStyleFromTextPosition:textPosition];
+    }
+}
+
+- (void)notifyDelegateOfStyleDidChangeFromTextPosition:(NKTTextPosition *)textPosition
 {
     if ([self.delegate respondsToSelector:@selector(textView:didChangeStyleFromTextPosition:)])
     {
@@ -1340,6 +1359,8 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         inheritedAttributes = [text_ attributesAtIndex:inheritedAttributesIndex effectiveRange:NULL];
     }
     
+    [self notifyDelegateOfTextWillChangeFromTextPosition:insertionTextRange.start];
+    
     // It is possible to avoid creating a new range of attributed text if the attributes that
     // would be inherited from the string following insertion match the insertion attributes
     if ([inheritedAttributes isEqualToDictionary:inputTextAttributes])
@@ -1354,7 +1375,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     }
     
     [self updateTextFrameForChangeFromTextPosition:insertionTextRange.start];
-    [self notifyDelegateOfChangeFromTextPosition:insertionTextRange.start];
+    [self notifyDelegateOfTextDidChangeFromTextPosition:insertionTextRange.start];
     
     NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:insertionTextRange.start.location + [text length]
                                                                      affinity:UITextStorageDirectionForward];
@@ -1403,10 +1424,12 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         }
     }
     
+    [self notifyDelegateOfTextWillChangeFromTextPosition:deletionTextRange.start];
+    
     [text_ deleteCharactersInRange:deletionTextRange.nsRange];
     
     [self updateTextFrameForChangeFromTextPosition:deletionTextRange.start];
-    [self notifyDelegateOfChangeFromTextPosition:deletionTextRange.start];
+    [self notifyDelegateOfTextDidChangeFromTextPosition:deletionTextRange.start];
     
     NKTTextPosition *textPosition = [NKTTextPosition textPositionWithLocation:deletionTextRange.start.location
                                                                      affinity:UITextStorageDirectionForward];
@@ -1500,17 +1523,17 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     // the text range changes
     NSDictionary *inputTextAttributes = [[self.inputTextAttributes copy] autorelease];
     
-    // To be safe and not be in a state when the selected text range could be invalid, following
-    // text changes, set the selected text range to nil first. Also we retain and autorelease
-    // nextTextRange and textRange in case they are the same as the selected text range!
+    // We retain and autorelease nextTextRange and textRange in case they are the same as the
+    // selected text range!
     [[nextTextRange retain] autorelease];
     [[textRange retain] autorelease];
-    [self setSelectedTextRange:nil notifyInputDelegate:notifyInputDelegate];
     
     if (notifyInputDelegate)
     {
         [inputDelegate_ textWillChange:self];
     }
+    
+    [self notifyDelegateOfTextWillChangeFromTextPosition:textRange.start];
     
     // It is possible to avoid creating a new range of attributed text if the attributes that
     // would be inherited from the string following insertion match the insertion attributes
@@ -1532,7 +1555,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [inputDelegate_ textDidChange:self];
     }
     
-    [self notifyDelegateOfChangeFromTextPosition:textRange.start];
+    [self notifyDelegateOfTextDidChangeFromTextPosition:textRange.start];
     [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
 }
 
@@ -1543,17 +1566,17 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     
     NKTTextRange* nextTextRange = [self selectedTextRangeAfterReplacingRange:textRange withText:[attributedString string]];
     
-    // To be safe and not be in a state when the selected text range could be invalid, following
-    // text changes, set the selected text range to nil first. Also we retain and autorelease
-    // nextTextRange and textRange in case they are the same as the selected text range!
+    // We retain and autorelease nextTextRange and textRange in case they are the same as the
+    // selected text range!
     [[nextTextRange retain] autorelease];
     [[textRange retain] autorelease];
-    [self setSelectedTextRange:nil notifyInputDelegate:notifyInputDelegate];
     
     if (notifyInputDelegate)
     {
         [inputDelegate_ textWillChange:self];
     }
+    
+    [self notifyDelegateOfTextWillChangeFromTextPosition:textRange.start];
     
     [text_ replaceCharactersInRange:textRange.nsRange withAttributedString:attributedString];
     
@@ -1564,7 +1587,7 @@ static const CGFloat EdgeScrollThreshold = 40.0;
         [inputDelegate_ textDidChange:self];
     }
     
-    [self notifyDelegateOfChangeFromTextPosition:textRange.start];    
+    [self notifyDelegateOfTextDidChangeFromTextPosition:textRange.start];
     [self setSelectedTextRange:nextTextRange notifyInputDelegate:notifyInputDelegate];
 }
 
@@ -1695,11 +1718,14 @@ static const CGFloat EdgeScrollThreshold = 40.0;
     NSDictionary *inputTextAttributes = [[self.inputTextAttributes copy] autorelease];
     NKTTextRange *replacementTextRange = (markedTextRange_ != nil) ? markedTextRange_ : selectedTextRange_;
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:markedText_ attributes:inputTextAttributes];
+    
+    [self notifyDelegateOfTextWillChangeFromTextPosition:replacementTextRange.start];
+    
     [text_ replaceCharactersInRange:replacementTextRange.nsRange withAttributedString:attributedString];
     [attributedString release];
     
     [self updateTextFrameForChangeFromTextPosition:replacementTextRange.start];
-    [self notifyDelegateOfChangeFromTextPosition:replacementTextRange.start];
+    [self notifyDelegateOfTextDidChangeFromTextPosition:replacementTextRange.start];
     
     NKTTextRange *newMarkedTextRange = nil;
     NKTTextRange *newSelectedTextRange = nil;

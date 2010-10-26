@@ -53,9 +53,18 @@ static NKTAttributedStringRangeInfo NKTInfoForAttributedStringRange(NSAttributed
     return info;
 }
 
+@interface NKTPageViewController()
+
+#pragma mark Undo
+
+@property (nonatomic, readwrite, retain) NSUndoManager *undoManager;
+
+@end
+
 @implementation NKTPageViewController
 
 @synthesize page = page_;
+@synthesize undoManager = undoManager_;
 
 @synthesize delegate = delegate_;
 @synthesize fontPopoverController = fontPopoverController_;
@@ -82,6 +91,7 @@ static NKTAttributedStringRangeInfo NKTInfoForAttributedStringRange(NSAttributed
 @synthesize italicToggleButton = italicToggleButton_;
 @synthesize underlineToggleButton = underlineToggleButton_;
 
+const NSUInteger MaximumNumberOfUndoLevels = 200;
 const NSUInteger SaveCheckpointChangeCountThreshold = 50;
 const NSUInteger SaveCheckpointTotalTextLengthChangeThreshold = 50;
 static const NSUInteger TitleSnippetSourceLength = 50;
@@ -94,6 +104,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 - (void)dealloc
 {
     [page_ release];
+    [undoManager_ release];
     
     [notebookPopoverController_ release];
     [fontPopoverController_ release];
@@ -127,6 +138,11 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 {
     [super didReceiveMemoryWarning];
     [self purgeCachedResources];
+    
+    // Force the undo manager to clear a maximum of half of its undo history
+    [self.undoManager setLevelsOfUndo:MaximumNumberOfUndoLevels / 2];
+    // Restore undo history limit
+    [self.undoManager setLevelsOfUndo:MaximumNumberOfUndoLevels];
 }
 
 - (void)purgeCachedResources
@@ -355,6 +371,9 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         [page_.notebook removeObserver:self forKeyPath:@"notebookStyle"];
     }
     
+    // Clear undo manager
+    self.undoManager = nil;
+    
     [page_ release];
     page_ = [page retain];
     
@@ -375,7 +394,16 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         textLengthBeforeChange_ = [textView_.text length];
         totalTextLengthChangeSinceSave_ = 0;
         
-        KBCLogDebug(@"Page set with text of length %d.", [page_.textString length]);
+        // Create undo manager
+        NSUndoManager *undoManager = [[NSUndoManager alloc] init];
+        // Assuming each undo command consumes a liberal 50KB of memory, we allow about 5MB of
+        // undo history ... at least until we have more granular undo
+        [undoManager setLevelsOfUndo:MaximumNumberOfUndoLevels];
+        self.undoManager = undoManager;
+        [undoManager release];
+        allowUndoCheckpoint_ = YES;
+        
+        //KBCLogDebug(@"Page set with text of length %d.", [page_.textString length]);
     }
     else
     {
@@ -383,7 +411,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     }
 }
 
-- (void)enterSaveCheckpointForTextChange
+- (void)enterSaveCheckpoint
 {
     // We push changes in the text view periodically to the data model and persistent storage
     // depending on the number of changes that have occured
@@ -413,9 +441,6 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         return;
     }
     
-    // Some logging and statistics
-    NSDate *startDate = [NSDate date];
-    
     NSAttributedString *text = textView_.text;
     // Must make a copy for core data or this will fail badly (the text property of the textview
     // returns the backing attributed string)!
@@ -437,11 +462,46 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     changeCountSinceSave_ = 0;
     totalTextLengthChangeSinceSave_ = 0;
     
-    // Finish up logging and statistics
-    NSDate *endDate = [NSDate date];
-    NSTimeInterval elapsedTime = [endDate timeIntervalSinceDate:startDate];
-    KBCLogDebug(@"Saved text of length %d in %f seconds.", [string length], elapsedTime);
     [string release];
+}
+
+#pragma mark -
+#pragma mark Undo
+
+- (void)registerUndoForCurrentState
+{
+    NSAttributedString *currentAttributedString = [[NSAttributedString alloc] initWithAttributedString:textView_.text];
+    NKTTextRange *currentSelectedTextRange = (NKTTextRange *)textView_.selectedTextRange;
+    
+    if (currentSelectedTextRange == nil)
+    {
+        currentSelectedTextRange = (NKTTextRange *)[textView_ beginningOfDocument];
+    }
+    
+    NSDictionary *currentUndoInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+                                     currentAttributedString, @"AttributedString",
+                                     currentSelectedTextRange, @"SelectedTextRange",
+                                     nil];
+    [self.undoManager registerUndoWithTarget:self selector:@selector(applyUndoWithInfo:) object:currentUndoInfo];
+    [currentAttributedString release];
+}
+
+- (void)applyUndoWithInfo:(NSDictionary *)undoInfo
+{
+    [self registerUndoForCurrentState];
+    
+    // Apply changes
+    NSAttributedString *attributedString = [undoInfo objectForKey:@"AttributedString"];
+    NKTTextRange *selectedTextRange = [undoInfo objectForKey:@"SelectedTextRange"];
+    CGPoint contentOffset = textView_.contentOffset;
+    textView_.text = attributedString;
+    textView_.contentOffset = contentOffset;
+    [textView_ setSelectedTextRange:selectedTextRange notifyInputDelegate:YES];
+    [textView_ updateSelectionDisplay];
+    [textView_ scrollTextRangeToVisible:selectedTextRange animated:YES];
+    allowUndoCheckpoint_ = YES;
+    // This is considered a change so we need to enter the save checkpoint!
+    [self enterSaveCheckpoint];
 }
 
 #pragma mark -
@@ -1001,6 +1061,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 {
     [self registerForKeyboardEvents];
     [self updateTextEditingItems];
+    allowUndoCheckpoint_ = YES;
 }
 
 - (void)textViewDidEndEditing:(NKTTextView *)textView
@@ -1016,6 +1077,8 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     
     menuEnabledForSelectedTextRange_ = NO;
     [self dismissMenu];
+    
+    allowUndoCheckpoint_ = YES;
 }
 
 - (void)textViewDidChangeSelection:(NKTTextView *)textView
@@ -1026,11 +1089,24 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     [self dismissMenu];
 }
 
-- (void)textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition
+- (void)textView:(NKTTextView *)textView willChangeTextFromTextPosition:(NKTTextPosition *)textPosition
+{    
+    if (!allowUndoCheckpoint_)
+    {
+        return;
+    }
+    
+    [self registerUndoForCurrentState];
+    
+    // Disallow more undos until checkpoint allowing change occurs
+    allowUndoCheckpoint_ = NO;
+}
+
+- (void)textView:(NKTTextView *)textView didChangeTextFromTextPosition:(NKTTextPosition *)textPosition
 {
     // Text view changes are saved at a certain frequency depending on the number and size of
     // changes
-    [self enterSaveCheckpointForTextChange];
+    [self enterSaveCheckpoint];
     
     if (notebookPopoverController_.popoverVisible)
     {
@@ -1058,9 +1134,14 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     }
 }
 
+- (void)textView:(NKTTextView *)textView willChangeStyleFromTextPosition:(NKTTextPosition *)textPosition
+{
+    [self registerUndoForCurrentState];
+}
+
 - (void)textView:(NKTTextView *)textView didChangeStyleFromTextPosition:(NKTTextPosition *)textPosition
 {
-    [self enterSaveCheckpointForTextChange];
+    [self enterSaveCheckpoint];
     
     menuEnabledForSelectedTextRange_ = NO;
     [self dismissMenu];
@@ -1083,6 +1164,8 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         menuEnabledForSelectedTextRange_ = NO;
         [self dismissMenu];
     }
+    
+    allowUndoCheckpoint_ = YES;
 }
 
 - (void)textViewContinuousGestureDidBegin
@@ -1100,6 +1183,8 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 {
     menuEnabledForSelectedTextRange_ = YES;
     [self presentMenu];
+    
+    allowUndoCheckpoint_ = YES;
 }
 
 - (void)textViewLongPressDidBegin:(NKTTextView *)textView

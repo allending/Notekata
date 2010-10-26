@@ -27,6 +27,8 @@
     NSUInteger changeCountSinceSave_;
     NSUInteger textLengthBeforeChange_;
     NSUInteger totalTextLengthChangeSinceSave_;
+    NSUndoManager *undoManager_;
+    BOOL allowUndoCheckpoint_;
     
     id <NKTPageViewControllerDelegate> delegate_;
     UIPopoverController *notebookPopoverController_;
@@ -68,8 +70,14 @@
 // Setting a new page causes any pending changes to be saved.
 @property (nonatomic, retain) NKTPage *page;
 
-- (void)enterSaveCheckpointForTextChange;
+- (void)enterSaveCheckpoint;
 - (void)savePendingChanges;
+
+#pragma mark -
+#pragma mark Undo
+
+- (void)registerUndoForCurrentState;
+- (void)applyUndoWithInfo:(NSDictionary *)undoInfo;
 
 #pragma mark -
 #pragma mark Delegate

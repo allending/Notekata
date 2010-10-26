@@ -339,7 +339,7 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
     // delay to get around some weird keyboard behavior that occurs if the text view is made first
     // responder immediately
     [pageViewController_ dismissNotebookPopoverAnimated:YES];
-    [pageViewController_.textView performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.1];
+    [pageViewController_.textView performSelector:@selector(becomeFirstResponder) withObject:nil afterDelay:0.15];
     [self dismissModalViewControllerAnimated:NO];
 }
 

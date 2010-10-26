@@ -154,7 +154,9 @@
 
 - (void)textViewDidBeginEditing:(NKTTextView *)textView;
 - (void)textViewDidEndEditing:(NKTTextView *)textView;
-- (void)textView:(NKTTextView *)textView didChangeFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)textView:(NKTTextView *)textView willChangeTextFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)textView:(NKTTextView *)textView didChangeTextFromTextPosition:(NKTTextPosition *)textPosition;
+- (void)textView:(NKTTextView *)textView willChangeStyleFromTextPosition:(NKTTextPosition *)textPosition;
 - (void)textView:(NKTTextView *)textView didChangeStyleFromTextPosition:(NKTTextPosition *)textPosition;
 - (void)textViewDidChangeSelection:(NKTTextView *)textView;
 
