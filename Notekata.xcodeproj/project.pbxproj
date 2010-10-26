@@ -28,10 +28,8 @@
 		9F0D11CA1263595000348E1B /* KBTFont.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11C91263595000348E1B /* KBTFont.m */; };
 		9F0D11D7126359E100348E1B /* KBTUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D11D6126359E100348E1B /* KBTUtilities.m */; };
 		9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D121F12635BF000348E1B /* KBCUtilities.m */; };
-		9F0D125F12635E3200348E1B /* License_JonathanWight.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F0D125E12635E3200348E1B /* License_JonathanWight.txt */; };
 		9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */; };
 		9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */; };
-		9F1665271255B9B800AEA16F /* Notes.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F1665261255B9B800AEA16F /* Notes.txt */; };
 		9F267F0D1271ED98007C6F04 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F267F0C1271ED98007C6F04 /* MessageUI.framework */; };
 		9F29982D1249B17200AA62DD /* FontPickerTableEdge.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F29982C1249B17200AA62DD /* FontPickerTableEdge.png */; };
 		9F322C6012756757000C1605 /* Notekata.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9F322C5F12756757000C1605 /* Notekata.xcdatamodeld */; };
@@ -45,7 +43,6 @@
 		9F47A1B7122AC6C900285550 /* KBCGeometry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F47A1B6122AC6C900285550 /* KBCGeometry.m */; };
 		9F47F0B51260C27B00E5E6BB /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F47F0B41260C27B00E5E6BB /* CoreData.framework */; };
 		9F48CDD51226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F48CDD41226C342002CAC54 /* NKTTextViewGestureRecognizerDelegate.m */; };
-		9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */ = {isa = PBXBuildFile; fileRef = 9F4F217E1226D37C00FC2367 /* License_TropicalPixels.txt */; };
 		9F65A3C012499D2D0006BD17 /* FontPickerTableTopCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F65A3BF12499D2D0006BD17 /* FontPickerTableTopCap.png */; };
 		9F65A42D1249A37F0006BD17 /* FontPickerTableBottomCap.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F65A42C1249A37F0006BD17 /* FontPickerTableBottomCap.png */; };
 		9F6711CB122B9F4D00B0811B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6711CA122B9F4D00B0811B /* QuartzCore.framework */; };
@@ -91,7 +88,6 @@
 		F5632B0211DD9D1000868F7B /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5632B0111DD9D1000868F7B /* CoreText.framework */; };
 		F5D12AA011F2ECA20049C2CE /* NKTLine.m in Sources */ = {isa = PBXBuildFile; fileRef = F5D12A9F11F2ECA20049C2CE /* NKTLine.m */; };
 		F5D56D5812129CFA0010849C /* NKTTextSection.m in Sources */ = {isa = PBXBuildFile; fileRef = F5D56D5712129CFA0010849C /* NKTTextSection.m */; };
-		F5E4990912143A4600C788A1 /* Todo.txt in Resources */ = {isa = PBXBuildFile; fileRef = F5E4990812143A4600C788A1 /* Todo.txt */; };
 		F5F94DA411DC4DC1004AB62C /* Icon-72.png in Resources */ = {isa = PBXBuildFile; fileRef = F5F94DA311DC4DC1004AB62C /* Icon-72.png */; };
 /* End PBXBuildFile section */
 
@@ -601,8 +597,6 @@
 				F54453B311ED6371009D392B /* CreamBackgroundPattern.png in Resources */,
 				F54453B511ED6371009D392B /* PageRightEdgeBackgroundPattern.png in Resources */,
 				F520393512097B1B00675702 /* NKTPageViewController.xib in Resources */,
-				F5E4990912143A4600C788A1 /* Todo.txt in Resources */,
-				9F4F217F1226D37C00FC2367 /* License_TropicalPixels.txt in Resources */,
 				9FA5410F122A59530005323E /* RectangleLoupe.png in Resources */,
 				9FA54110122A59530005323E /* RectangleLoupeMask.png in Resources */,
 				9FA54111122A59530005323E /* CaretHandle.png in Resources */,
@@ -612,8 +606,6 @@
 				9F65A42D1249A37F0006BD17 /* FontPickerTableBottomCap.png in Resources */,
 				9F29982D1249B17200AA62DD /* FontPickerTableEdge.png in Resources */,
 				9FA564E012517E14002EFFC7 /* PlainBackgroundPattern.png in Resources */,
-				9F1665271255B9B800AEA16F /* Notes.txt in Resources */,
-				9F0D125F12635E3200348E1B /* License_JonathanWight.txt in Resources */,
 				9FFD7FF3126400F700CB082D /* PageLeftEdgeCap.png in Resources */,
 				9FFD800A1264031800CB082D /* PageLeftEdgeShadow.png in Resources */,
 				9FAF0C30126BD52800B58D59 /* NKTNotebookEditViewController.xib in Resources */,
@@ -694,6 +686,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -706,6 +699,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				OTHER_CFLAGS = "-D__IPHONE_OS_VERSION_MIN_REQUIRED=030200";
 				PRODUCT_NAME = Notekata;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				TARGETED_DEVICE_FAMILY = 2;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Debug;
@@ -714,6 +709,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
@@ -725,10 +721,53 @@
 					"-DNS_BLOCK_ASSERTIONS=1",
 				);
 				PRODUCT_NAME = Notekata;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				TARGETED_DEVICE_FAMILY = 2;
 				VALIDATE_PRODUCT = YES;
 				WARNING_CFLAGS = "-Wall";
 			};
 			name = Release;
+		};
+		9F64DEED1276FF45006F07BD /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = iphoneos4.1;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Distribution;
+		};
+		9F64DEEE1276FF45006F07BD /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Allen Ding";
+				COPY_PHASE_STRIP = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Other Sources/Notekata_Prefix.pch";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = "Resources/Notekata-Info.plist";
+				OTHER_CFLAGS = (
+					"-D__IPHONE_OS_VERSION_MIN_REQUIRED=030200",
+					"-DNS_BLOCK_ASSERTIONS=1",
+				);
+				PRODUCT_NAME = Notekata;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "6438201B-4FB3-406C-A962-B238276A04C6";
+				VALIDATE_PRODUCT = YES;
+				WARNING_CFLAGS = "-Wall";
+			};
+			name = Distribution;
 		};
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -760,6 +799,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 3.2;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos4.1;
 				TARGETED_DEVICE_FAMILY = 2;
@@ -774,6 +814,7 @@
 			buildConfigurations = (
 				1D6058940D05DD3E006BFB54 /* Debug */,
 				1D6058950D05DD3E006BFB54 /* Release */,
+				9F64DEEE1276FF45006F07BD /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -783,6 +824,7 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+				9F64DEED1276FF45006F07BD /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
