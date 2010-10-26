@@ -8,6 +8,51 @@
 #import "NKTNotebook+CustomAdditions.h"
 #import "NKTPage+CustomAdditions.h"
 
+typedef struct NKTAttributedStringRangeInfo
+{
+    BOOL anyFontSupportsBold;
+    BOOL anyFontIsBold;
+    BOOL anyFontSupportsItalic;
+    BOOL anyFontIsItalic;
+    BOOL allFontsSupportsBoldOrItalicExclusively;
+} NKTAttributedStringRangeInfo;
+
+static NKTAttributedStringRangeInfo NKTInfoForAttributedStringRange(NSAttributedString *attributedString, NSRange range)
+{
+    NSArray *rangeAttributes = nil;
+    KBTLightweightEnumerateAttributedStringAttributesInRange(attributedString, &rangeAttributes, range);
+    NKTAttributedStringRangeInfo info;
+    info.anyFontSupportsBold = NO;
+    info.anyFontIsBold = NO;
+    info.anyFontSupportsItalic = NO;
+    info.anyFontIsItalic = NO;
+    info.allFontsSupportsBoldOrItalicExclusively = YES;
+    
+    for (NSDictionary *coreTextAttributes in rangeAttributes)
+    {
+        KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:coreTextAttributes];
+        info.anyFontSupportsBold |= styleDescriptor.fontFamilySupportsBoldTrait;
+        info.anyFontIsBold |= styleDescriptor.fontIsBold;
+        info.anyFontSupportsItalic |= styleDescriptor.fontFamilySupportsItalicTrait;
+        info.anyFontIsItalic |= styleDescriptor.fontIsItalic;
+        
+        if (info.allFontsSupportsBoldOrItalicExclusively)
+        {
+            if (!styleDescriptor.fontFamilySupportsBoldTrait || !styleDescriptor.fontFamilySupportsItalicTrait || styleDescriptor.fontFamilySupportsBoldItalicTrait)
+            {
+                info.allFontsSupportsBoldOrItalicExclusively = NO;
+            }
+        }
+        
+        if (info.anyFontSupportsBold && info.anyFontIsBold && info.anyFontSupportsItalic && info.anyFontIsItalic && !info.allFontsSupportsBoldOrItalicExclusively)
+        {
+            break;
+        }
+    }
+    
+    return info;
+}
+
 @implementation NKTPageViewController
 
 @synthesize page = page_;
@@ -358,7 +403,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 {
     if (page_ == nil)
     {
-        KBCLogDebug(@"Page is nil. Returning.");
+        //KBCLogDebug(@"Page is nil. Returning.");
         return;
     }
     
@@ -453,16 +498,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 }
 
 - (void)boldItemTapped:(id)sender
-{
-    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
-    
-    // Deselect the italic button if the font family supports bold or italic traits exclusively
-    if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
-    {
-        italicToggleButton_.selected = NO;
-    }
-    
+{    
     if (boldToggleButton_.selected)
     {
         [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingBoldTraitToAttributes:)];
@@ -472,20 +508,35 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingBoldTraitFromAttributes:)];
     }
     
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    NKTTextRange *selectedTextRange = (NKTTextRange *)textView_.selectedTextRange;
+    
+    if (selectedTextRange != nil && !selectedTextRange.empty)
+    {
+        NKTAttributedStringRangeInfo info = NKTInfoForAttributedStringRange(textView_.text, selectedTextRange.nsRange);
+        
+        // Deselect the italic button if the font family supports bold or italic traits exclusively
+        if (!info.anyFontIsItalic || info.allFontsSupportsBoldOrItalicExclusively)
+        {
+            italicToggleButton_.selected = NO;
+        }
+    }
+    else
+    {
+        KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
+        
+        // Deselect the bold button if the font family supports bold or italic traits exclusively
+        if (fontFamilyDescriptor.supportsItalicTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
+        {
+            italicToggleButton_.selected = NO;
+        }
+    }
+    
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
 }
 
 - (void)italicItemTapped:(id)sender
-{
-    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
-    KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
-    
-    // Deselect the bold button if the font family supports bold or italic traits exclusively
-    if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
-    {
-        boldToggleButton_.selected = NO;
-    }
-    
+{        
     if (italicToggleButton_.selected)
     {
         [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByAddingItalicTraitToAttributes:)];
@@ -493,6 +544,30 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     else
     {
         [textView_ styleTextRange:textView_.selectedTextRange withTarget:self selector:@selector(attributesByRemovingItalicTraitFromAttributes:)];
+    }
+    
+    NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
+    NKTTextRange *selectedTextRange = (NKTTextRange *)textView_.selectedTextRange;
+    
+    if (selectedTextRange != nil && !selectedTextRange.empty)
+    {
+        NKTAttributedStringRangeInfo info = NKTInfoForAttributedStringRange(textView_.text, selectedTextRange.nsRange);
+        
+        // Deselect the italic button if the font family supports bold or italic traits exclusively
+        if (!info.anyFontIsBold || info.allFontsSupportsBoldOrItalicExclusively)
+        {
+            boldToggleButton_.selected = NO;
+        }
+    }
+    else
+    {
+        KBTFontFamilyDescriptor *fontFamilyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
+        
+        // Deselect the bold button if the font family supports bold or italic traits exclusively
+        if (fontFamilyDescriptor.supportsBoldTrait && !fontFamilyDescriptor.supportsBoldItalicTrait)
+        {
+            boldToggleButton_.selected = NO;
+        }
     }
     
     textView_.inputTextAttributes = [self currentCoreTextAttributes];
@@ -779,21 +854,35 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 
 - (void)updateTextEditingItems
 {
-    // PENDING: improve poor clarity of behavior    
+    // PENDING: improve poor clarity of behavior
     if ([textView_ isFirstResponder])
     {
-        UITextRange *selectedTextRange = textView_.selectedTextRange;
+        NKTTextRange *selectedTextRange = (NKTTextRange *)textView_.selectedTextRange;
         NSDictionary *inputTextAttributes = self.textView.inputTextAttributes;
-        KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:inputTextAttributes];
+        KBTStyleDescriptor *inputStyleDescriptor = [KBTStyleDescriptor styleDescriptorWithCoreTextAttributes:inputTextAttributes];
         fontItem_.enabled = YES;
-        fontPickerViewController_.selectedFontFamilyName = styleDescriptor.fontFamilyName;
-        fontPickerViewController_.selectedFontSize = styleDescriptor.fontSize;
-        boldToggleButton_.enabled = !selectedTextRange.empty || styleDescriptor.fontFamilySupportsBoldTrait;
-        boldToggleButton_.selected = boldToggleButton_.enabled && styleDescriptor.fontIsBold;
-        italicToggleButton_.enabled = !selectedTextRange.empty || styleDescriptor.fontFamilySupportsItalicTrait;
-        italicToggleButton_.selected = italicToggleButton_.enabled && styleDescriptor.fontIsItalic;
+        fontPickerViewController_.selectedFontFamilyName = inputStyleDescriptor.fontFamilyName;
+        fontPickerViewController_.selectedFontSize = inputStyleDescriptor.fontSize;
+        
+        // Update bold and italic items
+        if (selectedTextRange == nil || selectedTextRange.empty)
+        {
+            boldToggleButton_.enabled = inputStyleDescriptor.fontFamilySupportsBoldTrait;
+            boldToggleButton_.selected = inputStyleDescriptor.fontIsBold;
+            italicToggleButton_.enabled = inputStyleDescriptor.fontFamilySupportsItalicTrait;
+            italicToggleButton_.selected = inputStyleDescriptor.fontIsItalic;
+        }
+        else
+        {
+            NKTAttributedStringRangeInfo info = NKTInfoForAttributedStringRange(textView_.text, selectedTextRange.nsRange);
+            boldToggleButton_.enabled = info.anyFontSupportsBold;
+            boldToggleButton_.selected = info.anyFontIsBold;
+            italicToggleButton_.enabled = info.anyFontSupportsItalic;
+            italicToggleButton_.selected = info.anyFontIsItalic;
+        }
+    
         underlineToggleButton_.enabled = YES;
-        underlineToggleButton_.selected = styleDescriptor.textIsUnderlined;
+        underlineToggleButton_.selected = inputStyleDescriptor.textIsUnderlined; 
     }
     else
     {
@@ -826,8 +915,9 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 {
     NSString *familyName = fontPickerViewController_.selectedFontFamilyName;
     CGFloat fontSize = fontPickerViewController_.selectedFontSize;
-    BOOL bold = boldToggleButton_.selected;
-    BOOL italic = italicToggleButton_.selected;
+    KBTFontFamilyDescriptor *familyDescriptor = [KBTFontFamilyDescriptor fontFamilyDescriptorWithFamilyName:familyName];
+    BOOL bold = boldToggleButton_.selected && familyDescriptor.supportsBoldTrait;
+    BOOL italic = italicToggleButton_.selected && familyDescriptor.supportsItalicTrait;
     BOOL underlined = underlineToggleButton_.selected;
     KBTStyleDescriptor *styleDescriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:familyName fontSize:fontSize bold:bold italic:italic underlined:underlined];
     return [styleDescriptor coreTextAttributes];

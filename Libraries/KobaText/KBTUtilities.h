@@ -11,6 +11,8 @@ void KBTEnumerateAttributedStringAttributes(NSAttributedString *attributedString
                                             NSArray **attributes,
                                             BOOL coalesceRanges);
 
+void KBTLightweightEnumerateAttributedStringAttributesInRange(NSAttributedString *attributedString, NSArray **outAttributes, NSRange range);
+
 #pragma mark Getting Strings
 
 NSString *KBTDebugDescriptionForAttributedString(NSAttributedString *attributedString, BOOL coalesceRanges);

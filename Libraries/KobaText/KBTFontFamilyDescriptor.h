@@ -9,11 +9,12 @@
 {
 @private
     NSString *familyName_;
+    BOOL supportsBoldTrait_;
+    BOOL supportsItalicTrait_;
+    BOOL supportsBoldItalicTrait_;
 }
 
 #pragma mark Initializing
-
-- (id)initWithFamilyName:(NSString *)familyName;
 
 + (id)fontFamilyDescriptorWithFamilyName:(NSString *)familyName;
 

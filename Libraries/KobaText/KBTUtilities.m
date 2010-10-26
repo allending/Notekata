@@ -41,6 +41,25 @@ void KBTEnumerateAttributedStringAttributes(NSAttributedString *attributedString
     *attributeDictionaries = mutableAttributeDictionaries;
 }
 
+void KBTLightweightEnumerateAttributedStringAttributesInRange(NSAttributedString *attributedString,
+                                                              NSArray **outAttributes,
+                                                              NSRange range)
+{
+    NSMutableArray *coreTextAttributes = [NSMutableArray arrayWithCapacity:4];
+    NSUInteger index = range.location;
+    NSUInteger endIndex = NSMaxRange(range);
+    
+    while (index < endIndex)
+    {
+        NSRange effectiveRange;
+        NSDictionary *attributes = [attributedString attributesAtIndex:index effectiveRange:&effectiveRange];
+        [coreTextAttributes addObject:attributes];
+        index = effectiveRange.location + effectiveRange.length;
+    }
+    
+    *outAttributes = coreTextAttributes;
+}
+
 #pragma mark -
 #pragma mark Getting Strings
 

@@ -142,7 +142,52 @@ static NSString * const CellIdentifier = @"CellIdentifier";
 {
     if (fontFamilyNames_ == nil)
     {
-        fontFamilyNames_ = [[[UIFont familyNames] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)] retain];
+        fontFamilyNames_ = [[NSArray alloc] initWithObjects:
+//                            "Academy Engraved LET",
+                            @"American Typewriter",
+//                            AppleGothic,
+//                            Arial,
+//                            "Arial Hebrew",
+//                            "Arial Rounded MT Bold",
+                            @"Baskerville",
+//                            "Bodoni 72",
+//                            "Bodoni 72 Oldstyle",
+//                            "Bodoni 72 Smallcaps",
+//                            "Bodoni Ornaments",
+                            @"Bradley Hand",
+//                            Chalkduster,
+                            @"Cochin",
+                            @"Copperplate",
+                            @"Courier",
+//                            "Courier New",
+//                            "DB LCD Temp",
+                            @"Didot",
+                            @"Futura",
+//                            "Geeza Pro",
+                            @"Georgia",
+                            @"Gill Sans",
+//                            "Heiti J",
+//                            "Heiti K",
+//                            "Heiti SC",
+//                            "Heiti TC",
+                            @"Helvetica",
+                            @"Helvetica Neue",
+//                            "Hiragino Kaku Gothic ProN",
+//                            "Hiragino Mincho ProN",
+                            @"Hoefler Text",
+//                            "Marker Felt",
+                            @"Optima",
+                            @"Palatino",
+                            @"Papyrus",
+//                            "Party LET",
+                            @"Snell Roundhand",
+//                            Thonburi,
+                            @"Times New Roman",
+//                            "Trebuchet MS",
+                            @"Verdana",
+//                            "Zapf Dingbats",
+                            @"Zapfino",
+                            nil];
     }
     
     return fontFamilyNames_;

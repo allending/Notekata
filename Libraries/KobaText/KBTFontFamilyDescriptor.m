@@ -8,7 +8,11 @@
 @implementation KBTFontFamilyDescriptor
 
 @synthesize familyName = familyName_;
+@synthesize supportsBoldTrait = supportsBoldTrait_;
+@synthesize supportsItalicTrait = supportsItalicTrait_;
+@synthesize supportsBoldItalicTrait = supportsBoldItalicTrait_;
 
+#pragma mark -
 #pragma mark Initializing
 
 - (id)initWithFamilyName:(NSString *)familyName
@@ -16,6 +20,26 @@
     if ((self = [super init]))
     {
         familyName_ = [familyName copy];
+        
+        NSArray *fontNames = [UIFont fontNamesForFamilyName:familyName_];
+        
+        for (NSString *fontName in fontNames)
+        {
+            if (KBTFontNameIdentifiesBoldFont(fontName))
+            {
+                supportsBoldTrait_ = YES;
+            }
+            
+            if (KBTFontNameIdentifiesItalicFont(fontName))
+            {
+                supportsItalicTrait_ = YES;
+            }
+            
+            if (KBTFontNameIdentifiesBoldItalicFont(fontName))
+            {
+                supportsBoldItalicTrait_ = YES;
+            }
+        }
     }
     
     return self;
@@ -23,8 +47,28 @@
 
 + (id)fontFamilyDescriptorWithFamilyName:(NSString *)familyName
 {
-    return [[[self alloc] initWithFamilyName:familyName] autorelease];
+    static NSMutableDictionary *descriptorCache = nil;
+    
+    if (descriptorCache == nil)
+    {
+        descriptorCache = [[NSMutableDictionary alloc] initWithCapacity:20];
+    }
+    
+    KBTFontFamilyDescriptor *descriptor = [descriptorCache objectForKey:familyName];
+    
+    if (descriptor != nil)
+    {
+        return descriptor;
+    }
+    
+    descriptor = [[self alloc] initWithFamilyName:familyName];
+    [descriptorCache setObject:descriptor forKey:familyName];
+    [descriptor release];
+    return descriptor;
 }
+
+#pragma mark -
+#pragma mark Memory
 
 - (void)dealloc
 {
@@ -32,57 +76,7 @@
     [super dealloc];
 }
 
-//--------------------------------------------------------------------------------------------------
-
-#pragma mark Getting Information About the Font Family
-
-- (BOOL)supportsBoldTrait
-{
-    NSArray *fontNames = [UIFont fontNamesForFamilyName:familyName_];
-    
-    for (NSString *fontName in fontNames)
-    {
-        if (KBTFontNameIdentifiesBoldFont(fontName))
-        {
-            return YES;
-        }
-    }
-    
-    return NO;
-}
-
-- (BOOL)supportsItalicTrait
-{
-    NSArray *fontNames = [UIFont fontNamesForFamilyName:familyName_];
-    
-    for (NSString *fontName in fontNames)
-    {
-        if (KBTFontNameIdentifiesItalicFont(fontName))
-        {
-            return YES;
-        }
-    }
-    
-    return NO;
-}
-
-- (BOOL)supportsBoldItalicTrait
-{
-    NSArray *fontNames = [UIFont fontNamesForFamilyName:familyName_];
-    
-    for (NSString *fontName in fontNames)
-    {
-        if (KBTFontNameIdentifiesBoldItalicFont(fontName))
-        {
-            return YES;
-        }
-    }
-    
-    return NO;
-}
-
-//--------------------------------------------------------------------------------------------------
-
+#pragma mark -
 #pragma mark Getting Font Names for Variants
 
 - (NSString *)bestFontNameWithBold:(BOOL)bold italic:(BOOL)italic
@@ -102,14 +96,11 @@
             break;
         }
     }
-
+    
     // Use the family name directly as a last resort
     if (bestFontName == nil)
     {
-        KBCLogWarning(@"could not find matching name for family name: '%@' bold: %d italic: %d, using family name",
-                      familyName_,
-                      bold,
-                      italic);
+        //KBCLogDebug(@"could not find matching name for family name: '%@' bold: %d italic: %d, using family name", familyName_, bold, italic);
         bestFontName = familyName_;
     }
     

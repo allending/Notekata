@@ -247,7 +247,12 @@ static NSString *UnderlinedKey = @"Underlined";
 }
 
 - (KBTStyleDescriptor *)styleDescriptorByEnablingBoldTrait
-{    
+{
+    if (!self.fontFamilySupportsBoldTrait)
+    {
+        return self;
+    }
+    
     return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
                                                   fontSize:self.fontSize
                                                       bold:YES
@@ -257,6 +262,11 @@ static NSString *UnderlinedKey = @"Underlined";
 
 - (KBTStyleDescriptor *)styleDescriptorByDisablingBoldTrait
 {
+    if (!self.fontFamilySupportsBoldTrait)
+    {
+        return self;
+    }
+    
     return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
                                                   fontSize:self.fontSize
                                                       bold:NO
@@ -266,6 +276,11 @@ static NSString *UnderlinedKey = @"Underlined";
 
 - (KBTStyleDescriptor *)styleDescriptorByEnablingItalicTrait
 {
+    if (!self.fontFamilySupportsItalicTrait)
+    {
+        return self;
+    }
+    
     return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
                                                   fontSize:self.fontSize
                                                       bold:self.fontIsBold && self.fontFamilySupportsBoldItalicTrait
@@ -275,6 +290,11 @@ static NSString *UnderlinedKey = @"Underlined";
 
 - (KBTStyleDescriptor *)styleDescriptorByDisablingItalicTrait
 {
+    if (!self.fontFamilySupportsItalicTrait)
+    {
+        return self;
+    }
+    
     return [[self class] styleDescriptorWithFontFamilyName:self.fontFamilyName
                                                   fontSize:self.fontSize
                                                       bold:self.fontIsBold
