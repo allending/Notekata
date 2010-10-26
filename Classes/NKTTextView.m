@@ -741,6 +741,7 @@
         {
             NKTTextRange *textRange = [(NKTTextPosition *)[self beginningOfDocument] textRange];
             [self setSelectedTextRange:textRange notifyInputDelegate:YES];
+            selectionDisplayController_.caretVisible = YES;
             [selectionDisplayController_ updateSelectionDisplay];
         }
         
