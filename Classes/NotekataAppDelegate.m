@@ -74,7 +74,7 @@ static NSString *ModelType = @"momd";
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
-{
+{    
     if (managedObjectContext_ != nil)
     {
         // Final chance for page view controller to save changes
@@ -93,6 +93,8 @@ static NSString *ModelType = @"momd";
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
+    // There is a bug that causes the caret not to show up if the application previously entered the background
+    [pageViewController_.textView updateSelectionDisplay];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application

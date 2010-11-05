@@ -32,6 +32,7 @@
     
     id <NKTPageViewControllerDelegate> delegate_;
     UIPopoverController *notebookPopoverController_;
+    BOOL notebookPopoverHidden_;
     UIPopoverController *fontPopoverController_;
     NKTFontPickerViewController *fontPickerViewController_;
     BOOL menuEnabledForSelectedTextRange_;
@@ -98,6 +99,7 @@
 #pragma mark -
 #pragma mark Freezing
 
+- (BOOL)isNotebookPopoverInSafeState;
 - (void)freeze;
 - (void)unfreeze;
 

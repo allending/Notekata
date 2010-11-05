@@ -531,6 +531,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     if (notebookPopoverController_.popoverVisible && !frozen_)
     {
         [notebookPopoverController_ dismissPopoverAnimated:YES];
+        notebookPopoverHidden_ = YES;
     }
     else
     {
@@ -543,6 +544,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         }
         
         [notebookPopoverController_ presentPopoverFromBarButtonItem:notebookItem_ permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        notebookPopoverHidden_ = NO;
     }
 }
 
@@ -703,6 +705,12 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 #pragma mark -
 #pragma mark Freezing
 
+- (BOOL)isNotebookPopoverInSafeState
+{
+    // Do not freeze if notebook popover exists and has been dismissed
+    return notebookPopoverController_ == nil || !notebookPopoverHidden_;
+}
+
 - (void)freeze
 {
     if (frozen_)
@@ -743,6 +751,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     if (notebookPopoverController_.popoverVisible)
     {
         [notebookPopoverController_ dismissPopoverAnimated:animated];
+        notebookPopoverHidden_ = YES;
     }
 }
 
@@ -754,12 +763,14 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     notebookPopoverController_ = pc;
     [notebookPopoverController_ setDelegate:self];
     [self updateToolbarAnimated:NO];
+    notebookPopoverHidden_ = YES;
 }
 
 - (void)splitViewController:(UISplitViewController*)svc willShowViewController:(UIViewController *)aViewController invalidatingBarButtonItem:(UIBarButtonItem *)button
 {
     notebookPopoverController_ = nil;
     [self updateToolbarAnimated:NO];
+    notebookPopoverHidden_ = YES;
 }
 
 #pragma mark -
@@ -772,7 +783,15 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         // PENDING: this is kinda leaky ... maybe ask delegate?
         // If the controller is frozen, then we must not dismiss the popover, or there might be no
         // way to unfreeze the controller
-        return !frozen_;
+        if (frozen_)
+        {
+            return NO;
+        }
+        else
+        {
+            notebookPopoverHidden_ = YES;
+            return YES;
+        }
     }
     
     return YES;

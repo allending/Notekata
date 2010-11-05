@@ -144,6 +144,13 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
 {
+    // If the page view controller is in the process of dismissing the notebook popover, don't do anything. This happens
+    // in edge cases when the popover is being dismissed
+    if (editing && ![pageViewController_ isNotebookPopoverInSafeState])
+    {
+        return;
+    }
+    
     [super setEditing:editing animated:animated];
     // PENDING: find Core Animation bug workaround when this animated: parameter is YES
     [self.navigationItem setHidesBackButton:editing animated:NO];
@@ -314,6 +321,11 @@ static NSString *LastViewedPageNumbersKey = @"LastViewedPageNumbers";
     }
     else
     {
+        if (![pageViewController_ isNotebookPopoverInSafeState])
+        {
+            return;
+        }
+        
         pageAddActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Page", nil];
         [pageAddActionSheet_ showFromBarButtonItem:item animated:YES];
         [pageAddActionSheet_ release];

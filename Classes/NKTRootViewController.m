@@ -134,6 +134,13 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated
 {
+    // If the page view controller is in the process of dismissing the notebook popover, don't do anything. This happens
+    // in edge cases when the popover is being dismissed
+    if (editing && ![pageViewController_ isNotebookPopoverInSafeState])
+    {
+        return;
+    }
+    
     [super setEditing:editing animated:animated];
     // PENDING: find Core Animation bug workaround when this is animated
     [self.navigationItem setHidesBackButton:editing animated:NO];
@@ -260,6 +267,11 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
     }
     else
     {
+        if (![pageViewController_ isNotebookPopoverInSafeState])
+        {
+            return;
+        }
+        
         notebookAddActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Add Notebook", nil];
         [notebookAddActionSheet_ showFromBarButtonItem:notebookAddToolbarItem_ animated:YES];
         [notebookAddActionSheet_ release];
@@ -299,13 +311,7 @@ static NSString *LastViewedNotebookIdKey = @"LastViewedNotebookId";
         self.notebookDeleteIndexPath = nil;
         notebookDeleteConfirmationActionSheet_ = nil;
     }
-}
-
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    // Present the next view after the sheet has been dismissed to prevent some animation
-    // artifacts
-    if (actionSheet == notebookAddActionSheet_)
+    else if (actionSheet == notebookAddActionSheet_)
     {
         if (buttonIndex == notebookAddActionSheet_.firstOtherButtonIndex)
         {
