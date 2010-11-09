@@ -1103,6 +1103,32 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
 
 - (NSDictionary *)defaultCoreTextAttributes
 {
+    int pageNumber = [page_.pageNumber intValue];
+    
+    // Get the default text attributes from the previous page if possible
+    if ([page_.pageNumber intValue] > 0)
+    {
+        // Use first page's style
+        NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+        NSEntityDescription *entity = [NSEntityDescription entityForName:@"Page" inManagedObjectContext:page_.managedObjectContext];
+        [fetchRequest setEntity:entity];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"notebook = %@ AND pageNumber = %@", page_.notebook, [NSNumber numberWithInt:pageNumber - 1]];
+        [fetchRequest setPredicate:predicate];
+        NSArray *pages = [page_.managedObjectContext executeFetchRequest:fetchRequest error:NULL];
+        [fetchRequest release];
+        
+        if ([pages count] > 0)
+        {
+            NKTPage *previousPage = [pages objectAtIndex:0];
+            NSAttributedString *attributedString = [KBTAttributedStringCodec attributedStringWithString:previousPage.textString styleString:previousPage.textStyleString];
+            
+            if ([attributedString length] > 0)
+            {
+                return [attributedString attributesAtIndex:0 effectiveRange:NULL];
+            }
+        }
+    }
+    
     KBTStyleDescriptor *styleDecriptor = [KBTStyleDescriptor styleDescriptorWithFontFamilyName:@"Helvetica Neue" fontSize:16.0 bold:NO italic:NO underlined:NO];
     return [styleDecriptor coreTextAttributes];
 }
@@ -1386,7 +1412,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
     if (menuController.menuVisible)
     {
         [menuController setTargetRect:CGRectNull inView:textView_];
-        [menuController setMenuVisible:NO animated:YES];
+        [menuController setMenuVisible:NO animated:NO];
     }
 }
 
