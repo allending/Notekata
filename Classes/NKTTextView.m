@@ -90,7 +90,7 @@
 
 #pragma mark Managing Text Ranges
 
-@property (nonatomic, readwrite) NKTTextRange *gestureTextRange;
+@property (nonatomic, assign, readwrite) NKTTextRange *gestureTextRange;
 
 - (void)confirmGestureTextRange;
 - (void)setSelectedTextRange:(NKTTextRange *)textRange notifyInputDelegate:(BOOL)notifyInputDelegate;

@@ -62,9 +62,9 @@
 
 #pragma mark Getting Text Ranges
 
-@property (nonatomic, readonly) NKTTextRange *gestureTextRange;
-@property (nonatomic, readonly) NKTTextRange *selectedTextRange;
-@property (nonatomic, readonly) NKTTextRange *markedTextRange;
+- (NKTTextRange *)gestureTextRange;
+- (NKTTextRange *)selectedTextRange;
+- (NKTTextRange *)markedTextRange;
 
 #pragma mark Geometry and Hit-Testing
 

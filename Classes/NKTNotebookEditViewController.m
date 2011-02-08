@@ -21,9 +21,6 @@
 @synthesize titleCell = titleCell_;
 @synthesize titleField = titleField_;
 
-static const NSUInteger TitleSection = 0;
-static const NSUInteger NotebookStyleSection = 1;
-
 #pragma mark -
 #pragma mark Initializing
 
@@ -247,18 +244,19 @@ static const NSUInteger NotebookStyleSection = 1;
     return 2;
 }
 
+static const int TitleSection = 0;
+static const int NotebookStyleSection = 1;
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     switch (section)
     {
-        case TitleSection:
+        case 0:
             return 1;
             break;
-            
-        case NotebookStyleSection:
+        case 1:
             return 3;
             break;
-            
         default:
             break;
     }

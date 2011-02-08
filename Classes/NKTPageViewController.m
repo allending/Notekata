@@ -567,7 +567,7 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
             [fontPopoverController_ dismissPopoverAnimated:YES];
         }
         
-        mailActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Email Page", nil];
+        mailActionSheet_ = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Email Page", @"Email PDF", nil];
         [mailActionSheet_ showFromBarButtonItem:actionItem_ animated:YES];
         [mailActionSheet_ release];
     }
@@ -696,6 +696,10 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
             [textView_ resignFirstResponder];
             [self presentModalViewController:mailComposeViewController animated:YES];
             [mailComposeViewController release];
+        }
+        else if (buttonIndex == (actionSheet.firstOtherButtonIndex + 1))
+        {
+            //NSLog(@"Mail as a pdf");
         }
         
         mailActionSheet_ = nil;
