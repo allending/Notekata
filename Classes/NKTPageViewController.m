@@ -7,6 +7,7 @@
 #import "KobaText.h"
 #import "NKTNotebook+CustomAdditions.h"
 #import "NKTPage+CustomAdditions.h"
+#import "KOTextPDFWriter.h"
 
 typedef struct NKTAttributedStringRangeInfo
 {
@@ -700,6 +701,23 @@ static NSString *CodedAttributedStringDataTypeIdentifier = @"com.allending.notek
         else if (buttonIndex == (actionSheet.firstOtherButtonIndex + 1))
         {
             //NSLog(@"Mail as a pdf");
+            MFMailComposeViewController *mailComposeViewController = [[MFMailComposeViewController alloc] init];
+            mailComposeViewController.mailComposeDelegate = self;
+            NSString *subjectSnippet = KUITrimmedSnippetFromString([textView_.text string], 100);
+            NSString *subject = [NSString stringWithFormat:@"%@ - %@", page_.notebook.title, subjectSnippet];
+            [mailComposeViewController setSubject:subject];
+            
+            // Generate PDF data
+            NSMutableData *pdfData = [NSMutableData data];
+            KOTextPDFWriter *textPDFWriter = [[KOTextPDFWriter alloc] initWithAttributedString:textView_.text];
+            [textPDFWriter writeToMutableData:pdfData];
+            [textPDFWriter release];
+            
+            NSString *filename = [NSString stringWithFormat:@"%@.pdf", subjectSnippet];
+            [mailComposeViewController addAttachmentData:pdfData mimeType:@"application/pdf" fileName:filename];
+            [textView_ resignFirstResponder];
+            [self presentModalViewController:mailComposeViewController animated:YES];
+            [mailComposeViewController release];
         }
         
         mailActionSheet_ = nil;

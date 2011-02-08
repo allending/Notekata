@@ -30,6 +30,7 @@
 		9F0D122012635BF000348E1B /* KBCUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D121F12635BF000348E1B /* KBCUtilities.m */; };
 		9F1026311246F3A300680CA8 /* KBTStyleDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1026301246F3A300680CA8 /* KBTStyleDescriptor.m */; };
 		9F10281612471ECD00680CA8 /* KBTFontFamilyDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */; };
+		9F265DDF1301086D00E84BB7 /* KOTextPDFWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F265DDE1301086D00E84BB7 /* KOTextPDFWriter.m */; };
 		9F267F0D1271ED98007C6F04 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F267F0C1271ED98007C6F04 /* MessageUI.framework */; };
 		9F29982D1249B17200AA62DD /* FontPickerTableEdge.png in Resources */ = {isa = PBXBuildFile; fileRef = 9F29982C1249B17200AA62DD /* FontPickerTableEdge.png */; };
 		9F322C6012756757000C1605 /* Notekata.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9F322C5F12756757000C1605 /* Notekata.xcdatamodeld */; };
@@ -138,6 +139,8 @@
 		9F10281412471ECD00680CA8 /* KBTFontFamilyDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KBTFontFamilyDescriptor.h; sourceTree = "<group>"; };
 		9F10281512471ECD00680CA8 /* KBTFontFamilyDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KBTFontFamilyDescriptor.m; sourceTree = "<group>"; };
 		9F1665261255B9B800AEA16F /* Notes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Notes.txt; sourceTree = "<group>"; };
+		9F265DDD1301086D00E84BB7 /* KOTextPDFWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KOTextPDFWriter.h; sourceTree = "<group>"; };
+		9F265DDE1301086D00E84BB7 /* KOTextPDFWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KOTextPDFWriter.m; sourceTree = "<group>"; };
 		9F267F0C1271ED98007C6F04 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		9F29982C1249B17200AA62DD /* FontPickerTableEdge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FontPickerTableEdge.png; sourceTree = "<group>"; };
 		9F322C731275683C000C1605 /* NKTPage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NKTPage.h; sourceTree = "<group>"; };
@@ -491,6 +494,8 @@
 		F5632AAB11DD92D800868F7B /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				9F265DDD1301086D00E84BB7 /* KOTextPDFWriter.h */,
+				9F265DDE1301086D00E84BB7 /* KOTextPDFWriter.m */,
 				9FF6EE9F1272D1890025E695 /* NKTNotebook+CustomAdditions.h */,
 				9FF6EEA01272D1890025E695 /* NKTNotebook+CustomAdditions.m */,
 				9F322C751275683C000C1605 /* NKTNotebook.h */,
@@ -676,6 +681,7 @@
 				9FF6EEBC1272D3F50025E695 /* NKTPage+CustomAdditions.m in Sources */,
 				9F322C771275683C000C1605 /* NKTPage.m in Sources */,
 				9F322C781275683C000C1605 /* NKTNotebook.m in Sources */,
+				9F265DDF1301086D00E84BB7 /* KOTextPDFWriter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
